@@ -45,10 +45,11 @@ export const mentoringRecords = pgTable('mentoring_records', {
   working:   text('working'),
   advice:    text('advice'),
   pros:      text('pros'),
-  cons:      text('cons'),
-  obs:       text('obs'),
+  cons:       text('cons'),
+  obs:        text('obs'),
   suggestion: text('suggestion'),
-  createdAt: timestamp('created_at').defaultNow(),
+  step:       integer('step').notNull().default(1),
+  createdAt:  timestamp('created_at').defaultNow(),
 })
 
 // ── NextAuth tables ──────────────────────────────────────────

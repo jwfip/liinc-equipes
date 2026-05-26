@@ -51,7 +51,9 @@ export default function HistoryModal({ team, records, onClose, currentUser }: an
                   const meta = statusMap[r.status]
 
                   const getStep = (r: any) => {
-                    if (!r || r.status === 'emergency') return 1
+                    if (!r) return 1
+                    if (typeof r.step === 'number') return r.step
+                    if (r.status === 'emergency') return 1
                     const w = (r.working || '').toLowerCase()
                     if ((w.includes('soluç') || w.includes('solução')) && !w.includes('definindo')) return 2
                     return 1

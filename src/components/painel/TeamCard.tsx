@@ -16,7 +16,9 @@ export default function TeamCard({ team, record, onHistoryClick }: any) {
   const meta = statusMap[record?.status || 'none']
   
   const getStep = (r: any) => {
-    if (!r || r.status === 'emergency') return 1
+    if (!r) return 1
+    if (typeof r.step === 'number') return r.step
+    if (r.status === 'emergency') return 1
     const w = (r.working || '').toLowerCase()
     if ((w.includes('soluç') || w.includes('solução')) && !w.includes('definindo')) return 2
     return 1

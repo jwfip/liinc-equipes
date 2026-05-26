@@ -25,6 +25,7 @@ export async function submitMentoria(formData: FormData) {
   const status = formData.get('status') as string
   const working = formData.get('working') as string
   const advice  = formData.get('advice')  as string
+  const step    = parseInt(formData.get('step') as string) || 1
 
   if (!teamId || !status || !working || !advice) {
     throw new Error('Campos obrigatórios não preenchidos.')
@@ -41,6 +42,7 @@ export async function submitMentoria(formData: FormData) {
     cons:       (formData.get('cons') as string) || null,
     obs:        (formData.get('obs')  as string) || null,
     suggestion: (formData.get('suggestion') as string) || null,
+    step,
   })
 
   revalidatePath('/painel')
@@ -64,6 +66,7 @@ export async function updateMentoria(recordId: string, formData: FormData) {
   const status = formData.get('status') as string
   const working = formData.get('working') as string
   const advice  = formData.get('advice')  as string
+  const step    = parseInt(formData.get('step') as string) || 1
 
   if (!status || !working || !advice) {
     throw new Error('Campos obrigatórios não preenchidos.')
@@ -77,6 +80,7 @@ export async function updateMentoria(recordId: string, formData: FormData) {
     cons:       (formData.get('cons') as string) || null,
     obs:        (formData.get('obs')  as string) || null,
     suggestion: (formData.get('suggestion') as string) || null,
+    step,
   }).where(eq(mentoringRecords.id, recordId))
 
   revalidatePath('/painel')

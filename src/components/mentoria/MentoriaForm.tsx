@@ -17,6 +17,7 @@ export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props
   const [isPending, startTransition] = useTransition()
   const [selectedTeam, setSelectedTeam] = useState(recordToEdit?.teamId || '')
   const [selectedStatus, setSelectedStatus] = useState(recordToEdit?.status || '')
+  const [selectedStep, setSelectedStep] = useState(recordToEdit?.step || 1)
   const [teamSearch, setTeamSearch] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -54,6 +55,7 @@ export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props
         if (!recordToEdit) {
           setSelectedTeam('')
           setSelectedStatus('')
+          setSelectedStep(1)
           setTeamSearch('')
           e.currentTarget?.reset()
         }
@@ -132,6 +134,32 @@ export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props
             )
           })}
         </div>
+      </div>
+
+      {/* Step Progress Selector */}
+      <div>
+        <label className="label">Em qual etapa do processo a equipe está? *</label>
+        <div className="flex gap-2 mt-2">
+          {[1, 2, 3, 4, 5, 6].map(s => {
+            const isSelected = selectedStep === s
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSelectedStep(s)}
+                className={`flex-1 py-2.5 rounded-xl border-2 font-display font-bold text-xs transition-all flex flex-col items-center justify-center
+                  ${isSelected
+                    ? 'border-orange bg-orange/5 text-orange shadow-sm'
+                    : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-300'
+                  }`}
+              >
+                <span className="text-[9px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-1 opacity-85">Etapa</span>
+                <span className="text-base leading-none">{s}</span>
+              </button>
+            )
+          })}
+        </div>
+        <input type="hidden" name="step" value={selectedStep} />
       </div>
 
       <Textarea name="working" label="Qual o projeto da equipe atualmente? *" defaultValue={recordToEdit?.working} required />
