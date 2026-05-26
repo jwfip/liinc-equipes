@@ -58,10 +58,10 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
   }
 
   const colorMap: Record<string, { border: string; bg: string; text: string }> = {
-    green:  { border: 'border-green-500',  bg: 'bg-green-600/20',  text: 'text-green-400'  },
-    yellow: { border: 'border-yellow-500', bg: 'bg-yellow-600/20', text: 'text-yellow-400' },
-    red:    { border: 'border-red-500',    bg: 'bg-red-600/20',    text: 'text-red-400'    },
-    blue:   { border: 'border-blue-500',   bg: 'bg-blue-600/20',   text: 'text-blue-400'   },
+    green:  { border: 'border-green-500',  bg: 'bg-green-50',  text: 'text-green-700'  },
+    yellow: { border: 'border-yellow-400', bg: 'bg-yellow-50', text: 'text-yellow-700' },
+    red:    { border: 'border-red-500',    bg: 'bg-red-50',    text: 'text-red-700'    },
+    blue:   { border: 'border-blue-500',   bg: 'bg-blue-50',   text: 'text-blue-700'   },
   }
 
   return (
@@ -83,20 +83,20 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
           className="input cursor-pointer flex items-center justify-between"
           onClick={() => setDropdownOpen(v => !v)}
         >
-          <span className={selectedTeamObj ? 'text-navy' : 'text-navy-muted'}>
+          <span className={selectedTeamObj ? 'text-navy' : 'text-slate-400'}>
             {selectedTeamObj ? `${selectedTeamObj.number} — ${selectedTeamObj.name}` : 'Selecione a equipe...'}
           </span>
           <span className="text-slate-500 text-xs">▼</span>
         </div>
         {dropdownOpen && (
-          <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden">
+          <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
             <div className="p-2 border-b border-slate-200">
               <input type="text" placeholder="Buscar..." value={teamSearch}
                 onChange={e => setTeamSearch(e.target.value)} className="input" autoFocus />
             </div>
             <ul className="max-h-48 overflow-y-auto">
               {filteredTeams.map(t => (
-                <li key={t.id} className="px-3 py-2 text-sm hover:bg-navy cursor-pointer transition-colors"
+                <li key={t.id} className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy cursor-pointer transition-colors"
                   onClick={() => { setSelectedTeam(t.id); setTeamSearch(''); setDropdownOpen(false) }}>
                   {t.number} — {t.name}
                 </li>
@@ -116,8 +116,8 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
             const isSelected = selectedStatus === opt.value
             return (
               <button key={opt.value} type="button" onClick={() => setSelectedStatus(opt.value)}
-                className={`rounded-lg border-2 py-3 px-4 text-sm font-semibold transition-all
-                  ${isSelected ? `${c.border} ${c.bg} ${c.text}` : 'border-slate-200 bg-navy text-slate-600 hover:border-slate-200/70'}`}>
+                className={`rounded-xl border-2 py-3 px-4 text-[13px] font-bold transition-all
+                  ${isSelected ? `${c.border} ${c.bg} ${c.text}` : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-300'}`}>
                 {opt.label}
               </button>
             )
@@ -132,8 +132,8 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
       <Textarea name="obs"        label="Observações para facilitadores" />
       <Textarea name="suggestion" label="Sugestão para o próximo mentor" />
 
-      {error   && <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
-      {success && <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 font-semibold">✅ Mentoria registrada!</div>}
+      {error   && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
+      {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold">✅ Mentoria registrada!</div>}
 
       <button type="submit" disabled={isPending || !selectedTeam || !selectedStatus}
         className="btn-primary w-full justify-center py-3 text-base">
