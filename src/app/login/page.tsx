@@ -14,7 +14,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
             <span className="text-3xl">🧭</span>
           </div>
           <h1 className="font-display font-bold text-2xl">Liinc Mentorias</h1>
-          <p className="text-slate-400 text-sm mt-1">Acesso à plataforma</p>
+          <p className="text-slate-500 text-sm mt-1">Acesso à plataforma</p>
         </div>
 
         <div className="card">

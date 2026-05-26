@@ -31,7 +31,7 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
       <div className="card text-center py-12">
         <p className="text-4xl mb-3">⏸️</p>
         <h2 className="font-display font-bold text-lg mb-1">Nenhum bloco ativo no momento</h2>
-        <p className="text-slate-400 text-sm">Aguarde o organizador ativar um bloco.</p>
+        <p className="text-slate-500 text-sm">Aguarde o organizador ativar um bloco.</p>
       </div>
     )
   }
@@ -72,7 +72,7 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
         <div>
           <p className="text-xs text-orange font-semibold">Bloco ativo</p>
           <p className="font-display font-bold">{activeBlock.label}</p>
-          <p className="text-xs text-slate-400">{new Date(activeBlock.date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+          <p className="text-xs text-slate-500">{new Date(activeBlock.date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
         </div>
       </div>
 
@@ -83,14 +83,14 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
           className="input cursor-pointer flex items-center justify-between"
           onClick={() => setDropdownOpen(v => !v)}
         >
-          <span className={selectedTeamObj ? 'text-white' : 'text-navy-muted'}>
+          <span className={selectedTeamObj ? 'text-navy' : 'text-navy-muted'}>
             {selectedTeamObj ? `${selectedTeamObj.number} — ${selectedTeamObj.name}` : 'Selecione a equipe...'}
           </span>
-          <span className="text-slate-400 text-xs">▼</span>
+          <span className="text-slate-500 text-xs">▼</span>
         </div>
         {dropdownOpen && (
-          <div className="absolute z-20 w-full mt-1 bg-navy-light border border-navy-muted rounded-lg shadow-xl overflow-hidden">
-            <div className="p-2 border-b border-navy-muted">
+          <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden">
+            <div className="p-2 border-b border-slate-200">
               <input type="text" placeholder="Buscar..." value={teamSearch}
                 onChange={e => setTeamSearch(e.target.value)} className="input" autoFocus />
             </div>
@@ -101,7 +101,7 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
                   {t.number} — {t.name}
                 </li>
               ))}
-              {filteredTeams.length === 0 && <li className="px-3 py-2 text-sm text-slate-400">Nenhuma equipe</li>}
+              {filteredTeams.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">Nenhuma equipe</li>}
             </ul>
           </div>
         )}
@@ -117,7 +117,7 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
             return (
               <button key={opt.value} type="button" onClick={() => setSelectedStatus(opt.value)}
                 className={`rounded-lg border-2 py-3 px-4 text-sm font-semibold transition-all
-                  ${isSelected ? `${c.border} ${c.bg} ${c.text}` : 'border-navy-muted bg-navy text-slate-300 hover:border-navy-muted/70'}`}>
+                  ${isSelected ? `${c.border} ${c.bg} ${c.text}` : 'border-slate-200 bg-navy text-slate-600 hover:border-slate-200/70'}`}>
                 {opt.label}
               </button>
             )

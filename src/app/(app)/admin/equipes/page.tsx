@@ -12,12 +12,12 @@ export default async function EquipesPage() {
     <div>
       <div className="mb-6">
         <h1 className="font-display font-bold text-2xl">Equipes</h1>
-        <p className="text-slate-400 text-sm mt-1">Gerencie as equipes do evento.</p>
+        <p className="text-slate-500 text-sm mt-1">Gerencie as equipes do evento.</p>
       </div>
 
       {/* Add form */}
       <div className="card mb-6">
-        <h2 className="font-display font-semibold text-sm mb-4 text-slate-300">Adicionar equipe</h2>
+        <h2 className="font-display font-semibold text-sm mb-4 text-slate-600">Adicionar equipe</h2>
         <form action={async (fd: FormData) => {
           'use server'
           await createTeam(parseInt(fd.get('number') as string, 10), fd.get('name') as string)
@@ -40,25 +40,25 @@ export default async function EquipesPage() {
       <div className="card p-0 overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-navy-muted">
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider w-16">Nº</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Nome</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
+            <tr className="border-b border-slate-200">
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-16">Nº</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Nome</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 w-28" />
             </tr>
           </thead>
           <tbody>
             {teams.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">Nenhuma equipe cadastrada.</td></tr>
+              <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500">Nenhuma equipe cadastrada.</td></tr>
             )}
             {teams.map(t => (
-              <tr key={t.id} className="border-b border-navy-muted/50 hover:bg-navy/50 transition-colors">
+              <tr key={t.id} className="border-b border-slate-200/50 hover:bg-navy/50 transition-colors">
                 <td className="px-4 py-3 font-bold text-orange">{t.number}</td>
                 <td className="px-4 py-3 font-medium">{t.name}</td>
                 <td className="px-4 py-3">
                   {t.active
                     ? <span className="badge-ok">Ativo</span>
-                    : <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-slate-700/50 text-slate-400 border border-slate-600/30">Inativo</span>
+                    : <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-slate-700/50 text-slate-500 border border-slate-600/30">Inativo</span>
                   }
                 </td>
                 <td className="px-4 py-3 text-right">

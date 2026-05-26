@@ -23,7 +23,7 @@ export default async function MentoriaPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="mb-6">
         <h2 className="font-display font-bold text-2xl">Nova mentoria</h2>
-        <p className="text-slate-400 text-sm mt-1">Preencha após cada sessão com a equipe.</p>
+        <p className="text-slate-500 text-sm mt-1">Preencha após cada sessão com a equipe.</p>
       </div>
       <MentoriaForm
         teams={activeTeams}
