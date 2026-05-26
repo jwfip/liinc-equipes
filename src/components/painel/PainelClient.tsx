@@ -20,9 +20,10 @@ interface Props {
   initialRecords: RecordWithRelations[]
   teams:          Team[]
   activeBlock:    { label: string } | null
+  headerActions?: React.ReactNode
 }
 
-export default function PainelClient({ initialRecords, teams, activeBlock }: Props) {
+export default function PainelClient({ initialRecords, teams, activeBlock, headerActions }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -77,17 +78,20 @@ export default function PainelClient({ initialRecords, teams, activeBlock }: Pro
               <p className="text-xs text-slate-400">Painel de Acompanhamento</p>
             </div>
           </div>
-          {activeBlock ? (
-            <div className="flex items-center gap-2 bg-orange/10 border border-orange/30 rounded-lg px-3 py-1.5">
-              <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
-              <span className="text-xs text-orange font-semibold">{activeBlock.label} — ao vivo</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 bg-navy border border-navy-muted rounded-lg px-3 py-1.5">
-              <span className="w-2 h-2 rounded-full bg-slate-500" />
-              <span className="text-xs text-slate-400">Sem bloco ativo</span>
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {activeBlock ? (
+              <div className="flex items-center gap-2 bg-orange/10 border border-orange/30 rounded-lg px-3 py-1.5">
+                <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
+                <span className="text-xs text-orange font-semibold">{activeBlock.label} — ao vivo</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 bg-navy border border-navy-muted rounded-lg px-3 py-1.5">
+                <span className="w-2 h-2 rounded-full bg-slate-500" />
+                <span className="text-xs text-slate-400 hidden sm:block">Sem bloco ativo</span>
+              </div>
+            )}
+            {headerActions}
+          </div>
         </div>
       </header>
 
