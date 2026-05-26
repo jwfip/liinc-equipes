@@ -53,7 +53,7 @@ export default async function MentoresPage() {
               <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500">Nenhum mentor cadastrado.</td></tr>
             )}
             {mentors.map(m => (
-              <tr key={m.id} className="border-b border-slate-200/50 hover:bg-navy/50 transition-colors">
+              <tr key={m.id} className="border-b border-slate-200/50 hover:bg-slate-50 transition-colors">
                 <td className="px-4 py-3 font-medium">{m.name}</td>
                 <td className="px-4 py-3 text-slate-500">{m.email}</td>
                 <td className="px-4 py-3">

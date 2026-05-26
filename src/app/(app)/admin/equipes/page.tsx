@@ -52,7 +52,7 @@ export default async function EquipesPage() {
               <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500">Nenhuma equipe cadastrada.</td></tr>
             )}
             {teams.map(t => (
-              <tr key={t.id} className="border-b border-slate-200/50 hover:bg-navy/50 transition-colors">
+              <tr key={t.id} className="border-b border-slate-200/50 hover:bg-slate-50 transition-colors">
                 <td className="px-4 py-3 font-bold text-orange">{t.number}</td>
                 <td className="px-4 py-3 font-medium">{t.name}</td>
                 <td className="px-4 py-3">

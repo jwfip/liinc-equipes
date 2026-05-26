@@ -50,7 +50,7 @@ export default async function BlocosPage() {
               <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-500">Nenhum bloco cadastrado.</td></tr>
             )}
             {blocks.map(b => (
-              <tr key={b.id} className="border-b border-slate-200/50 hover:bg-navy/50 transition-colors">
+              <tr key={b.id} className="border-b border-slate-200/50 hover:bg-slate-50 transition-colors">
                 <td className="px-4 py-3 font-medium">
                   <span className="text-orange font-bold mr-2">#{b.id}</span>{b.label}
                 </td>
