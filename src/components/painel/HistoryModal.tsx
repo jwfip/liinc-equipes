@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 
 function fmtDateTime(iso: string | null) {
   if (!iso) return ''
   return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-export default function HistoryModal({ team, records, onClose }: any) {
+export default function HistoryModal({ team, records, onClose, currentUser }: any) {
   useEffect(() => {
     const h = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', h)
@@ -89,6 +90,14 @@ export default function HistoryModal({ team, records, onClose }: any) {
                           </div>
                         )}
                         {r.suggestion && <Field label="💡 Sugestão p/ Próx. Mentor" value={r.suggestion} />}
+
+                        {currentUser === r.mentor?.email && (
+                          <div className="mt-2 pt-3 border-t border-slate-100 flex justify-end">
+                            <Link href={`/mentoria/edit/${r.id}`} className="text-[12px] font-bold text-orange hover:text-orange-dark bg-orange/10 hover:bg-orange/20 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-2">
+                              ✏️ Editar resposta
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )

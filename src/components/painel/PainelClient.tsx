@@ -13,6 +13,7 @@ interface Props {
   initialRecords: RecordWithRelations[]
   teams:          Team[]
   activeBlock:    { label: string } | null
+  currentUser:    string
 }
 
 const SECTION_META: Record<string, any> = {
@@ -22,7 +23,7 @@ const SECTION_META: Record<string, any> = {
   flying:    { icon: '🚀', title: 'Voando',     dot: 'bg-blue-600' },
 }
 
-export default function PainelClient({ initialRecords, teams, activeBlock }: Props) {
+export default function PainelClient({ initialRecords, teams, activeBlock, currentUser }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -182,7 +183,7 @@ export default function PainelClient({ initialRecords, teams, activeBlock }: Pro
 
       </main>
 
-      {historyTeam && <HistoryModal team={historyTeam} records={historyRecords} onClose={() => setHistoryTeam(null)} />}
+      {historyTeam && <HistoryModal team={historyTeam} records={historyRecords} onClose={() => setHistoryTeam(null)} currentUser={currentUser} />}
     </div>
   )
 }

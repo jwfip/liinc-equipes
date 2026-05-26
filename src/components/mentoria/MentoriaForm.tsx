@@ -1,21 +1,22 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { submitMentoria } from '@/actions/mentoria'
+import { submitMentoria, updateMentoria } from '@/actions/mentoria'
 import { STATUS_OPTIONS } from '@/lib/constants'
 
 type Team  = { id: string; number: number; name: string }
 type Block = { id: number; label: string; date: string } | null
 
 interface Props {
-  teams:       Team[]
-  activeBlock: Block
+  teams:        Team[]
+  activeBlock:  Block
+  recordToEdit?: any
 }
 
-export default function MentoriaForm({ teams, activeBlock }: Props) {
+export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props) {
   const [isPending, startTransition] = useTransition()
-  const [selectedTeam, setSelectedTeam] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState('')
+  const [selectedTeam, setSelectedTeam] = useState(recordToEdit?.teamId || '')
+  const [selectedStatus, setSelectedStatus] = useState(recordToEdit?.status || '')
   const [teamSearch, setTeamSearch] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -44,12 +45,18 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
     setError(null)
     startTransition(async () => {
       try {
-        await submitMentoria(formData)
+        if (recordToEdit) {
+          await updateMentoria(recordToEdit.id, formData)
+        } else {
+          await submitMentoria(formData)
+        }
         setSuccess(true)
-        setSelectedTeam('')
-        setSelectedStatus('')
-        setTeamSearch('')
-        e.currentTarget?.reset()
+        if (!recordToEdit) {
+          setSelectedTeam('')
+          setSelectedStatus('')
+          setTeamSearch('')
+          e.currentTarget?.reset()
+        }
         setTimeout(() => setSuccess(false), 4000)
       } catch (err: any) {
         setError(err.message)
@@ -67,14 +74,16 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Active block banner */}
-      <div className="card flex items-center gap-3 bg-orange/10 border-orange/30">
-        <span className="text-2xl">🕐</span>
-        <div>
-          <p className="text-xs text-orange font-semibold">Bloco ativo</p>
-          <p className="font-display font-bold">{activeBlock.label}</p>
-          <p className="text-xs text-slate-500">{new Date(activeBlock.date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+      {activeBlock && (
+        <div className="card flex items-center gap-3 bg-orange/10 border-orange/30">
+          <span className="text-2xl">🕐</span>
+          <div>
+            <p className="text-xs text-orange font-semibold">{recordToEdit ? 'Bloco do registro' : 'Bloco ativo'}</p>
+            <p className="font-display font-bold">{activeBlock.label}</p>
+            <p className="text-xs text-slate-500">{new Date(activeBlock.date + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Team dropdown */}
       <div className="relative">
@@ -125,29 +134,29 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
         </div>
       </div>
 
-      <Textarea name="working" label="Qual o projeto da equipe atualmente? *" required />
-      <Textarea name="advice"  label="Que orientação você deu? *"       required />
-      <Textarea name="pros"       label="Pontos positivos" />
-      <Textarea name="cons"       label="A melhorar" />
-      <Textarea name="obs"        label="Observações para facilitadores" />
-      <Textarea name="suggestion" label="Sugestão para o próximo mentor" />
+      <Textarea name="working" label="Qual o projeto da equipe atualmente? *" defaultValue={recordToEdit?.working} required />
+      <Textarea name="advice"  label="Que orientação você deu? *"       defaultValue={recordToEdit?.advice} required />
+      <Textarea name="pros"       label="Pontos positivos" defaultValue={recordToEdit?.pros} />
+      <Textarea name="cons"       label="A melhorar" defaultValue={recordToEdit?.cons} />
+      <Textarea name="obs"        label="Observações para facilitadores" defaultValue={recordToEdit?.obs} />
+      <Textarea name="suggestion" label="Sugestão para o próximo mentor" defaultValue={recordToEdit?.suggestion} />
 
       {error   && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
-      {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold">✅ Mentoria registrada!</div>}
+      {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold">✅ Mentoria {recordToEdit ? 'atualizada' : 'registrada'}!</div>}
 
       <button type="submit" disabled={isPending || !selectedTeam || !selectedStatus}
         className="btn-primary w-full justify-center py-3 text-base">
-        {isPending ? 'Registrando...' : 'Registrar mentoria'}
+        {isPending ? (recordToEdit ? 'Atualizando...' : 'Registrando...') : (recordToEdit ? 'Salvar alterações' : 'Registrar mentoria')}
       </button>
     </form>
   )
 }
 
-function Textarea({ name, label, required }: { name: string; label: string; required?: boolean }) {
+function Textarea({ name, label, required, defaultValue }: { name: string; label: string; required?: boolean; defaultValue?: string }) {
   return (
     <div>
       <label className="label">{label}</label>
-      <textarea name={name} required={required} rows={3} className="input resize-y" />
+      <textarea name={name} required={required} defaultValue={defaultValue} rows={3} className="input resize-y" />
     </div>
   )
 }
