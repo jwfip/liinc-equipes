@@ -17,24 +17,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: 'Credentials',
       credentials: {
-        email: { label: 'E-mail', type: 'email' },
-        code:  { label: 'Código de Acesso', type: 'password' }
+        username: { label: 'Usuário', type: 'text' },
+        code:     { label: 'Código de Acesso', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.code) return null
+        if (!credentials?.username || !credentials?.code) return null
         
         // Verifica o código do evento (senha global)
         if (credentials.code !== process.env.EVENT_ACCESS_CODE) {
           throw new Error('Código de acesso incorreto')
         }
 
-        const userEmail = (credentials.email as string).toLowerCase()
+        const username = (credentials.username as string).toLowerCase().trim()
         const user = await db.query.users.findFirst({
-          where: eq(users.email, userEmail),
+          where: eq(users.email, username),
         })
 
         if (!user) {
-          throw new Error('E-mail não cadastrado. Fale com a organização.')
+          throw new Error('Usuário não cadastrado. Fale com a organização.')
         }
 
         return user

@@ -19,22 +19,22 @@ export default async function MentoresPage() {
         <h2 className="font-display font-semibold text-sm mb-4 text-slate-300">Adicionar mentor</h2>
         <form action={async (fd: FormData) => {
           'use server'
-          await createMentor(fd.get('name') as string, (fd.get('email') as string).toLowerCase())
+          await createMentor(fd.get('name') as string, (fd.get('username') as string).toLowerCase().trim())
         }} className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
             <label className="label">Nome</label>
             <input name="name" type="text" required placeholder="Nome completo" className="input" />
           </div>
           <div className="flex-1">
-            <label className="label">E-mail</label>
-            <input name="email" type="email" required placeholder="mentor@exemplo.com" className="input" />
+            <label className="label">Usuário</label>
+            <input name="username" type="text" required placeholder="Ex: joao.silva" className="input" />
           </div>
           <div className="flex items-end">
             <button type="submit" className="btn-primary h-[38px]">+ Adicionar</button>
           </div>
         </form>
         <p className="text-xs text-slate-500 mt-2">
-          Após cadastrar, o mentor poderá fazer login informando seu e-mail e a senha do evento (<strong>{process.env.EVENT_ACCESS_CODE || 'liinc2026'}</strong>).
+          Após cadastrar, o mentor poderá fazer login informando seu usuário e a senha do evento (<strong>{process.env.EVENT_ACCESS_CODE || 'liinc2026'}</strong>).
         </p>
       </div>
 
@@ -43,7 +43,7 @@ export default async function MentoresPage() {
           <thead>
             <tr className="border-b border-navy-muted">
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Nome</th>
-              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">E-mail</th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Usuário</th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Status</th>
               <th className="px-4 py-3 w-28" />
             </tr>

@@ -3,7 +3,7 @@ import { AuthError } from 'next-auth'
 
 export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
   const errorMsg = searchParams.error === 'CredentialsSignin' 
-    ? 'E-mail ou código incorretos.' 
+    ? 'Usuário ou código incorretos.' 
     : searchParams.error ? 'Ocorreu um erro ao fazer login.' : null
 
   return (
@@ -23,8 +23,8 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
               'use server'
               try {
                 await signIn('credentials', {
-                  email: formData.get('email'),
-                  code:  formData.get('code'),
+                  username: formData.get('username'),
+                  code:     formData.get('code'),
                   redirectTo: '/painel',
                 })
               } catch (error) {
@@ -38,12 +38,12 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
             className="space-y-4"
           >
             <div>
-              <label className="label">Seu e-mail</label>
+              <label className="label">Nome de Usuário</label>
               <input
-                type="email"
-                name="email"
+                type="text"
+                name="username"
                 required
-                placeholder="mentor@exemplo.com"
+                placeholder="Ex: joao.silva"
                 className="input"
                 autoFocus
               />

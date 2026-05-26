@@ -27,14 +27,14 @@ export async function toggleTeam(id: string, active: boolean) {
 
 // ── Mentors ──────────────────────────────────────────────────
 
-export async function createMentor(name: string, email: string) {
+export async function createMentor(name: string, username: string) {
   await requireAdmin()
-  await db.insert(mentors).values({ name, email })
+  await db.insert(mentors).values({ name, email: username })
   // Cria usuário para login via NextAuth
   try {
-    await db.insert(users).values({ id: crypto.randomUUID(), name, email, role: 'mentor' })
+    await db.insert(users).values({ id: crypto.randomUUID(), name, email: username, role: 'mentor' })
   } catch {
-    // Ignora se o usuário já existe (email duplicado)
+    // Ignora se o usuário já existe
   }
   revalidatePath('/admin/mentores')
 }
