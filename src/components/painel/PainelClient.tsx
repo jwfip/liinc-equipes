@@ -1,18 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { STATUS_ORDER, getLatestByTeam, type RecordWithRelations } from '@/lib/constants'
 import SummaryStrip from './SummaryStrip'
 import FilterBar    from './FilterBar'
 import TeamCard     from './TeamCard'
 import HistoryModal from './HistoryModal'
-
-const SECTION_META = {
-  emergency: { icon: '🚨', title: 'Emergência', color: 'text-red-400'    },
-  attention:  { icon: '⚠️',  title: 'Atenção',    color: 'text-yellow-400' },
-  ok:         { icon: '🛣️', title: 'No caminho', color: 'text-green-400'  },
-  flying:     { icon: '🚀', title: 'Voando',     color: 'text-blue-400'   },
-}
 
 type Team = { id: string; number: number; name: string; active: boolean }
 
@@ -22,20 +15,26 @@ interface Props {
   activeBlock:    { label: string } | null
 }
 
+const SECTION_META: Record<string, any> = {
+  emergency: { icon: '🚨', title: 'Emergência', dot: 'bg-red-600' },
+  attention: { icon: '⚠️',  title: 'Atenção',    dot: 'bg-yellow-600' },
+  ok:        { icon: '🛣️', title: 'No caminho', dot: 'bg-green-600' },
+  flying:    { icon: '🚀', title: 'Voando',     dot: 'bg-blue-600' },
+}
+
 export default function PainelClient({ initialRecords, teams, activeBlock }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [search, setSearch]             = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [historyTeam, setHistoryTeam]   = useState<Team | null>(null)
 
-  // Polling a cada 5s
   useEffect(() => {
     const id = setInterval(async () => {
       try {
         const res  = await fetch('/api/records', { cache: 'no-store' })
         const data = await res.json()
         setRecords(data)
-      } catch { /* silently ignore */ }
+      } catch { /* ignore */ }
     }, 5000)
     return () => clearInterval(id)
   }, [])
@@ -46,7 +45,7 @@ export default function PainelClient({ initialRecords, teams, activeBlock }: Pro
     const matchSearch = t.name.toLowerCase().includes(search.toLowerCase()) ||
                         String(t.number).includes(search)
     const record = latestByTeam[t.id]
-    const matchStatus = !statusFilter || (record?.status === statusFilter)
+    const matchStatus = statusFilter === 'all' || (record?.status === statusFilter) || (!record && statusFilter === 'none')
     return matchSearch && matchStatus
   })
 
@@ -55,43 +54,51 @@ export default function PainelClient({ initialRecords, teams, activeBlock }: Pro
       .filter(t => latestByTeam[t.id]?.status === status)
       .sort((a, b) => a.number - b.number)
     return acc
-  }, {} as Record<string, Team[]>)
+  }, {})
 
   const noRecord = filtered
     .filter(t => !latestByTeam[t.id])
     .sort((a, b) => a.number - b.number)
 
   const historyRecords = historyTeam
-    ? records.filter(r => r.teamId === historyTeam.id)
+    ? records.filter(r => r.teamId === historyTeam.id).sort((a, b) => {
+        if (a.blockId !== b.blockId) return b.blockId - a.blockId
+        return (b.createdAt || '').localeCompare(a.createdAt || '')
+      })
     : []
 
+  // Build mentors matrix
+  const mentorsMap: Record<string, Record<string, any[]>> = {}
+  for (const r of records) {
+    if (!r.mentor) continue
+    const mName = r.mentor.name
+    if (!mentorsMap[mName]) mentorsMap[mName] = {}
+    const bLabel = r.block?.label || `Bloco ${r.blockId}`
+    if (!mentorsMap[mName][bLabel]) mentorsMap[mName][bLabel] = []
+    mentorsMap[mName][bLabel].push(r)
+  }
+  const sortedMentors = Object.entries(mentorsMap).sort((a, b) => a[0].localeCompare(b[0], 'pt'))
+
   return (
-    <div className="bg-navy h-full">
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="font-display font-bold text-2xl">Painel de Acompanhamento</h1>
-          </div>
-          <div>
-            {activeBlock ? (
-              <div className="inline-flex items-center gap-2 bg-orange/10 border border-orange/30 rounded-lg px-3 py-1.5">
-                <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
-                <span className="text-xs text-orange font-semibold">{activeBlock.label} — ao vivo</span>
+    <div className="bg-slate-50 text-slate-900 min-h-full pb-20 font-sans">
+      <main className="max-w-[1280px] mx-auto px-6 py-8">
+        
+        <SummaryStrip teams={teams} records={records} latestByTeam={latestByTeam} />
+
+        {/* Legend */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 mb-7 shadow-sm">
+          <div className="font-display font-bold text-xs text-slate-400 uppercase tracking-wide mb-3">Etapas do processo de inovação</div>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {['Entendimento do problema','Explorando soluções','Escolha da solução','Protótipo','Testes','Pitch'].map((s, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
+                <div className="w-5 h-5 rounded-full bg-navy text-white font-display font-bold text-[10px] flex items-center justify-center shrink-0">{i + 1}</div>
+                {s}
               </div>
-            ) : (
-              <div className="inline-flex items-center gap-2 bg-navy border border-navy-muted rounded-lg px-3 py-1.5">
-                <span className="w-2 h-2 rounded-full bg-slate-500" />
-                <span className="text-xs text-slate-400">Sem bloco ativo</span>
-              </div>
-            )}
+            ))}
           </div>
         </div>
 
-        <SummaryStrip latestByTeam={latestByTeam} />
-        <FilterBar
-          search={search} onSearch={setSearch}
-          statusFilter={statusFilter} onStatusFilter={setStatusFilter}
-        />
+        <FilterBar search={search} onSearch={setSearch} statusFilter={statusFilter} onStatusFilter={setStatusFilter} />
 
         {/* Status sections */}
         {STATUS_ORDER.map(status => {
@@ -99,13 +106,13 @@ export default function PainelClient({ initialRecords, teams, activeBlock }: Pro
           if (!group?.length) return null
           const meta = SECTION_META[status]
           return (
-            <section key={status} className="mb-8">
-              <h2 className={`font-display font-bold text-sm uppercase tracking-wider mb-3 flex items-center gap-2 ${meta.color}`}>
-                <span>{meta.icon}</span>
-                <span>{meta.title}</span>
-                <span className="text-slate-500">({group.length})</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <section key={status} className="mb-2">
+              <div className="flex items-center gap-3 mt-9 mb-4">
+                <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${meta.dot}`} />
+                <h2 className="font-display font-bold text-lg text-navy">{meta.title}</h2>
+                <div className="bg-slate-100 text-slate-600 font-display font-bold text-sm px-2.5 py-0.5 rounded-full">{group.length}</div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-5">
                 {group.map(team => (
                   <TeamCard key={team.id} team={team} record={latestByTeam[team.id]} onHistoryClick={setHistoryTeam} />
                 ))}
@@ -115,13 +122,14 @@ export default function PainelClient({ initialRecords, teams, activeBlock }: Pro
         })}
 
         {/* No record yet */}
-        {noRecord.length > 0 && !statusFilter && (
-          <section className="mb-8">
-            <h2 className="font-display font-bold text-sm uppercase tracking-wider mb-3 flex items-center gap-2 text-slate-500">
-              <span>📋</span><span>Sem registro ainda</span>
-              <span className="text-slate-600">({noRecord.length})</span>
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {noRecord.length > 0 && (
+          <section className="mb-2">
+            <div className="flex items-center gap-3 mt-9 mb-4 opacity-70">
+              <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-slate-400" />
+              <h2 className="font-display font-bold text-lg text-navy">Sem registro</h2>
+              <div className="bg-slate-200 text-slate-600 font-display font-bold text-sm px-2.5 py-0.5 rounded-full">{noRecord.length}</div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-5 opacity-75">
               {noRecord.map(team => (
                 <TeamCard key={team.id} team={team} record={undefined} onHistoryClick={setHistoryTeam} />
               ))}
@@ -129,15 +137,52 @@ export default function PainelClient({ initialRecords, teams, activeBlock }: Pro
           </section>
         )}
 
-        {filtered.length === 0 && (
-          <div className="text-center py-16 text-slate-500">
-            <p className="text-4xl mb-3">🔍</p>
-            <p>Nenhuma equipe encontrada.</p>
+        {/* Mentor Section */}
+        <div className="mt-14 pt-8 border-t-2 border-slate-200">
+          <h2 className="font-display font-bold text-2xl text-navy mb-1">Distribuição por Mentor</h2>
+          <p className="text-sm text-slate-400 mb-6">Equipes atendidas por cada mentor, organizadas por bloco de mentoria</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {sortedMentors.map(([mentor, blocos_]) => {
+              const allTeams = new Set(Object.values(blocos_).flat().map(r => r.team?.name))
+              const totalMentorias = Object.values(blocos_).flat().length
+              const initials = mentor.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase()
+
+              return (
+                <div key={mentor} className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="bg-navy text-white px-4 py-3 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-orange flex items-center justify-center font-display font-bold text-sm shrink-0">
+                      {initials}
+                    </div>
+                    <div>
+                      <div className="font-display font-bold text-sm">{mentor}</div>
+                      <div className="text-[11px] opacity-50">{allTeams.size} equipe{allTeams.size>1?'s':''} · {totalMentorias} mentoria{totalMentorias>1?'s':''}</div>
+                    </div>
+                  </div>
+                  <div className="p-4 flex flex-col gap-4">
+                    {Object.entries(blocos_).sort().map(([bLabel, recs]) => (
+                      <div key={bLabel}>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{bLabel}</div>
+                        {recs.sort((a,b)=>(a.team?.number||0)-(b.team?.number||0)).map(r => {
+                          const dot = r.status === 'emergency' ? 'bg-red-600' : r.status === 'attention' ? 'bg-yellow-600' : 'bg-green-600'
+                          return (
+                            <div key={r.id} className="flex items-center gap-2 py-1 text-[13px] text-slate-600 border-b border-slate-100 last:border-0">
+                              <div className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+                              <span className="truncate">{r.team?.number} - {r.team?.name}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
           </div>
-        )}
+        </div>
+
       </main>
 
-      <HistoryModal team={historyTeam} records={historyRecords} onClose={() => setHistoryTeam(null)} />
+      {historyTeam && <HistoryModal team={historyTeam} records={historyRecords} onClose={() => setHistoryTeam(null)} />}
     </div>
   )
 }
