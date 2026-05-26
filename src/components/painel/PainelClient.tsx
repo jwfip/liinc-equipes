@@ -20,10 +20,9 @@ interface Props {
   initialRecords: RecordWithRelations[]
   teams:          Team[]
   activeBlock:    { label: string } | null
-  headerActions?: React.ReactNode
 }
 
-export default function PainelClient({ initialRecords, teams, activeBlock, headerActions }: Props) {
+export default function PainelClient({ initialRecords, teams, activeBlock }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -67,35 +66,27 @@ export default function PainelClient({ initialRecords, teams, activeBlock, heade
     : []
 
   return (
-    <div className="min-h-screen bg-navy">
-      {/* Header */}
-      <header className="bg-navy-light border-b border-navy-muted sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🧭</span>
-            <div>
-              <h1 className="font-display font-bold text-base leading-tight">Liinc Mentorias</h1>
-              <p className="text-xs text-slate-400">Painel de Acompanhamento</p>
-            </div>
+    <div className="bg-navy h-full">
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="font-display font-bold text-2xl">Painel de Acompanhamento</h1>
           </div>
-          <div className="flex items-center gap-4">
+          <div>
             {activeBlock ? (
-              <div className="flex items-center gap-2 bg-orange/10 border border-orange/30 rounded-lg px-3 py-1.5">
+              <div className="inline-flex items-center gap-2 bg-orange/10 border border-orange/30 rounded-lg px-3 py-1.5">
                 <span className="w-2 h-2 rounded-full bg-orange animate-pulse" />
                 <span className="text-xs text-orange font-semibold">{activeBlock.label} — ao vivo</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 bg-navy border border-navy-muted rounded-lg px-3 py-1.5">
+              <div className="inline-flex items-center gap-2 bg-navy border border-navy-muted rounded-lg px-3 py-1.5">
                 <span className="w-2 h-2 rounded-full bg-slate-500" />
-                <span className="text-xs text-slate-400 hidden sm:block">Sem bloco ativo</span>
+                <span className="text-xs text-slate-400">Sem bloco ativo</span>
               </div>
             )}
-            {headerActions}
           </div>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
         <SummaryStrip latestByTeam={latestByTeam} />
         <FilterBar
           search={search} onSearch={setSearch}
