@@ -47,6 +47,7 @@ export const mentoringRecords = pgTable('mentoring_records', {
   pros:      text('pros'),
   cons:      text('cons'),
   obs:       text('obs'),
+  suggestion: text('suggestion'),
   createdAt: timestamp('created_at').defaultNow(),
 })
 

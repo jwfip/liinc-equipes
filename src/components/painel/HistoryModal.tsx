@@ -64,7 +64,8 @@ export default function HistoryModal({ team, records, onClose }: Props) {
                           {r.advice  && <Field label="Orientação dada" value={r.advice} />}
                           {r.pros    && <Field label="Pontos positivos" value={r.pros} />}
                           {r.cons    && <Field label="A melhorar" value={r.cons} />}
-                          {r.obs     && <Field label="Observações" value={r.obs} />}
+                          {r.obs        && <Field label="Observações" value={r.obs} />}
+                          {r.suggestion && <Field label="Sugestão p/ Próx. Mentor" value={r.suggestion} />}
                         </div>
                       </div>
                     </div>

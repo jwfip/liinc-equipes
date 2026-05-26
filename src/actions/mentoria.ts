@@ -37,9 +37,10 @@ export async function submitMentoria(formData: FormData) {
     status,
     working,
     advice,
-    pros:     (formData.get('pros') as string) || null,
-    cons:     (formData.get('cons') as string) || null,
-    obs:      (formData.get('obs')  as string) || null,
+    pros:       (formData.get('pros') as string) || null,
+    cons:       (formData.get('cons') as string) || null,
+    obs:        (formData.get('obs')  as string) || null,
+    suggestion: (formData.get('suggestion') as string) || null,
   })
 
   revalidatePath('/painel')

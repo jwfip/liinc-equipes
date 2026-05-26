@@ -127,9 +127,10 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
 
       <Textarea name="working" label="Em que o time está trabalhando? *" required />
       <Textarea name="advice"  label="Que orientação você deu? *"       required />
-      <Textarea name="pros"    label="Pontos positivos" />
-      <Textarea name="cons"    label="A melhorar" />
-      <Textarea name="obs"     label="Observações para facilitadores" />
+      <Textarea name="pros"       label="Pontos positivos" />
+      <Textarea name="cons"       label="A melhorar" />
+      <Textarea name="obs"        label="Observações para facilitadores" />
+      <Textarea name="suggestion" label="Sugestão para o próximo mentor" />
 
       {error   && <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">{error}</div>}
       {success && <div className="bg-green-600/20 border border-green-500/30 rounded-lg p-3 text-sm text-green-400 font-semibold">✅ Mentoria registrada!</div>}
