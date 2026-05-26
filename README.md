@@ -20,7 +20,7 @@ Crie `.env.local`:
 ```env
 DATABASE_URL=postgresql://...
 AUTH_SECRET=...            # openssl rand -hex 32
-AUTH_RESEND_KEY=re_...
+EVENT_ACCESS_CODE=liinc2026 # Senha global do evento para os mentores logarem
 AUTH_URL=http://localhost:3000
 ```
 

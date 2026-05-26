@@ -34,7 +34,7 @@ export default async function MentoresPage() {
           </div>
         </form>
         <p className="text-xs text-slate-500 mt-2">
-          Após cadastrar, o mentor poderá fazer login via magic link em <strong>/login</strong>.
+          Após cadastrar, o mentor poderá fazer login informando seu e-mail e a senha do evento (<strong>{process.env.EVENT_ACCESS_CODE || 'liinc2026'}</strong>).
         </p>
       </div>
 

@@ -1,6 +1,11 @@
 import { signIn } from '@/auth'
+import { AuthError } from 'next-auth'
 
-export default function LoginPage() {
+export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
+  const errorMsg = searchParams.error === 'CredentialsSignin' 
+    ? 'E-mail ou código incorretos.' 
+    : searchParams.error ? 'Ocorreu um erro ao fazer login.' : null
+
   return (
     <div className="min-h-screen bg-navy flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
@@ -9,17 +14,26 @@ export default function LoginPage() {
             <span className="text-3xl">🧭</span>
           </div>
           <h1 className="font-display font-bold text-2xl">Liinc Mentorias</h1>
-          <p className="text-slate-400 text-sm mt-1">Acesso de mentores</p>
+          <p className="text-slate-400 text-sm mt-1">Acesso à plataforma</p>
         </div>
 
         <div className="card">
           <form
             action={async (formData: FormData) => {
               'use server'
-              await signIn('resend', {
-                email:       formData.get('email') as string,
-                redirectTo:  '/mentoria',
-              })
+              try {
+                await signIn('credentials', {
+                  email: formData.get('email'),
+                  code:  formData.get('code'),
+                  redirectTo: '/mentoria',
+                })
+              } catch (error) {
+                if (error instanceof AuthError) {
+                  // NextAuth redirects to /login?error=CredentialsSignin on failure
+                  throw error
+                }
+                throw error
+              }
             }}
             className="space-y-4"
           >
@@ -34,15 +48,28 @@ export default function LoginPage() {
                 autoFocus
               />
             </div>
-            <button type="submit" className="btn-primary w-full justify-center py-2.5">
-              ✉️ Enviar magic link
+            <div>
+              <label className="label">Código do Evento</label>
+              <input
+                type="password"
+                name="code"
+                required
+                placeholder="Senha de acesso"
+                className="input"
+              />
+            </div>
+            
+            {errorMsg && (
+              <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 font-semibold text-center">
+                {errorMsg}
+              </div>
+            )}
+
+            <button type="submit" className="btn-primary w-full justify-center py-2.5 mt-2">
+              Entrar
             </button>
           </form>
         </div>
-
-        <p className="text-center text-xs text-slate-500 mt-4">
-          Sem senha. Apenas um clique no seu e-mail.
-        </p>
       </div>
     </div>
   )

@@ -1,5 +1,5 @@
 import NextAuth from 'next-auth'
-import Resend from 'next-auth/providers/resend'
+import Credentials from 'next-auth/providers/credentials'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from '@/db'
 import { users, accounts, sessions, verificationTokens } from '@/schema'
@@ -13,10 +13,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     verificationTokensTable: verificationTokens,
   }),
   providers: [
-    Resend({
-      from:    'Liinc Mentorias <mentoria@liinc.com.br>',
-      apiKey:  process.env.AUTH_RESEND_KEY,
-    }),
+    Credentials({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'E-mail', type: 'email' },
+        code:  { label: 'Código de Acesso', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.code) return null
+        
+        // Verifica o código do evento (senha global)
+        if (credentials.code !== process.env.EVENT_ACCESS_CODE) {
+          throw new Error('Código de acesso incorreto')
+        }
+
+        const userEmail = (credentials.email as string).toLowerCase()
+        const user = await db.query.users.findFirst({
+          where: eq(users.email, userEmail),
+        })
+
+        if (!user) {
+          throw new Error('E-mail não cadastrado. Fale com a organização.')
+        }
+
+        return user
+      }
+    })
   ],
   callbacks: {
     async session({ session, user }) {
