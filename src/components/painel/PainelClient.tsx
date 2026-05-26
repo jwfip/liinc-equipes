@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { STATUS_ORDER, getLatestByTeam, type RecordWithRelations } from '@/lib/constants'
+import { STATUS_ORDER, getLatestByTeam, PROCESS_STEPS, type RecordWithRelations } from '@/lib/constants'
 import SummaryStrip from './SummaryStrip'
 import FilterBar    from './FilterBar'
 import TeamCard     from './TeamCard'
@@ -90,7 +90,7 @@ export default function PainelClient({ initialRecords, teams, activeBlock, curre
         <div className="bg-white border border-slate-200 rounded-xl p-5 mb-7 shadow-sm">
           <div className="font-display font-bold text-xs text-slate-400 uppercase tracking-wide mb-3">Etapas do processo de inovação</div>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
-            {['Entendimento do problema','Explorando soluções','Escolha da solução','Protótipo','Testes','Pitch'].map((s, i) => (
+            {PROCESS_STEPS.map((s, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
                 <div className="w-5 h-5 rounded-full bg-navy text-white font-display font-bold text-[10px] flex items-center justify-center shrink-0">{i + 1}</div>
                 {s}

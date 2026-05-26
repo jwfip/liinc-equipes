@@ -5,6 +5,15 @@ export const STATUS_OPTIONS = [
   { value: 'flying',    label: '🚀 Voando',       color: 'blue'   },
 ] as const
 
+export const PROCESS_STEPS = [
+  'Entendimento do problema',
+  'Explorando soluções',
+  'Escolha da solução',
+  'Protótipo',
+  'Testes',
+  'Pitch',
+] as const
+
 export type StatusValue = 'ok' | 'attention' | 'emergency' | 'flying'
 
 export const STATUS_META: Record<StatusValue, {

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { submitMentoria, updateMentoria } from '@/actions/mentoria'
-import { STATUS_OPTIONS } from '@/lib/constants'
+import { STATUS_OPTIONS, PROCESS_STEPS } from '@/lib/constants'
 
 type Team  = { id: string; number: number; name: string }
 type Block = { id: number; label: string; date: string } | null
@@ -138,7 +138,10 @@ export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props
 
       {/* Step Progress Selector */}
       <div>
-        <label className="label">Em qual etapa do processo a equipe está? *</label>
+        <div className="flex items-center justify-between">
+          <label className="label">Em qual etapa do processo a equipe está? *</label>
+          <span className="text-[11px] font-bold text-orange">Etapa {selectedStep} — {PROCESS_STEPS[selectedStep - 1]}</span>
+        </div>
         <div className="flex gap-2 mt-2">
           {[1, 2, 3, 4, 5, 6].map(s => {
             const isSelected = selectedStep === s
