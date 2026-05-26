@@ -32,6 +32,7 @@ export type RecordWithRelations = {
   pros:      string | null
   cons:      string | null
   obs:       string | null
+  suggestion: string | null
   createdAt: string | null
   team:   { id: string; number: number; name: string; active: boolean } | null
   mentor: { id: string; name: string } | null
