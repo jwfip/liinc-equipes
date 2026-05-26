@@ -48,7 +48,7 @@ export default function HistoryModal({ team, records, onClose }: Props) {
                   const meta = STATUS_META[r.status as StatusValue]
                   return (
                     <div key={r.id} className="relative">
-                      <div className={`absolute -left-[34px] top-1.5 w-3 h-3 rounded-full border-2 border-navy-light
+                      <div className={`absolute -left-[29px] top-1.5 w-3 h-3 rounded-full border-2 border-navy-light
                         ${r.status === 'ok' ? 'bg-green-500' : r.status === 'attention' ? 'bg-yellow-500' : r.status === 'emergency' ? 'bg-red-500' : 'bg-blue-500'}`}
                       />
                       <div className="card">
