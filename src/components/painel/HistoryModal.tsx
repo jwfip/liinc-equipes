@@ -60,7 +60,7 @@ export default function HistoryModal({ team, records, onClose }: Props) {
                         </div>
                         <p className="text-xs text-slate-400 mb-2">Mentor: <span className="text-slate-300">{r.mentor?.name}</span></p>
                         <div className="space-y-1.5 text-sm">
-                          {r.working && <Field label="Trabalhando em" value={r.working} />}
+                          {r.working && <Field label="Projeto atual" value={r.working} />}
                           {r.advice  && <Field label="Orientação dada" value={r.advice} />}
                           {r.pros    && <Field label="Pontos positivos" value={r.pros} />}
                           {r.cons    && <Field label="A melhorar" value={r.cons} />}

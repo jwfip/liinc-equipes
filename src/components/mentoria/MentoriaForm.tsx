@@ -125,7 +125,7 @@ export default function MentoriaForm({ teams, activeBlock }: Props) {
         </div>
       </div>
 
-      <Textarea name="working" label="Em que o time está trabalhando? *" required />
+      <Textarea name="working" label="Qual o projeto da equipe atualmente? *" required />
       <Textarea name="advice"  label="Que orientação você deu? *"       required />
       <Textarea name="pros"       label="Pontos positivos" />
       <Textarea name="cons"       label="A melhorar" />
