@@ -12,6 +12,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     sessionsTable:           sessions,
     verificationTokensTable: verificationTokens,
   }),
+  session: { strategy: 'jwt' },
   providers: [
     Credentials({
       name: 'Credentials',
@@ -41,13 +42,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     })
   ],
   callbacks: {
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        token.role = user.role
+      }
+      return token
+    },
+    async session({ session, token }) {
       // Busca role atual do banco (pode ter sido atualizado)
       const dbUser = await db.query.users.findFirst({
-        where: eq(users.id, user.id),
+        where: eq(users.id, token.id as string),
       })
       session.user.role = dbUser?.role ?? 'mentor'
-      session.user.id   = user.id
+      session.user.id   = token.id as string
       return session
     },
   },
