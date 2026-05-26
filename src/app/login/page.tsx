@@ -25,7 +25,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
                 await signIn('credentials', {
                   email: formData.get('email'),
                   code:  formData.get('code'),
-                  redirectTo: '/mentoria',
+                  redirectTo: '/painel',
                 })
               } catch (error) {
                 if (error instanceof AuthError) {

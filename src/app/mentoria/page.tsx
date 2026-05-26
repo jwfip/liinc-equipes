@@ -1,9 +1,9 @@
 import { db } from '@/db'
 import { blocks, teams } from '@/schema'
 import { eq } from 'drizzle-orm'
-import { auth } from '@/auth'
-import { signOut } from '@/auth'
+import { auth, signOut } from '@/auth'
 import MentoriaForm from '@/components/mentoria/MentoriaForm'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -28,6 +28,11 @@ export default async function MentoriaPage() {
             <h1 className="font-display font-bold text-base">Registrar Mentoria</h1>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/painel" className="text-xs font-semibold text-slate-300 hover:text-white hidden sm:block">Painel</Link>
+            {session?.user?.role === 'admin' && (
+              <Link href="/admin/equipes" className="text-xs text-orange font-semibold hover:underline hidden sm:block">Admin</Link>
+            )}
+            <span className="text-xs text-slate-500 mx-2 hidden sm:block">|</span>
             <span className="text-xs text-slate-400 hidden sm:block">{session?.user?.email}</span>
             <form action={async () => { 'use server'; await signOut({ redirectTo: '/login' }) }}>
               <button type="submit" className="btn-secondary text-xs py-1.5">Sair</button>
