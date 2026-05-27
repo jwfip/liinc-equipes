@@ -56,8 +56,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 flex flex-col h-[calc(100vh-130px)] md:h-screen overflow-x-hidden">
-        <div className="flex-1 overflow-y-auto relative">
+      <main className="flex-1 min-w-0 flex flex-col md:h-screen overflow-x-hidden">
+        <div className="flex-1 md:overflow-y-auto relative">
           {children}
         </div>
       </main>
