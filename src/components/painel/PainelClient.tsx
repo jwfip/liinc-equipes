@@ -32,9 +32,11 @@ export default function PainelClient({ initialRecords, teams, activeBlock, curre
   useEffect(() => {
     const id = setInterval(async () => {
       try {
-        const res  = await fetch('/api/records', { cache: 'no-store' })
+        const res  = await fetch(`/api/records?t=${Date.now()}`, { cache: 'no-store' })
         const data = await res.json()
-        setRecords(data)
+        if (Array.isArray(data)) {
+          setRecords(data)
+        }
       } catch { /* ignore */ }
     }, 5000)
     return () => clearInterval(id)
