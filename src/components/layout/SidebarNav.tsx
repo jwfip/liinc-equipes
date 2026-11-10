@@ -12,6 +12,7 @@ const NAV_ADMIN = [
   { href: '/admin/equipes',  icon: '👥', label: 'Equipes' },
   { href: '/admin/mentores', icon: '🎓', label: 'Mentores' },
   { href: '/admin/blocos',   icon: '🕐', label: 'Blocos & Evento' },
+  { href: '/admin/relatorio', icon: '📄', label: 'Relatório (PDF)' },
 ]
 
 export default function SidebarNav({ role }: { role: string }) {
