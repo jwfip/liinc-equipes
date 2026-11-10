@@ -1,3 +1,4 @@
+import { auth } from '@/auth'
 import { db } from '@/db'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
@@ -7,6 +8,11 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   // Call headers() to guarantee that Next.js treats this endpoint as dynamic and doesn't cache it on Vercel
   headers()
+
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  }
 
   try {
     const records = await db.query.mentoringRecords.findMany({
