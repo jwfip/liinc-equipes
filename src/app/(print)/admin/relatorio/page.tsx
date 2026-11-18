@@ -122,7 +122,7 @@ export default async function RelatorioPage() {
       {/* Barra de ações (não impressa) */}
       <div className="print:hidden sticky top-0 z-10 bg-navy text-white shadow-md">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <Link href="/admin/blocos" className="text-sm text-slate-300 hover:text-white">← Voltar</Link>
+          <Link href="/admin/eventos" className="text-sm text-slate-300 hover:text-white">← Voltar</Link>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline text-xs text-slate-400">Na janela de impressão, escolha “Salvar como PDF”</span>
             <PrintButton />

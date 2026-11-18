@@ -7,15 +7,17 @@ import { mentoringRecords, eventSteps, teams } from '@/schema'
 import { getEventContext } from '@/lib/event-context'
 import { getActiveBlock } from '@/lib/event-data'
 import { assertTeamInEvent } from '@/lib/records'
+import { registrationError } from '@/lib/participation'
+import { toActionError, type ActionResult } from '@/lib/action-result'
 
 const STATUSES = ['ok', 'attention', 'emergency', 'flying']
 const opt = (fd: FormData, k: string) => (String(fd.get(k) ?? '').trim() || null)
 
 async function requireParticipant() {
   const ctx = await getEventContext()
-  if (!ctx.event) throw new Error('Nenhum evento selecionado.')
-  if (!ctx.mentorId || !ctx.role) throw new Error('Você não participa deste evento.')
-  return { eventId: ctx.event.id, mentorId: ctx.mentorId }
+  const error = registrationError(ctx)
+  if (error) throw new Error(error)
+  return { eventId: ctx.event!.id, mentorId: ctx.mentorId! }
 }
 
 async function readFields(fd: FormData, eventId: number) {
@@ -36,35 +38,49 @@ async function readFields(fd: FormData, eventId: number) {
   }
 }
 
-export async function submitMentoria(formData: FormData) {
-  const { eventId, mentorId } = await requireParticipant()
+// As actions retornam ActionResult: em produção o Next.js troca mensagens de erro lançadas
+// por uma genérica, então o motivo da recusa precisa voltar como valor.
 
-  const block = await getActiveBlock(eventId)
-  if (!block) throw new Error('Nenhum bloco ativo no momento.')
+export async function submitMentoria(formData: FormData): Promise<ActionResult> {
+  try {
+    const { eventId, mentorId } = await requireParticipant()
 
-  const teamId = String(formData.get('teamId') ?? '')
-  const team = teamId ? await db.query.teams.findFirst({ where: eq(teams.id, teamId) }) : undefined
-  assertTeamInEvent(team, eventId)
+    const block = await getActiveBlock(eventId)
+    if (!block) throw new Error('Nenhum bloco ativo no momento.')
 
-  const fields = await readFields(formData, eventId)
-  await db.insert(mentoringRecords).values({
-    ...fields, eventId, teamId, mentorId, blockId: block.id, kind: 'mentoring',
-  })
+    const teamId = String(formData.get('teamId') ?? '')
+    const team = teamId ? await db.query.teams.findFirst({ where: eq(teams.id, teamId) }) : undefined
+    assertTeamInEvent(team, eventId)
 
-  revalidatePath('/painel')
+    const fields = await readFields(formData, eventId)
+    await db.insert(mentoringRecords).values({
+      ...fields, eventId, teamId, mentorId, blockId: block.id, kind: 'mentoring',
+    })
+
+    revalidatePath('/painel')
+    return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
 }
 
-export async function updateMentoria(recordId: string, formData: FormData) {
-  const { mentorId } = await getEventContext()
-  if (!mentorId) throw new Error('Não autenticado')
+export async function updateMentoria(recordId: string, formData: FormData): Promise<ActionResult> {
+  try {
+    const { mentorId, mentorActive } = await getEventContext()
+    if (!mentorId) throw new Error('Não autenticado')
+    if (!mentorActive) throw new Error('Seu acesso de mentor está desativado.')
 
-  const record = await db.query.mentoringRecords.findFirst({ where: eq(mentoringRecords.id, recordId) })
-  if (!record) throw new Error('Registro não encontrado.')
-  if (record.mentorId !== mentorId) throw new Error('Você não tem permissão para editar este registro.')
+    const record = await db.query.mentoringRecords.findFirst({ where: eq(mentoringRecords.id, recordId) })
+    if (!record) throw new Error('Registro não encontrado.')
+    if (record.mentorId !== mentorId) throw new Error('Você não tem permissão para editar este registro.')
 
-  // Edição vale no evento do próprio registro, mesmo que o usuário esteja vendo outro evento.
-  const fields = await readFields(formData, record.eventId)
-  await db.update(mentoringRecords).set(fields).where(eq(mentoringRecords.id, recordId))
+    // Edição vale no evento do próprio registro, mesmo que o usuário esteja vendo outro evento.
+    const fields = await readFields(formData, record.eventId)
+    await db.update(mentoringRecords).set(fields).where(eq(mentoringRecords.id, recordId))
 
-  revalidatePath('/painel')
+    revalidatePath('/painel')
+    return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
 }

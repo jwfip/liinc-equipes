@@ -2,6 +2,7 @@ import MentoriaForm from '@/components/mentoria/MentoriaForm'
 import NoEventNotice from '@/components/layout/NoEventNotice'
 import { getEventContext } from '@/lib/event-context'
 import { getActiveBlock, getActiveTeams, getEventSteps } from '@/lib/event-data'
+import { registrationError } from '@/lib/participation'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,6 +16,18 @@ export default async function MentoriaPage() {
         <div className="card text-center py-12">
           <h2 className="font-display font-bold text-lg mb-1">Você não participa de {ctx.event.name}.</h2>
           <p className="text-slate-500 text-sm">Para registrar, adicione-se como participante em Eventos → Participantes.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const blocked = registrationError(ctx)
+  if (blocked) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-10">
+        <div className="card text-center py-12">
+          <h2 className="font-display font-bold text-lg mb-1">{blocked}</h2>
+          <p className="text-slate-500 text-sm">Em caso de dúvida, fale com a organização.</p>
         </div>
       </div>
     )

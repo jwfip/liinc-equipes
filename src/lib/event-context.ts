@@ -11,9 +11,10 @@ export type EventContext = {
   options:  EventOption[]
   isAdmin:  boolean
   mentorId: string | null
+  mentorActive: boolean
 }
 
-const EMPTY: EventContext = { event: null, role: null, options: [], isAdmin: false, mentorId: null }
+const EMPTY: EventContext = { event: null, role: null, options: [], isAdmin: false, mentorId: null, mentorActive: false }
 
 export async function getEventContext(): Promise<EventContext> {
   const session = await auth()
@@ -46,5 +47,6 @@ export async function getEventContext(): Promise<EventContext> {
     options,
     isAdmin,
     mentorId: mentor?.id ?? null,
+    mentorActive: mentor?.active ?? false,
   }
 }

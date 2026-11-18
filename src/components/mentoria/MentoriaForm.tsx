@@ -47,10 +47,12 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
     setError(null)
     startTransition(async () => {
       try {
-        if (recordToEdit) {
-          await updateMentoria(recordToEdit.id, formData)
-        } else {
-          await submitMentoria(formData)
+        const result = recordToEdit
+          ? await updateMentoria(recordToEdit.id, formData)
+          : await submitMentoria(formData)
+        if (!result.ok) {
+          setError(result.error)
+          return
         }
         setSuccess(true)
         if (!recordToEdit) {
@@ -62,7 +64,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
         }
         setTimeout(() => setSuccess(false), 4000)
       } catch (err: any) {
-        setError(err.message)
+        setError(err?.message || 'Erro inesperado. Tente novamente.')
       }
     })
   }

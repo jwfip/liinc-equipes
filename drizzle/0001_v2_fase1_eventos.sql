@@ -1,6 +1,8 @@
 -- Liinc Mentorias v2 — Fase 1: eventos, etapas e participantes
 -- Idempotente: pode ser executado mais de uma vez.
 -- Uso: psql "$DATABASE_URL" -f drizzle/0001_v2_fase1_eventos.sql
+-- Se houver mais de um bloco ativo hoje (o activateBlock antigo não era atômico),
+-- todos são desativados ao entrar no arquivo, então o índice único não falha.
 
 BEGIN;
 
@@ -61,6 +63,9 @@ BEGIN
   UPDATE teams             SET event_id = archive_id WHERE event_id IS NULL;
   UPDATE blocks            SET event_id = archive_id WHERE event_id IS NULL;
   UPDATE mentoring_records SET event_id = archive_id WHERE event_id IS NULL;
+
+  -- O arquivo fica encerrado: nenhum bloco ativo nele.
+  UPDATE blocks SET active = false WHERE event_id = archive_id AND active;
 
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
