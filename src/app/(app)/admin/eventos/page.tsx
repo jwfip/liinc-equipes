@@ -12,8 +12,8 @@ export default async function EventosPage() {
   const list = await db.select({
     id: events.id, name: events.name, company: events.company,
     startDate: events.startDate, endDate: events.endDate, active: events.active,
-    teams: sql<number>`(select count(*)::int from teams t where t.event_id = ${events.id})`,
-    members: sql<number>`(select count(*)::int from event_members m where m.event_id = ${events.id})`,
+    teams: sql<number>`(select count(*)::int from teams t where t.event_id = events.id)`,
+    members: sql<number>`(select count(*)::int from event_members m where m.event_id = events.id)`,
   }).from(events).orderBy(desc(events.active), desc(events.startDate), desc(events.id))
 
   return (
