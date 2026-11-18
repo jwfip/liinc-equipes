@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { db } from '@/db'
-import { PROCESS_STEPS, STATUS_ORDER, type StatusValue } from '@/lib/constants'
+import { STATUS_ORDER, type StatusValue } from '@/lib/constants'
+import { getEventContext } from '@/lib/event-context'
+import { getEventSteps } from '@/lib/event-data'
 import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
@@ -29,9 +31,11 @@ function fmtDate(d: string) {
   return new Date(d + 'T00:00:00').toLocaleDateString('pt-BR')
 }
 
-function stepLabel(step: number | null | undefined) {
-  const s = step && step >= 1 && step <= PROCESS_STEPS.length ? step : 1
-  return `${s} — ${PROCESS_STEPS[s - 1]}`
+function makeStepLabel(steps: { id: number; label: string }[]) {
+  return (stepId: number | null | undefined) => {
+    const i = steps.findIndex(s => s.id === stepId)
+    return i >= 0 ? `${i + 1} — ${steps[i].label}` : '—'
+  }
 }
 
 function StatusPill({ status }: { status: string }) {
@@ -47,16 +51,22 @@ function StatusPill({ status }: { status: string }) {
 export default async function RelatorioPage() {
   const session = await auth()
   if (session?.user?.role !== 'admin') redirect('/painel')
+  const ctx = await getEventContext()
+  if (!ctx.event) redirect('/admin/eventos')
+  const eventId = ctx.event.id
 
-  const [records, allTeams, allMentors, allBlocks] = await Promise.all([
+  const [records, allTeams, allMentors, allBlocks, steps] = await Promise.all([
     db.query.mentoringRecords.findMany({
+      where: (r, { and, eq }) => and(eq(r.eventId, eventId), eq(r.kind, 'mentoring')),
       with: { team: true, mentor: true, block: true },
       orderBy: (r, { asc }) => [asc(r.blockId), asc(r.createdAt)],
     }),
-    db.query.teams.findMany({ orderBy: (t, { asc }) => [asc(t.number)] }),
+    db.query.teams.findMany({ where: (t, { eq }) => eq(t.eventId, eventId), orderBy: (t, { asc }) => [asc(t.number)] }),
     db.query.mentors.findMany({ orderBy: (m, { asc }) => [asc(m.name)] }),
-    db.query.blocks.findMany({ orderBy: (b, { asc }) => [asc(b.id)] }),
+    db.query.blocks.findMany({ where: (b, { eq }) => eq(b.eventId, eventId), orderBy: (b, { asc }) => [asc(b.id)] }),
+    getEventSteps(eventId),
   ])
+  const stepLabel = makeStepLabel(steps)
 
   // Equipes no relatório: ativas + inativas que tenham registros
   const teamIdsWithRecords = new Set(records.map(r => r.teamId))
@@ -84,7 +94,7 @@ export default async function RelatorioPage() {
       const mine = records.filter(r => r.mentorId === m.id)
       return { ...m, count: mine.length, teams: new Set(mine.map(r => r.teamId)).size }
     })
-    .filter(m => m.active || m.count > 0)
+    .filter(m => m.count > 0)
     .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
 
   const blockStats = allBlocks.map(b => {
@@ -128,7 +138,7 @@ export default async function RelatorioPage() {
             <div className="w-px h-8 bg-slate-300" />
             <span className="font-display font-semibold text-lg">Mentorias</span>
           </div>
-          <h1 className="font-display font-bold text-2xl mt-4">Relatório do Evento</h1>
+          <h1 className="font-display font-bold text-2xl mt-4">Relatório — {ctx.event.name}</h1>
           <p className="text-sm text-slate-500 mt-1">
             Gerado em {fmtDateTime(new Date())}
             {allBlocks.length > 0 && <> · {fmtDate(allBlocks[0].date)} a {fmtDate(allBlocks[allBlocks.length - 1].date)}</>}
@@ -193,7 +203,7 @@ export default async function RelatorioPage() {
                       {t.name}{!t.active && <span className="text-slate-400 text-[10px]"> (inativa)</span>}
                     </td>
                     <td className="py-1.5 pr-2">{last ? <StatusPill status={last.status} /> : <span className="text-slate-400">—</span>}</td>
-                    <td className="py-1.5 pr-2">{last ? stepLabel(last.step) : '—'}</td>
+                    <td className="py-1.5 pr-2">{last ? stepLabel(last.stepId) : '—'}</td>
                     <td className="py-1.5 pr-2 text-center">{recordsByTeam.get(t.id)?.length ?? 0}</td>
                     <td className="py-1.5">{last?.mentor?.name ?? '—'}</td>
                   </tr>
@@ -281,7 +291,7 @@ export default async function RelatorioPage() {
                           <span className="font-display font-bold text-[13px]">{r.block?.label}</span>
                           <span className="text-[11px] text-slate-500">{fmtDateTime(r.createdAt)}</span>
                           <StatusPill status={r.status} />
-                          <span className="text-[11px] text-orange font-bold">Etapa {stepLabel(r.step)}</span>
+                          <span className="text-[11px] text-orange font-bold">Etapa {stepLabel(r.stepId)}</span>
                           <span className="ml-auto text-[11px] font-bold text-slate-600">👤 {r.mentor?.name ?? '—'}</span>
                         </div>
                         <div className="grid gap-2">

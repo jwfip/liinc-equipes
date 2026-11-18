@@ -2,14 +2,14 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { PROCESS_STEPS } from '@/lib/constants'
+import StepProgress from './StepProgress'
 
 function fmtDateTime(iso: string | null) {
   if (!iso) return ''
   return new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-export default function HistoryModal({ team, records, onClose, currentUser }: any) {
+export default function HistoryModal({ team, records, steps, onClose, currentUser }: any) {
   useEffect(() => {
     const h = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', h)
@@ -51,15 +51,6 @@ export default function HistoryModal({ team, records, onClose, currentUser }: an
                   }
                   const meta = statusMap[r.status]
 
-                  const getStep = (r: any) => {
-                    if (!r) return 1
-                    if (typeof r.step === 'number') return r.step
-                    if (r.status === 'emergency') return 1
-                    const w = (r.working || '').toLowerCase()
-                    if ((w.includes('soluç') || w.includes('solução')) && !w.includes('definindo')) return 2
-                    return 1
-                  }
-                  const step = getStep(r)
 
                   return (
                     <div key={r.id} className="relative">
@@ -73,17 +64,7 @@ export default function HistoryModal({ team, records, onClose, currentUser }: an
                       </div>
 
                       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
-                        <div>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Etapa do processo</span>
-                            <span className="text-[11px] font-bold text-orange">{step} — {PROCESS_STEPS[step - 1]}</span>
-                          </div>
-                          <div className="flex gap-1">
-                            {[1,2,3,4,5,6].map(i => (
-                              <div key={i} className={`flex-1 h-1 rounded-full ${i < step ? 'bg-green-500' : i === step ? 'bg-orange' : 'bg-slate-200'}`} />
-                            ))}
-                          </div>
-                        </div>
+                        <StepProgress steps={steps} current={r.step ?? null} size="sm" />
 
                         {r.working && <Field label="Projeto atual" value={r.working} dark />}
                         <Field label="Orientação do mentor" value={r.advice} />

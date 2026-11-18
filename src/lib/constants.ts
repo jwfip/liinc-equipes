@@ -5,15 +5,6 @@ export const STATUS_OPTIONS = [
   { value: 'flying',    label: '🚀 Voando',       color: 'blue'   },
 ] as const
 
-export const PROCESS_STEPS = [
-  'Entendimento do problema',
-  'Explorando soluções',
-  'Escolha da solução',
-  'Protótipo',
-  'Testes',
-  'Pitch',
-] as const
-
 export type StatusValue = 'ok' | 'attention' | 'emergency' | 'flying'
 
 export const STATUS_META: Record<StatusValue, {
@@ -30,8 +21,13 @@ export const STATUS_META: Record<StatusValue, {
 
 export const STATUS_ORDER: StatusValue[] = ['emergency', 'attention', 'ok', 'flying']
 
+export type Step = { id: number; position: number; label: string }
+
 export type RecordWithRelations = {
   id:        string
+  eventId:   number
+  kind:      string
+  stepId:    number | null
   teamId:    string
   mentorId:  string
   blockId:   number
@@ -44,20 +40,9 @@ export type RecordWithRelations = {
   suggestion: string | null
   createdAt: string | null
   team:   { id: string; number: number; name: string; active: boolean } | null
-  mentor: { id: string; name: string } | null
+  mentor: { id: string; name: string; email?: string } | null
   block:  { id: number; label: string; date: string } | null
+  step:   Step | null
 }
 
-export function getLatestByTeam(records: RecordWithRelations[]) {
-  return records.reduce<Record<string, RecordWithRelations>>((acc, r) => {
-    const prev = acc[r.teamId]
-    if (
-      !prev ||
-      r.blockId > prev.blockId ||
-      (r.blockId === prev.blockId && (r.createdAt ?? '') > (prev.createdAt ?? ''))
-    ) {
-      acc[r.teamId] = r
-    }
-    return acc
-  }, {})
-}
+export { getLatestByTeam } from './records'

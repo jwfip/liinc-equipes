@@ -1,5 +1,6 @@
 import { auth } from '@/auth'
-import { db } from '@/db'
+import { getEventContext } from '@/lib/event-context'
+import { getEventRecords } from '@/lib/event-data'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 
@@ -15,11 +16,8 @@ export async function GET() {
   }
 
   try {
-    const records = await db.query.mentoringRecords.findMany({
-      with: { team: true, mentor: true, block: true },
-      orderBy: (r, { asc }) => [asc(r.createdAt)],
-    })
-    console.log(`GET /api/records success. Count: ${records.length}`)
+    const ctx = await getEventContext()
+    const records = ctx.event ? await getEventRecords(ctx.event.id) : []
     return NextResponse.json(records, {
       headers: {
         'Cache-Control': 'no-store, max-age=0, must-revalidate',

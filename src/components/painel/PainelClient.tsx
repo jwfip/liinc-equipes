@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { STATUS_ORDER, getLatestByTeam, PROCESS_STEPS, type RecordWithRelations } from '@/lib/constants'
+import { STATUS_ORDER, getLatestByTeam, type RecordWithRelations, type Step } from '@/lib/constants'
 import SummaryStrip from './SummaryStrip'
 import FilterBar    from './FilterBar'
 import TeamCard     from './TeamCard'
@@ -12,6 +12,7 @@ type Team = { id: string; number: number; name: string; active: boolean }
 interface Props {
   initialRecords: RecordWithRelations[]
   teams:          Team[]
+  steps:          Step[]
   activeBlock:    { label: string } | null
   currentUser:    string
 }
@@ -23,7 +24,7 @@ const SECTION_META: Record<string, any> = {
   flying:    { icon: '🚀', title: 'Voando',     dot: 'bg-blue-600' },
 }
 
-export default function PainelClient({ initialRecords, teams, activeBlock, currentUser }: Props) {
+export default function PainelClient({ initialRecords, teams, steps, activeBlock, currentUser }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -92,10 +93,11 @@ export default function PainelClient({ initialRecords, teams, activeBlock, curre
         <div className="bg-white border border-slate-200 rounded-xl p-5 mb-7 shadow-sm">
           <div className="font-display font-bold text-xs text-slate-400 uppercase tracking-wide mb-3">Etapas do processo de inovação</div>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
-            {PROCESS_STEPS.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-slate-600">
+            {steps.length === 0 && <span className="text-xs text-slate-400">Nenhuma etapa configurada para este evento.</span>}
+            {steps.map((s, i) => (
+              <div key={s.id} className="flex items-center gap-2 text-xs text-slate-600">
                 <div className="w-5 h-5 rounded-full bg-navy text-white font-display font-bold text-[10px] flex items-center justify-center shrink-0">{i + 1}</div>
-                {s}
+                {s.label}
               </div>
             ))}
           </div>
@@ -117,7 +119,7 @@ export default function PainelClient({ initialRecords, teams, activeBlock, curre
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-5">
                 {group.map(team => (
-                  <TeamCard key={team.id} team={team} record={latestByTeam[team.id]} onHistoryClick={setHistoryTeam} />
+                  <TeamCard key={team.id} team={team} record={latestByTeam[team.id]} steps={steps} onHistoryClick={setHistoryTeam} />
                 ))}
               </div>
             </section>
@@ -134,7 +136,7 @@ export default function PainelClient({ initialRecords, teams, activeBlock, curre
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-5 opacity-75">
               {noRecord.map(team => (
-                <TeamCard key={team.id} team={team} record={undefined} onHistoryClick={setHistoryTeam} />
+                <TeamCard key={team.id} team={team} record={undefined} steps={steps} onHistoryClick={setHistoryTeam} />
               ))}
             </div>
           </section>
@@ -185,7 +187,7 @@ export default function PainelClient({ initialRecords, teams, activeBlock, curre
 
       </main>
 
-      {historyTeam && <HistoryModal team={historyTeam} records={historyRecords} onClose={() => setHistoryTeam(null)} currentUser={currentUser} />}
+      {historyTeam && <HistoryModal team={historyTeam} records={historyRecords} steps={steps} onClose={() => setHistoryTeam(null)} currentUser={currentUser} />}
     </div>
   )
 }
