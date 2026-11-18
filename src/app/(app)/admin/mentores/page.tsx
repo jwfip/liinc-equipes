@@ -1,5 +1,6 @@
 import { db } from '@/db'
 import { createMentor, toggleMentor } from '@/actions/admin'
+import AdminForm from '@/components/admin/AdminForm'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,10 +18,7 @@ export default async function MentoresPage() {
 
       <div className="card mb-6">
         <h2 className="font-display font-semibold text-sm mb-4 text-slate-600">Adicionar mentor</h2>
-        <form action={async (fd: FormData) => {
-          'use server'
-          await createMentor(fd.get('name') as string, (fd.get('username') as string).toLowerCase().trim())
-        }} className="flex flex-col sm:flex-row gap-3">
+        <AdminForm action={createMentor}>
           <div className="flex-1">
             <label className="label">Nome</label>
             <input name="name" type="text" required placeholder="Nome completo" className="input" />
@@ -29,10 +27,7 @@ export default async function MentoresPage() {
             <label className="label">Usuário</label>
             <input name="username" type="text" required placeholder="Ex: joao.silva" className="input" />
           </div>
-          <div className="flex items-end">
-            <button type="submit" className="btn-primary h-[38px]">+ Adicionar</button>
-          </div>
-        </form>
+        </AdminForm>
         <p className="text-xs text-slate-500 mt-2">
           Após cadastrar, o mentor poderá fazer login informando seu usuário e a senha do evento (<strong>{process.env.EVENT_ACCESS_CODE || 'liinc2026'}</strong>).
         </p>
