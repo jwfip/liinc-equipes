@@ -1,29 +1,45 @@
 'use server'
 
-import { auth } from '@/auth'
 import { db } from '@/db'
 import { teams, mentors, blocks, users } from '@/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
+import { requireAdmin } from '@/lib/guards'
 import { revalidatePath } from 'next/cache'
 import { toActionError, type ActionResult } from '@/lib/action-result'
 
-async function requireAdmin() {
-  const session = await auth()
-  if (session?.user?.role !== 'admin') throw new Error('Acesso negado')
-}
-
 // ── Teams ────────────────────────────────────────────────────
 
-export async function createTeam(number: number, name: string) {
-  await requireAdmin()
-  await db.insert(teams).values({ number, name })
-  revalidatePath('/admin/equipes')
+function revalidateEventPages(eventId: number) {
+  revalidatePath(`/admin/eventos/${eventId}`, 'layout')
+  revalidatePath('/painel')
+  revalidatePath('/mentoria')
 }
 
-export async function toggleTeam(id: string, active: boolean) {
-  await requireAdmin()
-  await db.update(teams).set({ active }).where(eq(teams.id, id))
-  revalidatePath('/admin/equipes')
+export async function createTeam(eventId: number, fd: FormData): Promise<ActionResult> {
+  try {
+    await requireAdmin()
+    const number = parseInt(String(fd.get('number') ?? ''), 10)
+    const name   = String(fd.get('name') ?? '').trim()
+    if (!Number.isInteger(number) || number < 1 || !name) return { ok: false, error: 'Informe número e nome da equipe.' }
+    const dup = await db.query.teams.findFirst({ where: and(eq(teams.eventId, eventId), eq(teams.number, number)) })
+    if (dup) return { ok: false, error: `Já existe a equipe nº ${number} neste evento.` }
+    await db.insert(teams).values({ eventId, number, name })
+    revalidateEventPages(eventId)
+    return { ok: true, message: `Equipe ${number} — ${name} cadastrada.` }
+  } catch (err) {
+    return toActionError(err)
+  }
+}
+
+export async function toggleTeam(id: string, active: boolean): Promise<ActionResult> {
+  try {
+    await requireAdmin()
+    const [t] = await db.update(teams).set({ active }).where(eq(teams.id, id)).returning({ eventId: teams.eventId })
+    if (t) revalidateEventPages(t.eventId)
+    return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
 }
 
 // ── Mentors ──────────────────────────────────────────────────
@@ -63,22 +79,46 @@ export async function toggleMentor(id: string, active: boolean): Promise<ActionR
 
 // ── Blocks ───────────────────────────────────────────────────
 
-export async function createBlock(label: string, date: string) {
-  await requireAdmin()
-  await db.insert(blocks).values({ label, date, active: false })
-  revalidatePath('/admin/blocos')
+export async function createBlock(eventId: number, fd: FormData): Promise<ActionResult> {
+  try {
+    await requireAdmin()
+    const label = String(fd.get('label') ?? '').trim()
+    const date  = String(fd.get('date') ?? '').trim()
+    if (!label || !date) return { ok: false, error: 'Informe nome e data do bloco.' }
+    await db.insert(blocks).values({ eventId, label, date, active: false })
+    revalidateEventPages(eventId)
+    return { ok: true, message: `${label} criado.` }
+  } catch (err) {
+    return toActionError(err)
+  }
 }
 
-export async function activateBlock(id: number) {
-  await requireAdmin()
-  await db.update(blocks).set({ active: false })
-  await db.update(blocks).set({ active: true }).where(eq(blocks.id, id))
-  revalidatePath('/admin/blocos')
-  revalidatePath('/mentoria')
+/**
+ * Ativa um bloco e desativa os demais do mesmo evento. Usa db.batch (transação não interativa
+ * no neon-http): o índice único parcial é checado linha a linha, então desativar e ativar
+ * num único UPDATE falharia.
+ */
+export async function activateBlock(eventId: number, id: number): Promise<ActionResult> {
+  try {
+    await requireAdmin()
+    await db.batch([
+      db.update(blocks).set({ active: false }).where(and(eq(blocks.eventId, eventId), eq(blocks.active, true))),
+      db.update(blocks).set({ active: true }).where(and(eq(blocks.id, id), eq(blocks.eventId, eventId))),
+    ])
+    revalidateEventPages(eventId)
+    return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
 }
 
-export async function deactivateBlock(id: number) {
-  await requireAdmin()
-  await db.update(blocks).set({ active: false }).where(eq(blocks.id, id))
-  revalidatePath('/admin/blocos')
+export async function deactivateBlock(eventId: number, id: number): Promise<ActionResult> {
+  try {
+    await requireAdmin()
+    await db.update(blocks).set({ active: false }).where(and(eq(blocks.id, id), eq(blocks.eventId, eventId)))
+    revalidateEventPages(eventId)
+    return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
 }
