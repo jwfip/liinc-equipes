@@ -1,6 +1,6 @@
 # Plataforma Liinc Mentorias — v2 (eventos, login, especialistas, IA, evolução)
 
-Data: 2026-11-18 · Status: em revisão
+Data: 2026-11-18 · Status: aprovado
 
 ## 1. Intenção e porquê
 
@@ -173,7 +173,7 @@ users           + passwordHash text null, mustChangePassword boolean default tru
 
 ### 5.13 Entrega em fases
 
-Cada fase é deployável sozinha:
+Cada fase é deployável sozinha. Não há evento em andamento, então as fases podem ser publicadas sem fallback do login antigo nem evento de arquivo ativo:
 
 1. **Eventos**: schema, migração, admin de eventos/etapas/equipes/blocos/participantes, contexto de evento, painel e formulário por evento, correção dos formulários que não limpam.
 2. **Login com senha**.
