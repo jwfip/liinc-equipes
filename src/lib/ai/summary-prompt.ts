@@ -8,6 +8,8 @@ const STATUS_PT: Record<string, string> = { ok: 'No caminho', attention: 'Atenç
 
 type Stamp = string | Date | null | undefined
 const ts = (d: Stamp) => (d ? new Date(d).getTime() : 0)
+/** Linhas com data (dd/mm) em vez de números: o modelo confundia "1., 2." com números de bloco. */
+const day = (d: Stamp) => (d ? new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }) : '--/--')
 
 /** Texto do usuário vai como dado: corta o tamanho e neutraliza delimitadores falsos. */
 export function clip(v: string | null | undefined, tag = 'registros'): string {
@@ -31,9 +33,9 @@ type MentoringRec = {
 }
 
 export function buildMentoringSummaryMessages(team: string, steps: { id: number; label: string }[], records: MentoringRec[]): ChatMessage[] {
-  const lines = lastN(records).map((r, i) => {
+  const lines = lastN(records).map((r) => {
     const idx = steps.findIndex(s => s.id === r.stepId)
-    return `${i + 1}. ` + [
+    return `- ${day(r.createdAt)} · ` + [
       r.block?.label ?? 'Sem bloco',
       r.status ? `Status: ${STATUS_PT[r.status] ?? r.status}` : '',
       idx >= 0 ? `Etapa ${idx + 1} — ${clip(steps[idx].label)}` : '',
@@ -53,7 +55,7 @@ export function buildMentoringSummaryMessages(team: string, steps: { id: number;
 type SpecialistRec = { createdAt: Stamp; topic: string | null; advice: string | null; obs: string | null; block?: { label: string } | null }
 
 export function buildSpecialistSummaryMessages(team: string, records: SpecialistRec[]): ChatMessage[] {
-  const lines = lastN(records).map((r, i) => `${i + 1}. ` + [
+  const lines = lastN(records).map((r) => `- ${day(r.createdAt)} · ` + [
     r.block?.label ?? 'Fora de bloco', part('Tema', r.topic), part('Orientação', r.advice), part('Observações', r.obs),
   ].filter(Boolean).join(' · '))
   return [

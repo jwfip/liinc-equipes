@@ -18,8 +18,8 @@ describe('buildFinalSummaryMessages', () => {
     const [, user] = buildFinalSummaryMessages('ALFA', steps, Array.from({ length: 30 }, (_, i) => m(i)), Array.from({ length: 15 }, (_, i) => a(i)))
     const ment = user.content.slice(user.content.indexOf('<mentorias>'), user.content.indexOf('</mentorias>'))
     const aten = user.content.slice(user.content.indexOf('<atendimentos>'), user.content.indexOf('</atendimentos>'))
-    expect((ment.match(/^\d+\./gm) ?? []).length).toBe(20)
-    expect((aten.match(/^\d+\./gm) ?? []).length).toBe(10)
+    expect((ment.match(/^- /gm) ?? []).length).toBe(20)
+    expect((aten.match(/^- /gm) ?? []).length).toBe(10)
   })
   it('leaves internal notes (obs, suggestion) out of the company summary', () => {
     const [, user] = buildFinalSummaryMessages('ALFA', steps, [m(1)], [])
@@ -36,5 +36,13 @@ describe('cleanFinalSummary', () => {
     const s = cleanFinalSummary('Uma frase completa aqui. '.repeat(60))!
     expect(s.length).toBeLessThanOrEqual(900)
     expect(s.length).toBeGreaterThan(600)
+  })
+})
+
+describe('record lines', () => {
+  it('are dated bullets, not numbered (the model read numbers as block numbers)', () => {
+    const [, user] = buildFinalSummaryMessages('ALFA', steps, [m(1), m(2)], [a(1)])
+    expect(user.content).not.toMatch(/^\d+\./m)
+    expect(user.content).toMatch(/^- 01\/01 · B · /m)
   })
 })

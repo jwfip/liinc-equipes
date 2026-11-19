@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, FileDown, Sparkles, Loader2 } from 'lucide-react'
@@ -18,7 +18,10 @@ interface Props {
 export default function ReportToolbar({ eventId, hidden, teams, finals }: Props) {
   const router = useRouter()
   const pathname = usePathname()
-  const hiddenSet = new Set(hidden)
+  // Estado local para a caixa responder na hora; a URL (e o servidor) acompanham em seguida.
+  const [hiddenSet, setHiddenSet] = useState(() => new Set(hidden))
+  const hiddenKey = hidden.join(',')
+  useEffect(() => { setHiddenSet(new Set(hiddenKey ? hiddenKey.split(',') as ReportSection[] : [])) }, [hiddenKey])
   const [overwrite, setOverwrite] = useState(false)
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null)
   const [failed, setFailed] = useState<{ id: string; name: string; error: string }[]>([])
@@ -26,6 +29,7 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
   function toggle(section: ReportSection) {
     const next = new Set(hiddenSet)
     if (next.has(section)) next.delete(section); else next.add(section)
+    setHiddenSet(next)
     router.replace(`${pathname}?${hiddenToQuery(next)}`, { scroll: false })
   }
 
