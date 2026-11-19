@@ -112,6 +112,19 @@ export const teamSummaries = pgTable('team_summaries', {
   teamKind: uniqueIndex('team_summaries_team_kind_idx').on(t.teamId, t.kind),
 }))
 
+export const teamProjects = pgTable('team_projects', {
+  id:          serial('id').primaryKey(),
+  eventId:     integer('event_id').notNull().references(() => events.id),
+  teamId:      uuid('team_id').notNull().references(() => teams.id, { onDelete: 'cascade' }),
+  description: text('description').notNull(),
+  kind:        text('kind').notNull(), // 'initial' | 'pivot' | 'correction'
+  recordId:    uuid('record_id').references(() => mentoringRecords.id),
+  createdBy:   uuid('created_by').references(() => mentors.id),
+  createdAt:   timestamp('created_at').defaultNow(),
+}, (t) => ({
+  teamIdx: index('team_projects_team_idx').on(t.teamId, t.createdAt),
+}))
+
 // ── NextAuth tables ──────────────────────────────────────────
 
 export const users = pgTable('users', {
@@ -201,6 +214,11 @@ export const mentorsRelations = relations(mentors, ({ many }) => ({
 export const blocksRelations = relations(blocks, ({ one, many }) => ({
   event:   one(events, { fields: [blocks.eventId], references: [events.id] }),
   records: many(mentoringRecords),
+}))
+
+export const teamProjectsRelations = relations(teamProjects, ({ one }) => ({
+  team:   one(teams,   { fields: [teamProjects.teamId],    references: [teams.id] }),
+  author: one(mentors, { fields: [teamProjects.createdBy], references: [mentors.id] }),
 }))
 
 export const teamStepChangesRelations = relations(teamStepChanges, ({ one }) => ({

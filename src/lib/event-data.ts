@@ -1,6 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm'
 import { db } from '@/db'
-import { blocks, eventSteps, teams, teamStepChanges, teamSummaries } from '@/schema'
+import { blocks, eventSteps, teams, teamProjects, teamStepChanges, teamSummaries } from '@/schema'
+import type { ProjectRow } from './project'
 
 export async function getEventSteps(eventId: number) {
   return db.select({ id: eventSteps.id, position: eventSteps.position, label: eventSteps.label })
@@ -42,4 +43,21 @@ export async function getEventSummaries(eventId: number) {
     id: teamSummaries.id, teamId: teamSummaries.teamId, kind: teamSummaries.kind, content: teamSummaries.content,
     basedOnRecordId: teamSummaries.basedOnRecordId, createdAt: teamSummaries.createdAt,
   }).from(teamSummaries).where(eq(teamSummaries.eventId, eventId))
+}
+
+/** Todas as versões de projeto das equipes do evento (o projeto atual é a mais recente de cada equipe). */
+export async function getEventProjects(eventId: number): Promise<ProjectRow[]> {
+  const rows = await db.query.teamProjects.findMany({
+    where: eq(teamProjects.eventId, eventId),
+    columns: { id: true, teamId: true, description: true, kind: true, recordId: true, createdAt: true },
+    with: { author: { columns: { name: true } } },
+    orderBy: (p, { asc }) => [asc(p.createdAt), asc(p.id)],
+  })
+  return rows.map(r => ({ ...r, kind: r.kind as ProjectRow['kind'], author: r.author ?? null }))
+}
+
+/** Blocos do evento em ordem cronológica. */
+export async function getEventBlocks(eventId: number) {
+  return db.select({ id: blocks.id, label: blocks.label, date: blocks.date, active: blocks.active })
+    .from(blocks).where(eq(blocks.eventId, eventId)).orderBy(asc(blocks.date), asc(blocks.id))
 }
