@@ -73,6 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         where: eq(users.id, token.id as string),
       })
       session.user.role = dbUser?.role ?? 'mentor'
+      session.user.mustChangePassword = dbUser?.mustChangePassword ?? false
       session.user.id   = token.id as string
       return session
     },
