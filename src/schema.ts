@@ -75,8 +75,9 @@ export const mentoringRecords = pgTable('mentoring_records', {
   kind:      text('kind').notNull().default('mentoring'), // 'mentoring' | 'specialist'
   teamId:    uuid('team_id').notNull().references(() => teams.id),
   mentorId:  uuid('mentor_id').notNull().references(() => mentors.id),
-  blockId:   integer('block_id').notNull().references(() => blocks.id),
-  status:    text('status').notNull(), // 'ok' | 'attention' | 'emergency' | 'flying'
+  blockId:   integer('block_id').references(() => blocks.id), // nulo em atendimento fora de bloco
+  status:    text('status'), // 'ok' | 'attention' | 'emergency' | 'flying'; nulo em atendimento
+  topic:     text('topic'),  // tema/dúvida do atendimento
   working:   text('working'),
   advice:    text('advice'),
   pros:      text('pros'),
@@ -85,6 +86,15 @@ export const mentoringRecords = pgTable('mentoring_records', {
   suggestion: text('suggestion'),
   stepId:     integer('step_id').references(() => eventSteps.id),
   createdAt:  timestamp('created_at').defaultNow(),
+})
+
+export const teamStepChanges = pgTable('team_step_changes', {
+  id:        serial('id').primaryKey(),
+  eventId:   integer('event_id').notNull().references(() => events.id),
+  teamId:    uuid('team_id').notNull().references(() => teams.id),
+  stepId:    integer('step_id').notNull().references(() => eventSteps.id),
+  changedBy: text('changed_by').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
 })
 
 // ── NextAuth tables ──────────────────────────────────────────
@@ -176,4 +186,10 @@ export const mentorsRelations = relations(mentors, ({ many }) => ({
 export const blocksRelations = relations(blocks, ({ one, many }) => ({
   event:   one(events, { fields: [blocks.eventId], references: [events.id] }),
   records: many(mentoringRecords),
+}))
+
+export const teamStepChangesRelations = relations(teamStepChanges, ({ one }) => ({
+  team: one(teams,      { fields: [teamStepChanges.teamId], references: [teams.id] }),
+  step: one(eventSteps, { fields: [teamStepChanges.stepId], references: [eventSteps.id] }),
+  user: one(users,      { fields: [teamStepChanges.changedBy], references: [users.id] }),
 }))

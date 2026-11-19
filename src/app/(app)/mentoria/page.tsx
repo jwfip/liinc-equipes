@@ -1,4 +1,5 @@
 import MentoriaForm from '@/components/mentoria/MentoriaForm'
+import AtendimentoForm from '@/components/mentoria/AtendimentoForm'
 import NoEventNotice from '@/components/layout/NoEventNotice'
 import { getEventContext } from '@/lib/event-context'
 import { getActiveBlock, getActiveTeams, getEventSteps } from '@/lib/event-data'
@@ -21,7 +22,8 @@ export default async function MentoriaPage() {
     )
   }
 
-  const blocked = registrationError(ctx)
+  const isSpecialist = ctx.role === 'specialist'
+  const blocked = registrationError(ctx, isSpecialist ? 'specialist' : 'mentoring')
   if (blocked) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-10">
@@ -37,17 +39,19 @@ export default async function MentoriaPage() {
     getActiveBlock(ctx.event.id), getActiveTeams(ctx.event.id), getEventSteps(ctx.event.id),
   ])
 
+  const block = activeBlock ? { id: activeBlock.id, label: activeBlock.label, date: activeBlock.date } : null
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 md:py-8">
       <div className="mb-6">
-        <h2 className="font-display font-bold text-2xl">Nova mentoria</h2>
-        <p className="text-slate-500 text-sm mt-1">{ctx.event.name} · preencha após cada sessão com a equipe.</p>
+        <h2 className="font-display font-bold text-2xl">{isSpecialist ? 'Novo atendimento' : 'Nova mentoria'}</h2>
+        <p className="text-slate-500 text-sm mt-1">
+          {ctx.event.name} · {isSpecialist ? 'registre as dúvidas tiradas com a equipe.' : 'preencha após cada sessão com a equipe.'}
+        </p>
       </div>
-      <MentoriaForm
-        teams={activeTeams}
-        steps={steps}
-        activeBlock={activeBlock ? { id: activeBlock.id, label: activeBlock.label, date: activeBlock.date } : null}
-      />
+      {isSpecialist
+        ? <AtendimentoForm teams={activeTeams} activeBlock={block} />
+        : <MentoriaForm teams={activeTeams} steps={steps} activeBlock={block} />}
     </div>
   )
 }

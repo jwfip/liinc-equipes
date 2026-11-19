@@ -6,7 +6,7 @@ import { getEventContext } from '@/lib/event-context'
 import { EVENT_COOKIE } from '@/lib/event-pick'
 import { and, eq, max, sql, count } from 'drizzle-orm'
 import { db } from '@/db'
-import { events, eventSteps, eventMembers, mentoringRecords } from '@/schema'
+import { events, eventSteps, eventMembers, mentoringRecords, teamStepChanges } from '@/schema'
 import { requireAdmin, requireActiveSession } from '@/lib/guards'
 import { toActionError, type ActionResult } from '@/lib/action-result'
 import { swapPositions } from '@/lib/steps'
@@ -113,8 +113,12 @@ export async function moveStep(eventId: number, stepId: number, dir: 'up' | 'dow
 
 export async function deleteStep(stepId: number): Promise<ActionResult> {
   return guarded(async () => {
-    const [{ n }] = await db.select({ n: count() }).from(mentoringRecords).where(eq(mentoringRecords.stepId, stepId))
-    if (n > 0) return { ok: false, error: `Etapa em uso por ${n} registro${n > 1 ? 's' : ''}.` }
+    const [[{ n: recs }], [{ n: adj }]] = await Promise.all([
+      db.select({ n: count() }).from(mentoringRecords).where(eq(mentoringRecords.stepId, stepId)),
+      db.select({ n: count() }).from(teamStepChanges).where(eq(teamStepChanges.stepId, stepId)),
+    ])
+    if (recs > 0) return { ok: false, error: `Etapa em uso por ${recs} registro${recs > 1 ? 's' : ''}.` }
+    if (adj > 0) return { ok: false, error: `Etapa em uso por ${adj} ajuste${adj > 1 ? 's' : ''} de etapa da organização.` }
     await db.delete(eventSteps).where(eq(eventSteps.id, stepId))
   })
 }

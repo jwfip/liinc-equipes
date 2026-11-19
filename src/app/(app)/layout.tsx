@@ -33,7 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* Mobile Nav */}
       <div className="md:hidden bg-navy border-t border-white/10 overflow-x-auto">
         <div className="flex p-2 gap-2 min-w-max">
-          <SidebarNav role={session.user.role as string} />
+          <SidebarNav role={session.user.role as string} eventRole={ctx.role} />
         </div>
       </div>
 
@@ -54,7 +54,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         </div>
         <div className="flex-1 overflow-y-auto py-6">
-          <SidebarNav role={session.user.role as string} />
+          <SidebarNav role={session.user.role as string} eventRole={ctx.role} />
         </div>
         <div className="p-5 border-t border-white/10 bg-white/[0.02]">
           <div className="px-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate mb-3 flex items-center gap-2">

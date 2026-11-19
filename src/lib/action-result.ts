@@ -12,6 +12,7 @@ function pgCode(err: unknown): string | undefined {
 
 export function toActionError(err: unknown): { ok: false; error: string } {
   if (pgCode(err) === '23505') return { ok: false, error: 'Registro já existe.' }
+  if (pgCode(err) === '23503') return { ok: false, error: 'Não é possível concluir: há registros ligados a este item.' }
   if (err instanceof Error && err.message) return { ok: false, error: err.message }
   return { ok: false, error: 'Erro inesperado. Tente novamente.' }
 }

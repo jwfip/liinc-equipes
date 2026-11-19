@@ -24,7 +24,7 @@ export default function FilterBar({ search, onSearch, statusFilter, onStatusFilt
         {btn('attention', '⚠️ Atenção', 'bg-yellow-400 text-navy border-yellow-400')}
         {btn('ok', '🛣️ No caminho', 'bg-green-600 text-white border-green-600')}
         {btn('flying', '🚀 Voando', 'bg-blue-600 text-white border-blue-600')}
-        {btn('none', 'Sem registro', 'bg-slate-500 text-white border-slate-500')}
+        {btn('none', 'Sem mentoria', 'bg-slate-500 text-white border-slate-500')}
       </div>
       <div className="relative ml-auto w-full md:w-auto">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]">🔍</span>

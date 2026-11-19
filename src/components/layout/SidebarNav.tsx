@@ -3,11 +3,15 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const NAV_PUBLIC = [
-  { href: '/painel',   icon: '📊', label: 'Painel Geral' },
-  { href: '/mentoria', icon: '📝', label: 'Nova Mentoria' },
-  { href: '/conta/senha', icon: '🔑', label: 'Alterar senha' },
-]
+function navPublic(eventRole: string | null) {
+  return [
+    { href: '/painel',   icon: '📊', label: 'Painel Geral' },
+    eventRole === 'specialist'
+      ? { href: '/mentoria', icon: '💬', label: 'Novo Atendimento' }
+      : { href: '/mentoria', icon: '📝', label: 'Nova Mentoria' },
+    { href: '/conta/senha', icon: '🔑', label: 'Alterar senha' },
+  ]
+}
 
 const NAV_ADMIN = [
   { href: '/admin/eventos',   icon: '📅', label: 'Eventos' },
@@ -15,7 +19,7 @@ const NAV_ADMIN = [
   { href: '/admin/relatorio', icon: '📄', label: 'Relatório (PDF)' },
 ]
 
-export default function SidebarNav({ role }: { role: string }) {
+export default function SidebarNav({ role, eventRole = null }: { role: string; eventRole?: string | null }) {
   const pathname = usePathname()
 
   const NavItem = ({ href, icon, label }: { href: string; icon: string; label: string }) => {
@@ -36,7 +40,7 @@ export default function SidebarNav({ role }: { role: string }) {
     <nav className="px-4 flex md:flex-col gap-2 md:gap-0 md:space-y-8 w-full">
       <div className="flex md:flex-col gap-2 md:gap-0 md:space-y-1.5 items-center md:items-stretch w-max md:w-auto">
         <p className="px-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest hidden md:block mb-3">Acesso Rápido</p>
-        {NAV_PUBLIC.map(item => <NavItem key={item.href} {...item} />)}
+        {navPublic(eventRole).map(item => <NavItem key={item.href} {...item} />)}
       </div>
 
       {role === 'admin' && (

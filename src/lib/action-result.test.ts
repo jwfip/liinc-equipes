@@ -14,4 +14,7 @@ describe('toActionError', () => {
   it('falls back to a generic message', () => {
     expect(toActionError(42)).toEqual({ ok: false, error: 'Erro inesperado. Tente novamente.' })
   })
+  it('maps foreign key violations to a readable message', () => {
+    expect(toActionError({ cause: { code: '23503' } })).toEqual({ ok: false, error: 'Não é possível concluir: há registros ligados a este item.' })
+  })
 })

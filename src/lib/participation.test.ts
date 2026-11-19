@@ -20,3 +20,18 @@ describe('registrationError', () => {
     expect(registrationError({ ...base, mentorActive: false })).toBe('Seu acesso de mentor está desativado.')
   })
 })
+
+describe('registrationError by record kind', () => {
+  it('rejects a specialist registering a mentoring', () => {
+    expect(registrationError({ ...base, role: 'specialist' }, 'mentoring')).toBe('Especialistas registram atendimentos, não mentorias.')
+  })
+  it('rejects a mentor registering an atendimento', () => {
+    expect(registrationError(base, 'specialist')).toBe('Mentores registram mentorias, não atendimentos.')
+  })
+  it('allows a specialist registering an atendimento', () => {
+    expect(registrationError({ ...base, role: 'specialist' }, 'specialist')).toBeNull()
+  })
+  it('defaults to mentoring', () => {
+    expect(registrationError({ ...base, role: 'specialist' })).toBe('Especialistas registram atendimentos, não mentorias.')
+  })
+})

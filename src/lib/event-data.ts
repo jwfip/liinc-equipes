@@ -1,6 +1,6 @@
 import { and, asc, eq } from 'drizzle-orm'
 import { db } from '@/db'
-import { blocks, eventSteps, teams } from '@/schema'
+import { blocks, eventSteps, teams, teamStepChanges } from '@/schema'
 
 export async function getEventSteps(eventId: number) {
   return db.select({ id: eventSteps.id, position: eventSteps.position, label: eventSteps.label })
@@ -21,7 +21,16 @@ export async function getActiveBlock(eventId: number) {
 export async function getEventRecords(eventId: number) {
   return db.query.mentoringRecords.findMany({
     where: (r, { eq }) => eq(r.eventId, eventId),
-    with: { team: true, mentor: true, block: true, step: true },
+    with: { team: true, mentor: { columns: { id: true, name: true, email: true } }, block: true, step: true },
     orderBy: (r, { asc }) => [asc(r.createdAt)],
+  })
+}
+
+export async function getEventStepChanges(eventId: number) {
+  return db.query.teamStepChanges.findMany({
+    where: eq(teamStepChanges.eventId, eventId),
+    columns: { id: true, teamId: true, stepId: true, createdAt: true },
+    with: { step: true },
+    orderBy: (c, { asc }) => [asc(c.createdAt)],
   })
 }

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import { submitMentoria, updateMentoria } from '@/actions/mentoria'
 import { STATUS_OPTIONS, type Step } from '@/lib/constants'
+import TeamPicker from './TeamPicker'
 
 type Team  = { id: string; number: number; name: string }
 type Block = { id: number; label: string; date: string } | null
@@ -19,15 +20,9 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
   const [selectedTeam, setSelectedTeam] = useState(recordToEdit?.teamId || '')
   const [selectedStatus, setSelectedStatus] = useState(recordToEdit?.status || '')
   const [selectedStep, setSelectedStep] = useState<number | null>(recordToEdit?.stepId ?? null)
-  const [teamSearch, setTeamSearch] = useState('')
-  const [dropdownOpen, setDropdownOpen] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError]     = useState<string | null>(null)
 
-  const filteredTeams = teams.filter(t =>
-    `${t.number} ${t.name}`.toLowerCase().includes(teamSearch.toLowerCase())
-  )
-  const selectedTeamObj = teams.find(t => t.id === selectedTeam)
 
   if (!activeBlock) {
     return (
@@ -41,7 +36,8 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const formData = new FormData(e.currentTarget)
+    const form = e.currentTarget // guardar já: depois do await, e.currentTarget vira null
+    const formData = new FormData(form)
     formData.set('teamId', selectedTeam)
     formData.set('status', selectedStatus)
     setError(null)
@@ -59,8 +55,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
           setSelectedTeam('')
           setSelectedStatus('')
           setSelectedStep(null)
-          setTeamSearch('')
-          e.currentTarget?.reset()
+          form.reset()
         }
         setTimeout(() => setSuccess(false), 4000)
       } catch (err: any) {
@@ -90,36 +85,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
         </div>
       )}
 
-      {/* Team dropdown */}
-      <div className="relative">
-        <label className="label">Equipe *</label>
-        <div
-          className="input cursor-pointer flex items-center justify-between"
-          onClick={() => setDropdownOpen(v => !v)}
-        >
-          <span className={selectedTeamObj ? 'text-navy' : 'text-slate-400'}>
-            {selectedTeamObj ? `${selectedTeamObj.number} — ${selectedTeamObj.name}` : 'Selecione a equipe...'}
-          </span>
-          <span className="text-slate-500 text-xs">▼</span>
-        </div>
-        {dropdownOpen && (
-          <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
-            <div className="p-2 border-b border-slate-200">
-              <input type="text" placeholder="Buscar..." value={teamSearch}
-                onChange={e => setTeamSearch(e.target.value)} className="input" autoFocus />
-            </div>
-            <ul className="max-h-48 overflow-y-auto">
-              {filteredTeams.map(t => (
-                <li key={t.id} className="px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-navy cursor-pointer transition-colors"
-                  onClick={() => { setSelectedTeam(t.id); setTeamSearch(''); setDropdownOpen(false) }}>
-                  {t.number} — {t.name}
-                </li>
-              ))}
-              {filteredTeams.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">Nenhuma equipe</li>}
-            </ul>
-          </div>
-        )}
-      </div>
+      <TeamPicker teams={teams} value={selectedTeam} onChange={setSelectedTeam} />
 
       {/* Status */}
       <div>
