@@ -10,7 +10,7 @@ import FilterBar    from './FilterBar'
 import TeamCard     from './TeamCard'
 import HistoryModal from './HistoryModal'
 import type { TeamSummary } from './SummaryBox'
-import { isSummaryStale } from '@/lib/ai/summary-prompt'
+import { summaryBoxProps } from './summary-props'
 import type { EventRole } from '@/lib/event-pick'
 import { currentProject, recentPivot, recentBlockIds, type ProjectRow } from '@/lib/project'
 import { todayISO } from '@/lib/format'
@@ -75,19 +75,7 @@ export default function PainelClient({
   const recordBlock = new Map(mentoring.filter(r => r.blockId !== null).map(r => [r.id, r.blockId as number]))
   const recentBlocks = recentBlockIds(blocks, todayISO())
   const changesFor = (teamId: string) => stepChanges.filter(c => c.teamId === teamId)
-  const summaryOf = (teamId: string, kind: string) => summaries.find(x => x.teamId === teamId && x.kind === kind)
-  /** Registro mais recente (por data) da equipe naquele tipo — base do resumo. */
-  const newest = (rs: RecordWithRelations[], teamId: string) =>
-    rs.filter(r => r.teamId === teamId).reduce<RecordWithRelations | undefined>((a, r) => (!a || time(r.createdAt) > time(a.createdAt) ? r : a), undefined)
-  const summaryProps = (teamId: string, kind: 'mentoring' | 'specialist') => {
-    const rs = kind === 'mentoring' ? mentoring : specialist
-    const latest = newest(rs, teamId)
-    const summary = summaryOf(teamId, kind)
-    return {
-      summary, stale: isSummaryStale(summary, latest?.id ?? null), hasRecords: !!latest,
-      latestAt: latest ? time(latest.createdAt) : undefined, teamId, kind, onRefreshed: reload,
-    }
-  }
+  const summaryProps = (teamId: string, kind: 'mentoring' | 'specialist') => summaryBoxProps(records, summaries, teamId, kind, reload)
 
   const filtered = teams.filter(t => {
     const matchSearch = t.name.toLowerCase().includes(search.toLowerCase()) || String(t.number).includes(search)
