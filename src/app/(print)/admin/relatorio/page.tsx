@@ -306,7 +306,7 @@ export default async function RelatorioPage() {
                   return pts.length > 0 && (
                     <div className="avoid-break border border-slate-200 rounded-xl p-3.5 mb-4">
                       <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Evolução</div>
-                      <EvolutionChart steps={steps} points={pts} />
+                      <EvolutionChart steps={steps} points={pts} fit />
                     </div>
                   )
                 })()}

@@ -150,8 +150,8 @@ export default function PainelClient({
                     {Object.entries(byBlock).sort().map(([bLabel, recs]) => (
                       <div key={bLabel}>
                         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{bLabel}</div>
-                        {[...recs].sort((a, b) => (a.team?.number || 0) - (b.team?.number || 0)).map(r => (
-                          <TeamLine key={r.id} dot={DOT[r.status ?? ''] ?? 'bg-slate-400'} team={r.team} />
+                        {latestPerTeam(recs).map(({ r, count }) => (
+                          <TeamLine key={r.teamId} dot={DOT[r.status ?? ''] ?? 'bg-slate-400'} team={r.team} suffix={count > 1 ? `×${count}` : undefined} />
                         ))}
                       </div>
                     ))}
@@ -201,6 +201,17 @@ export default function PainelClient({
       )}
     </div>
   )
+}
+
+/** Uma linha por equipe (status da mentoria mais recente do mentor naquele bloco) + quantidade. */
+function latestPerTeam(recs: RecordWithRelations[]) {
+  const byTeam = new Map<string, { r: RecordWithRelations; count: number }>()
+  for (const r of recs) {
+    const cur = byTeam.get(r.teamId)
+    const newer = !cur || time(r.createdAt) > time(cur.r.createdAt)
+    byTeam.set(r.teamId, { r: newer ? r : cur!.r, count: (cur?.count ?? 0) + 1 })
+  }
+  return Array.from(byTeam.values()).sort((a, b) => (a.r.team?.number || 0) - (b.r.team?.number || 0))
 }
 
 function PersonCard({ name, sub, accent = 'bg-orange', children }: { name: string; sub: string; accent?: string; children: React.ReactNode }) {

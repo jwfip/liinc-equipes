@@ -25,7 +25,8 @@ function pointTitle(p: EvolutionPoint) {
 }
 
 /** Gráfico de evolução da equipe: etapa ao longo do tempo (linha em degraus) e status de cada mentoria. */
-export default function EvolutionChart({ steps, points }: { steps: { id: number; label: string }[]; points: EvolutionPoint[] }) {
+/** `fit`: sem rolagem (gráfico encolhe para caber) — usado no relatório impresso. */
+export default function EvolutionChart({ steps, points, fit = false }: { steps: { id: number; label: string }[]; points: EvolutionPoint[]; fit?: boolean }) {
   if (points.length === 0 || steps.length === 0) {
     return <p className="text-xs text-slate-400 italic">Sem dados de evolução ainda.</p>
   }
@@ -46,9 +47,10 @@ export default function EvolutionChart({ steps, points }: { steps: { id: number;
 
   return (
     <figure className="m-0">
-      <div className="overflow-x-auto -mx-1 px-1">
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ minWidth: Math.min(W, 300 + n * 28) }}
-          role="img" aria-label={`Evolução da equipe: ${description}`} className="block">
+      {/* direction: rtl faz o quadro rolável abrir no fim (mentorias mais recentes) sem precisar de JS */}
+      <div className={fit ? '' : 'overflow-x-auto -mx-1 px-1'} style={fit ? undefined : { direction: 'rtl' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%"
+          role="img" aria-label={`Evolução da equipe: ${description}`} className="block" style={fit ? undefined : { direction: 'ltr', minWidth: Math.min(W, 300 + n * 22) }}>
           {steps.map((s, i) => (
             <g key={s.id}>
               <line x1={PAD.l} x2={W - PAD.r} y1={y(i)} y2={y(i)} stroke="#E2E8F0" strokeDasharray={i === 0 ? undefined : '3 4'} />
