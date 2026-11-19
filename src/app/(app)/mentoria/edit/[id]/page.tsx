@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm'
 import { auth } from '@/auth'
 import { getActiveTeams, getEventSteps } from '@/lib/event-data'
 import MentoriaForm from '@/components/mentoria/MentoriaForm'
+import AtendimentoForm from '@/components/mentoria/AtendimentoForm'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
@@ -44,23 +45,22 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
     )
   }
 
+  const isAtendimento = record.kind === 'specialist'
+  const block = record.block ? { id: record.block.id, label: record.block.label, date: record.block.date } : null
   const [activeTeams, steps] = await Promise.all([getActiveTeams(record.eventId), getEventSteps(record.eventId)])
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10">
+    <div className="max-w-2xl mx-auto px-4 py-6 md:px-6 md:py-10">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h2 className="font-display font-bold text-2xl text-navy">Editar mentoria</h2>
+          <h2 className="font-display font-bold text-2xl text-navy">{isAtendimento ? 'Editar atendimento' : 'Editar mentoria'}</h2>
           <p className="text-slate-500 text-sm mt-1">Atualize as informações do seu registro.</p>
         </div>
         <Link href="/painel" className="text-slate-400 hover:text-navy text-sm font-bold transition-colors">✕ Cancelar</Link>
       </div>
-      <MentoriaForm
-        teams={activeTeams}
-        steps={steps}
-        activeBlock={record.block ? { id: record.block.id, label: record.block.label, date: record.block.date } : null}
-        recordToEdit={record}
-      />
+      {isAtendimento
+        ? <AtendimentoForm teams={activeTeams} activeBlock={block} recordToEdit={record} />
+        : <MentoriaForm teams={activeTeams} steps={steps} activeBlock={block} recordToEdit={record} />}
     </div>
   )
 }
