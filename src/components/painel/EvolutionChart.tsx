@@ -46,18 +46,22 @@ export default function EvolutionChart({ steps, points, fit = false }: { steps: 
 
   return (
     <figure className="m-0">
+      <div className="flex">
+      {/* Eixo das etapas fica fixo à esquerda, fora da área rolável */}
+      <svg width={PAD.l} height={H} viewBox={`0 0 ${PAD.l} ${H}`} aria-hidden="true" className="shrink-0 block">
+        {steps.map((s, i) => (
+          <text key={s.id} x={PAD.l - 10} y={y(i) + 4} textAnchor="end" fontSize="12" fontWeight="700" fill="#64748B">
+            <title>{`${i + 1} — ${s.label}`}</title>{i + 1}
+          </text>
+        ))}
+      </svg>
       {/* direction: rtl faz o quadro rolável abrir no fim (mentorias mais recentes) sem precisar de JS */}
-      <div className={fit ? '' : 'overflow-x-auto -mx-1 px-1'} style={fit ? undefined : { direction: 'rtl' }}>
+      <div className={fit ? 'min-w-0' : 'overflow-x-auto min-w-0 pr-1'} style={fit ? undefined : { direction: 'rtl' }}>
         {/* Desenhado em pixels reais (sem escala) para o texto manter o tamanho */}
-        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H}
+        <svg viewBox={`${PAD.l} 0 ${W - PAD.l} ${H}`} width={W - PAD.l} height={H}
           role="img" aria-label={`Evolução da equipe: ${description}`} className="block" style={{ direction: 'ltr', maxWidth: 'none' }}>
           {steps.map((s, i) => (
-            <g key={s.id}>
-              <line x1={PAD.l} x2={W - PAD.r} y1={y(i)} y2={y(i)} stroke="#E2E8F0" strokeDasharray={i === 0 ? undefined : '3 4'} />
-              <text x={PAD.l - 10} y={y(i) + 4} textAnchor="end" fontSize="12" fontWeight="700" fill="#64748B">
-                <title>{`${i + 1} — ${s.label}`}</title>{i + 1}
-              </text>
-            </g>
+            <line key={s.id} x1={PAD.l} x2={W - PAD.r} y1={y(i)} y2={y(i)} stroke="#E2E8F0" strokeDasharray={i === 0 ? undefined : '3 4'} />
           ))}
           <path d={d} fill="none" stroke={ORANGE} strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
           {points.map((p, i) => (
@@ -74,6 +78,7 @@ export default function EvolutionChart({ steps, points, fit = false }: { steps: 
             </g>
           ))}
         </svg>
+      </div>
       </div>
       <figcaption className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[11px] text-slate-500">
         {Object.entries(STATUS_COLOR).map(([k, c]) => (
