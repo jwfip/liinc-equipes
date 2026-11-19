@@ -21,6 +21,7 @@
 - Atendimentos **não** entram em: status do card, etapa, `getLatestByTeam`, resumo de status, "Distribuição por Mentor".
 - Edição: só o autor, no evento do próprio registro (mesma regra das mentorias).
 - Resumo por IA dos atendimentos fica para a fase 5.
+- **Etapa da equipe** = a mais recente entre (etapa da última mentoria) e (último ajuste feito pela organização). Status continua vindo só das mentorias. Só **admin** ajusta etapa (o facilitador do backlog herdará isso). Ajustes ficam em tabela própria `team_step_changes` e aparecem no histórico como "Etapa ajustada pela organização".
 
 ## Review Focus
 
@@ -28,6 +29,8 @@
 - **Especialista sem bloco ativo** → consegue registrar; o histórico mostra o atendimento sem rótulo de bloco ("Fora de bloco"). (E2E Task 5)
 - **Papel trocado** (admin muda alguém de Mentor para Especialista com o formulário aberto) → envio recusado com mensagem legível. (teste Task 1)
 - **Edição de atendimento** pelo autor mantém `kind`; ninguém consegue transformar atendimento em mentoria ou vice-versa via `updateMentoria`/`updateAtendimento`. (teste Task 1 em `assertSameKind`)
+- **Equipe sem mentoria, com etapa ajustada pelo admin** → card mostra a etapa (sem status) e continua em "Sem mentoria ainda". (teste Task 2 em `currentStepFor`)
+- **Mentoria posterior a um ajuste** prevalece, e ajuste posterior a uma mentoria prevalece. (teste Task 2)
 - **Relatório impresso** continua só com mentorias na tabela de status; atendimentos aparecem em seção separada por equipe. (verificação manual Task 5)
 
 ---
@@ -85,6 +88,20 @@ CLAUDE.md
 
 ---
 
+### Task 2b: Ajuste de etapa pela organização
+
+**Files:** SQL na `drizzle/0003_v2_fase3_atendimentos.sql`; Modify `src/schema.ts`, `src/lib/records.ts` (+test), `src/actions/admin.ts`, `src/app/api/records/route.ts`, `src/lib/event-data.ts`
+
+**Interfaces — Produces:**
+- Tabela `team_step_changes`: `id serial PK`, `event_id → events` notNull, `team_id → teams` notNull, `step_id → event_steps` notNull, `changed_by text → users.id`, `created_at timestamp default now()`. Relations: team, step, user.
+- `type StepChange = { id: number; teamId: string; stepId: number; createdAt: string | Date; step: Step | null }`
+- `currentStepFor(latestMentoring: { step: Step | null; createdAt } | undefined, changes: StepChange[]): { step: Step | null; source: 'mentoring' | 'organization' | null }` — o mais recente por `createdAt`.
+- `adjustTeamStep(teamId: string, stepId: number): Promise<ActionResult>` (admin; equipe e etapa do mesmo evento).
+- `getEventStepChanges(eventId)` em `event-data.ts`; `/api/records` passa a responder `{ records, stepChanges }`.
+- [ ] Testes de `currentStepFor`: só mentoria → mentoria; só ajuste → ajuste (source `organization`); ajuste mais novo vence; mentoria mais nova vence; nenhum → `{ step: null, source: null }`.
+
+---
+
 ### Task 3: Registro de atendimento
 
 **Files:** Modify `src/actions/mentoria.ts`, `src/app/(app)/mentoria/page.tsx`, `src/app/(app)/mentoria/edit/[id]/page.tsx`, `src/components/layout/SidebarNav.tsx`, `src/app/(app)/layout.tsx`; Create `src/components/mentoria/AtendimentoForm.tsx`
@@ -111,7 +128,10 @@ CLAUDE.md
 **Interfaces — Consumes:** helpers da Task 2.
 - `RecordWithRelations`: `status: string | null`, `blockId: number | null`, `block: ... | null`, `topic: string | null`.
 - `PainelClient` recebe `viewerRole: 'mentor' | 'specialist' | null`; usa `splitByKind`; `getLatestByTeam`/`groupTeams` só com mentorias; grupo `'none'` com título **"Sem mentoria ainda"**; "Distribuição por Mentor" só com mentorias; nova seção "Atendimentos de especialistas" (por especialista: nome, nº de atendimentos, equipes atendidas) exibida só se houver atendimentos.
-- `TeamCard` recebe `specialistCount: number`; mostra "💬 N atendimento(s)" quando > 0 (também em equipes sem mentoria).
+- `TeamCard` recebe `specialistCount: number` e `current: { step, source }` (de `currentStepFor`); mostra a etapa também para equipes sem mentoria quando houver ajuste; para admin, controle "Ajustar etapa" (select com as etapas + confirmar) que chama `adjustTeamStep`; quando `source === 'organization'`, legenda "ajustada pela organização".
+- `HistoryModal` aba Mentorias intercala os ajustes de etapa na linha do tempo ("Etapa ajustada pela organização → N — rótulo", data).
+- `PainelClient` consome `{ records, stepChanges }` do polling.
+- `TeamCard` (atendimentos): mostra "💬 N atendimento(s)" quando > 0 (também em equipes sem mentoria).
 - `HistoryModal` recebe `mentoring`, `specialist`, `initialTab`; abas **Mentorias (n)** | **Atendimentos (n)** com `role="tablist"`; aba Atendimentos lista bloco (ou "Fora de bloco"), data, especialista, tema, orientação, observações, link "Editar" para o autor; cabeçalho lista mentores e especialistas separadamente.
 - `SummaryStrip`: "Mentores com registros" conta só mentorias; novo cartão "Atendimentos" (total) quando houver.
 - Relatório: consultas por evento trazem os dois tipos; tabelas de status/etapa só com mentorias; em cada equipe, subseção "Atendimentos de especialistas" (tema, orientação, especialista, data) se houver.
