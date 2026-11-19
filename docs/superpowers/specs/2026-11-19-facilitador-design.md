@@ -22,7 +22,7 @@ Junto com isso entram duas mudanças que o facilitador e o futuro matching preci
 ## Não-objetivos
 
 - Registrar intervenções, marcar equipe como "em investigação"/"resolvida", notificar alguém. A plataforma só aponta.
-- Facilitador registrar mentoria ou atendimento, ajustar etapa, acessar `/admin` ou o relatório final.
+- Facilitador registrar mentoria ou atendimento, ajustar etapa, acessar `/admin` ou o relatório final. (A única escrita do facilitador é corrigir o texto do projeto atual.)
 - Pessoa com mais de um papel no mesmo evento (decidido: **um papel por pessoa por evento**).
 - Perfil de mentores e matching por IA (próximas entregas).
 - Deduzir o projeto atual a partir de registros antigos.
@@ -75,8 +75,8 @@ Vale para `obs` de mentorias **e** de atendimentos.
 | `team_id` | uuid → teams, cascade | |
 | `description` | text not null | |
 | `kind` | text not null | `'initial' \| 'pivot' \| 'correction'` |
-| `record_id` | uuid → mentoring_records, null | mentoria que registrou (nulo em correção do admin) |
-| `created_by` | uuid → mentors, null | quem escreveu |
+| `record_id` | uuid → mentoring_records, null | mentoria que registrou (nulo em correção) |
+| `created_by` | uuid → mentors, null | quem escreveu (nulo se for admin sem cadastro de mentor) |
 | `created_at` | timestamp default now | |
 
 Projeto atual = linha mais recente da equipe. Função pura `currentProject(rows)` em `src/lib/project.ts`.
@@ -89,11 +89,11 @@ Projeto atual = linha mais recente da equipe. Função pura `currentProject(rows
 - O projeto exibido depende da equipe escolhida; a página já carrega as equipes, passa a carregar também o projeto atual de cada uma.
 - **Corrida:** dois mentores abrem o formulário de uma equipe sem projeto e ambos enviam. O segundo envio vira um novo `initial` mais recente; aceitável (ganha o mais recente, histórico guarda os dois). Não bloquear.
 - `submitMentoria` grava registro + linha de projeto com `db.batch` (o `id` do registro é gerado no servidor com `crypto.randomUUID()` para poder referenciá-lo no mesmo batch).
-- **Edição de mentoria** (`updateMentoria`): não altera projeto. O bloco do projeto aparece só leitura na edição. **Minha decisão**, para evitar o caso "editei e desfiz o pivô". Correções passam pelo admin.
+- **Edição de mentoria** (`updateMentoria`): não altera projeto. O bloco do projeto aparece só leitura na edição. **Minha decisão**, para evitar o caso "editei e desfiz o pivô". Correções passam pelo facilitador ou admin.
 
-**Correção pelo admin:** no histórico da equipe (aba nova, abaixo), admin tem **"Corrigir texto do projeto"**, que cria linha `correction` com o texto novo. Correção não conta como pivô em lugar nenhum.
+**Correção pelo facilitador ou admin:** no histórico da equipe (aba nova, abaixo), facilitador do evento e admin têm **"Corrigir texto do projeto"** (action `correctProject`, guard `canCorrectProject(ctx)` = `ctx.isAdmin || ctx.role === 'facilitator'`, evento ativo para facilitador), que cria linha `correction` com o texto novo. Correção não conta como pivô em lugar nenhum. Só corrige equipe que já tem projeto.
 
-**Especialistas e facilitadores:** veem o projeto atual (card, histórico), não alteram. O formulário de atendimento mostra o projeto atual da equipe escolhida, somente leitura, como contexto.
+**Mentores e especialistas** fora do formulário veem o projeto atual (card, histórico) sem alterar. O formulário de atendimento mostra o projeto atual da equipe escolhida, somente leitura, como contexto.
 
 **Relato por áudio:** a extração ganha a chave `project` (descrição do projeto) e `pivot` (booleano). Se a equipe não tem projeto e o campo está vazio, preenche com o selo "Sugerido pela IA — confirme". Se tem projeto e a IA indicar `pivot: true`, **não** marca a caixa sozinha: mostra um aviso "A IA identificou um possível pivô — confira" ao lado da caixa, com o texto sugerido disponível para aplicar.
 
