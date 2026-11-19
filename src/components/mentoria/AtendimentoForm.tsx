@@ -7,6 +7,8 @@ import { submitAtendimento, updateAtendimento } from '@/actions/mentoria'
 import { fmtDate } from '@/lib/format'
 import TeamPicker from './TeamPicker'
 import AudioRecorder, { type AudioResult } from './AudioRecorder'
+import { ProjectReadOnly } from './ProjectField'
+import type { ProjectInfo } from '@/lib/project'
 
 type Team  = { id: string; number: number; name: string }
 type Block = { id: number; label: string; date: string } | null
@@ -14,10 +16,11 @@ type Block = { id: number; label: string; date: string } | null
 interface Props {
   teams:         Team[]
   activeBlock:   Block
+  projects:      Record<string, ProjectInfo>
   recordToEdit?: { id: string; teamId: string; topic: string | null; advice: string | null; obs: string | null }
 }
 
-export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Props) {
+export default function AtendimentoForm({ teams, activeBlock, projects, recordToEdit }: Props) {
   const [isPending, startTransition] = useTransition()
   const [teamId, setTeamId] = useState(recordToEdit?.teamId ?? '')
   const [success, setSuccess] = useState(false)
@@ -73,6 +76,7 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
       </div>
 
       {!recordToEdit && <TeamPicker teams={teams} value={teamId} onChange={setTeamId} />}
+      {teamId && <ProjectReadOnly project={projects[teamId] ?? null} />}
 
       <AudioRecorder kind="specialist" onResult={applyAudio} />
       <input type="hidden" name="audioTranscript" value={transcript} />

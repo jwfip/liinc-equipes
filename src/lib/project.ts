@@ -26,3 +26,20 @@ export function recentPivot(rows: ProjectRow[], teamId: string, recordBlock: Map
   return ofTeam(rows, teamId).find(r =>
     r.kind === 'pivot' && r.recordId !== null && recentBlockIds.includes(recordBlock.get(r.recordId) ?? -1)) ?? null
 }
+
+export type ProjectInfo = { description: string; since: string | null; author: string | null }
+
+/** Projeto atual de cada equipe para os formulários: texto mais recente, datado e assinado por quem o registrou. */
+export function projectInfoByTeam(rows: ProjectRow[]): Record<string, ProjectInfo> {
+  const out: Record<string, ProjectInfo> = {}
+  for (const teamId of Array.from(new Set(rows.map(r => r.teamId)))) {
+    const cur = currentProject(rows, teamId)!
+    const since = projectSince(rows, teamId) ?? cur
+    out[teamId] = {
+      description: cur.description,
+      since: since.createdAt ? new Date(since.createdAt).toISOString() : null,
+      author: since.author?.name ?? null,
+    }
+  }
+  return out
+}

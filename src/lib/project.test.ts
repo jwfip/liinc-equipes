@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { currentProject, projectSince, recentPivot, type ProjectRow } from './project'
+import { currentProject, projectSince, recentPivot, projectInfoByTeam, type ProjectRow } from './project'
 
 const row = (id: number, kind: ProjectRow['kind'], at: string, extra: Partial<ProjectRow> = {}): ProjectRow => ({
   id, teamId: 't1', description: `p${id}`, kind, recordId: null, createdAt: at, author: null, ...extra,
@@ -34,5 +34,18 @@ describe('recentPivot', () => {
   })
   it('ignores a pivot outside the window', () => {
     expect(recentPivot(rows, 't1', recordBlock, [3, 4])).toBeNull()
+  })
+})
+
+describe('projectInfoByTeam', () => {
+  it('gives each team its current text dated by the latest initial or pivot', () => {
+    const rows = [
+      row(1, 'initial', '2026-01-01T12:00:00Z', { author: { name: 'Ana' } }),
+      row(2, 'correction', '2026-01-03T12:00:00Z', { author: { name: 'Fac' } }),
+      row(3, 'initial', '2026-01-02T12:00:00Z', { teamId: 't2' }),
+    ]
+    const info = projectInfoByTeam(rows)
+    expect(info.t1).toEqual({ description: 'p2', since: '2026-01-01T12:00:00.000Z', author: 'Ana' })
+    expect(info.t2).toEqual({ description: 'p3', since: '2026-01-02T12:00:00.000Z', author: null })
   })
 })

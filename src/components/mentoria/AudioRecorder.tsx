@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Mic, Square, X, Loader2 } from 'lucide-react'
 
-export type AudioResult = { transcript: string; status: string | null; stepId: number | null; fields: Record<string, string> }
+export type AudioResult = {
+  transcript: string; status: string | null; stepId: number | null; fields: Record<string, string>
+  project?: string | null; pivot?: boolean
+}
 
 const MAX_SECONDS = 180
 

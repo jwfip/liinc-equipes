@@ -2,7 +2,8 @@ import MentoriaForm from '@/components/mentoria/MentoriaForm'
 import AtendimentoForm from '@/components/mentoria/AtendimentoForm'
 import NoEventNotice from '@/components/layout/NoEventNotice'
 import { getEventContext } from '@/lib/event-context'
-import { getActiveBlock, getActiveTeams, getEventSteps } from '@/lib/event-data'
+import { getActiveBlock, getActiveTeams, getEventSteps, getEventProjects } from '@/lib/event-data'
+import { projectInfoByTeam } from '@/lib/project'
 import { registrationError } from '@/lib/participation'
 
 export const dynamic = 'force-dynamic'
@@ -35,9 +36,10 @@ export default async function MentoriaPage() {
     )
   }
 
-  const [activeBlock, activeTeams, steps] = await Promise.all([
-    getActiveBlock(ctx.event.id), getActiveTeams(ctx.event.id), getEventSteps(ctx.event.id),
+  const [activeBlock, activeTeams, steps, projectRows] = await Promise.all([
+    getActiveBlock(ctx.event.id), getActiveTeams(ctx.event.id), getEventSteps(ctx.event.id), getEventProjects(ctx.event.id),
   ])
+  const projects = projectInfoByTeam(projectRows)
 
   const block = activeBlock ? { id: activeBlock.id, label: activeBlock.label, date: activeBlock.date } : null
 
@@ -50,8 +52,8 @@ export default async function MentoriaPage() {
         </p>
       </div>
       {isSpecialist
-        ? <AtendimentoForm teams={activeTeams} activeBlock={block} />
-        : <MentoriaForm teams={activeTeams} steps={steps} activeBlock={block} />}
+        ? <AtendimentoForm teams={activeTeams} activeBlock={block} projects={projects} />
+        : <MentoriaForm teams={activeTeams} steps={steps} activeBlock={block} projects={projects} />}
     </div>
   )
 }

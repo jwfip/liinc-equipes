@@ -21,10 +21,10 @@ describe('buildExtractionMessages', () => {
 describe('parseExtraction', () => {
   it('maps a valid mentoring answer, step number to step id', () => {
     const r = parseExtraction(JSON.stringify({ status: 'ok', step: 2, working: 'App', advice: 'Testar', pros: null, cons: 'tempo', obs: null, suggestion: null }), 'mentoring', steps)
-    expect(r).toEqual({ status: 'ok', stepId: 12, fields: { working: 'App', advice: 'Testar', cons: 'tempo' } })
+    expect(r).toEqual({ status: 'ok', stepId: 12, fields: { working: 'App', advice: 'Testar', cons: 'tempo' }, project: null, pivot: false })
   })
   it('returns nothing for broken JSON', () => {
-    expect(parseExtraction('{oops', 'mentoring', steps)).toEqual({ status: null, stepId: null, fields: {} })
+    expect(parseExtraction('{oops', 'mentoring', steps)).toEqual({ status: null, stepId: null, fields: {}, project: null, pivot: false })
   })
   it('drops an unknown status and an out-of-range step', () => {
     const r = parseExtraction(JSON.stringify({ status: 'great', step: 9, advice: 'x' }), 'mentoring', steps)
@@ -59,5 +59,23 @@ describe('isEmptyExtraction', () => {
     expect(isEmptyExtraction({ status: null, stepId: null, fields: {} })).toBe(true)
     expect(isEmptyExtraction({ status: 'ok', stepId: null, fields: {} })).toBe(false)
     expect(isEmptyExtraction({ status: null, stepId: null, fields: { advice: 'x' } })).toBe(false)
+    expect(isEmptyExtraction({ status: null, stepId: null, fields: {}, project: 'App X' })).toBe(false)
+  })
+})
+
+describe('parseExtraction — project and pivot', () => {
+  const st = [{ id: 1 }, { id: 2 }]
+  it('reads the project and the pivot flag for mentorias', () => {
+    const r = parseExtraction('{"project":"App X","pivot":true}', 'mentoring', st)
+    expect(r.project).toBe('App X')
+    expect(r.pivot).toBe(true)
+  })
+  it('treats a non-boolean pivot as false', () => {
+    expect(parseExtraction('{"pivot":"sim"}', 'mentoring', st).pivot).toBe(false)
+  })
+  it('has no project for atendimentos', () => {
+    const r = parseExtraction('{"project":"App X","pivot":true}', 'specialist', st)
+    expect(r.project).toBeNull()
+    expect(r.pivot).toBe(false)
   })
 })

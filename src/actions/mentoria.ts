@@ -3,9 +3,10 @@
 import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 import { db } from '@/db'
-import { mentoringRecords, eventSteps, teams } from '@/schema'
+import { mentoringRecords, eventSteps, teams, teamProjects } from '@/schema'
 import { getEventContext } from '@/lib/event-context'
 import { getActiveBlock } from '@/lib/event-data'
+import { readProjectInput } from '@/lib/project-input'
 import { assertTeamInEvent, assertSameKind } from '@/lib/records'
 import { registrationError, type RecordKind } from '@/lib/participation'
 import { requireActiveSession } from '@/lib/guards'
@@ -87,9 +88,19 @@ export async function submitMentoria(formData: FormData): Promise<ActionResult> 
     const teamId = await readTeam(formData, eventId)
 
     const fields = await readFields(formData, eventId)
-    await db.insert(mentoringRecords).values({
-      ...fields, eventId, teamId, mentorId, blockId: block.id, kind: 'mentoring',
+    const hasProject = !!(await db.query.teamProjects.findFirst({ where: eq(teamProjects.teamId, teamId), columns: { id: true } }))
+    const project = readProjectInput({ pivoted: formData.get('pivoted') === 'on', description: opt(formData, 'project') }, hasProject)
+
+    // O id vem daqui para a linha do projeto apontar para a mentoria no mesmo batch (neon-http não tem transação).
+    const id = crypto.randomUUID()
+    const insertRecord = db.insert(mentoringRecords).values({
+      ...fields, id, eventId, teamId, mentorId, blockId: block.id, kind: 'mentoring',
     })
+    if (project) {
+      await db.batch([insertRecord, db.insert(teamProjects).values({ ...project, eventId, teamId, recordId: id, createdBy: mentorId })])
+    } else {
+      await insertRecord
+    }
     generateTeamSummaryInBackground(teamId, 'mentoring')
 
     revalidatePath('/painel')

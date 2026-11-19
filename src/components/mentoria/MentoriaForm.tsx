@@ -8,6 +8,8 @@ import { STATUS_OPTIONS, type Step } from '@/lib/constants'
 import TeamPicker from './TeamPicker'
 import AudioRecorder, { type AudioResult } from './AudioRecorder'
 import AiHint from './AiHint'
+import ProjectField, { ProjectReadOnly } from './ProjectField'
+import type { ProjectInfo } from '@/lib/project'
 import { StatusIcon } from '@/components/ui/StatusIcon'
 
 type Team  = { id: string; number: number; name: string }
@@ -17,17 +19,32 @@ interface Props {
   teams:        Team[]
   steps:        Step[]
   activeBlock:  Block
+  projects:     Record<string, ProjectInfo>
   recordToEdit?: any
 }
 
-export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }: Props) {
+export default function MentoriaForm({ teams, steps, activeBlock, projects, recordToEdit }: Props) {
   const [isPending, startTransition] = useTransition()
   const [selectedTeam, setSelectedTeam] = useState(recordToEdit?.teamId || '')
   const [selectedStatus, setSelectedStatus] = useState(recordToEdit?.status || '')
   const [selectedStep, setSelectedStep] = useState<number | null>(recordToEdit?.stepId ?? null)
   const [aiSuggested, setAiSuggested] = useState<{ status: boolean; step: boolean }>({ status: false, step: false })
   const [transcript, setTranscript] = useState('')
+  const [pivoted, setPivoted] = useState(false)
+  const [projectText, setProjectText] = useState('')
+  const [projectAi, setProjectAi] = useState<{ filled: boolean; pivotText: string | null }>({ filled: false, pivotText: null })
   const formRef = useRef<HTMLFormElement>(null)
+  const project = selectedTeam ? projects[selectedTeam] ?? null : null
+
+  function resetProject() {
+    setPivoted(false)
+    setProjectText('')
+    setProjectAi({ filled: false, pivotText: null })
+  }
+  function chooseTeam(id: string) {
+    setSelectedTeam(id)
+    resetProject()
+  }
 
   /** Preenche só o que está vazio; status/etapa sugeridos ficam marcados para confirmação. */
   function applyAudio(r: AudioResult) {
@@ -41,6 +58,9 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
     if (r.status && !selectedStatus) { setSelectedStatus(r.status); sug.status = true }
     if (r.stepId && !selectedStep) { setSelectedStep(r.stepId); sug.step = true }
     setAiSuggested(sug)
+    // Projeto: sem projeto, preenche se vazio; com projeto, um pivô só vira sugestão — o mentor confirma.
+    if (r.project && !project && !projectText.trim()) { setProjectText(r.project); setProjectAi({ filled: true, pivotText: null }) }
+    else if (r.project && project && r.pivot && !pivoted) setProjectAi({ filled: false, pivotText: r.project })
   }
   const [success, setSuccess] = useState(false)
   const [error, setError]     = useState<string | null>(null)
@@ -79,6 +99,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
           setSelectedStep(null)
           setAiSuggested({ status: false, step: false })
           setTranscript('')
+          resetProject()
           form.reset()
         }
         setTimeout(() => setSuccess(false), 4000)
@@ -109,7 +130,16 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
         </div>
       )}
 
-      <TeamPicker teams={teams} value={selectedTeam} onChange={setSelectedTeam} />
+      <TeamPicker teams={teams} value={selectedTeam} onChange={chooseTeam} />
+
+      {recordToEdit
+        ? <ProjectReadOnly project={project} />
+        : selectedTeam && (
+          <ProjectField project={project} pivoted={pivoted} onPivoted={setPivoted}
+            text={projectText} onText={v => { setProjectText(v); setProjectAi(a => ({ ...a, filled: false })) }}
+            aiFilled={projectAi.filled} aiPivotText={projectAi.pivotText}
+            onUseAiPivot={() => { setPivoted(true); setProjectText(projectAi.pivotText ?? ''); setProjectAi({ filled: false, pivotText: null }) }} />
+        )}
 
       <AudioRecorder kind="mentoring" onResult={applyAudio} />
       <input type="hidden" name="audioTranscript" value={transcript} />
@@ -161,7 +191,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
         <input type="hidden" name="stepId" value={selectedStep ?? ''} />
       </div>
 
-      <Textarea name="working" label="Qual o projeto da equipe atualmente? *" defaultValue={recordToEdit?.working} required />
+      <Textarea name="working" label="No que a equipe trabalhou nesta mentoria? *" defaultValue={recordToEdit?.working} required />
       <Textarea name="advice"  label="Que orientação você deu? *"       defaultValue={recordToEdit?.advice} required />
       <Textarea name="pros"       label="Pontos positivos" defaultValue={recordToEdit?.pros} />
       <Textarea name="cons"       label="A melhorar" defaultValue={recordToEdit?.cons} />

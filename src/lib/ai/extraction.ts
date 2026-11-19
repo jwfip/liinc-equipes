@@ -16,7 +16,9 @@ export function buildExtractionMessages(kind: Kind, transcript: string, steps: {
       'Responda só com um objeto JSON com as chaves: ' +
       'status ("ok" = no caminho, "attention" = atenção, "emergency" = emergência, "flying" = voando, ou null se não foi dito), ' +
       `step (número da etapa ou null; etapas: ${steps.map((s, i) => `${i + 1} ${s.label}`).join('; ')}), ` +
-      'working (o que a equipe está fazendo/projeto), advice (orientação dada), pros (pontos positivos), cons (a melhorar), ' +
+      'project (descrição do projeto da equipe, em uma ou duas frases), ' +
+      'pivot (true só se o relato disser que a equipe mudou de projeto; senão false), ' +
+      'working (no que a equipe trabalhou nesta mentoria), advice (orientação dada), pros (pontos positivos), cons (a melhorar), ' +
       'obs (observações para facilitadores), suggestion (sugestão ao próximo mentor). '
     : 'Você transforma o relato falado de um especialista que atendeu uma equipe numa maratona de inovação em campos de formulário. ' +
       'Responda só com um objeto JSON com as chaves: topic (tema ou dúvida da equipe), advice (orientação dada), obs (observações). '
@@ -29,7 +31,7 @@ export function buildExtractionMessages(kind: Kind, transcript: string, steps: {
 }
 
 export function parseExtraction(raw: string, kind: Kind, steps: { id: number }[]) {
-  const empty = { status: null as string | null, stepId: null as number | null, fields: {} as Record<string, string> }
+  const empty = { status: null as string | null, stepId: null as number | null, fields: {} as Record<string, string>, project: null as string | null, pivot: false }
   let data: unknown
   try { data = JSON.parse(raw) } catch { return empty }
   if (!data || typeof data !== 'object' || Array.isArray(data)) return empty
@@ -45,7 +47,8 @@ export function parseExtraction(raw: string, kind: Kind, steps: { id: number }[]
   const status = typeof d.status === 'string' && (STATUSES as readonly string[]).includes(d.status) ? d.status : null
   const n = typeof d.step === 'number' ? d.step : typeof d.step === 'string' ? Number(d.step) : NaN
   const stepId = Number.isInteger(n) && n >= 1 && n <= steps.length ? steps[n - 1].id : null
-  return { status, stepId, fields }
+  const project = typeof d.project === 'string' && d.project.trim() ? d.project.trim().slice(0, MAX_TEXT) : null
+  return { status, stepId, fields, project, pivot: d.pivot === true }
 }
 
 /** Frases que o Whisper costuma "ouvir" em silêncio ou ruído (legendas de vídeo do treino). */
@@ -60,6 +63,6 @@ export function isUnclearTranscript(text: string): boolean {
   return HALLUCINATIONS.some(h => t.includes(h)) && t.length < 120
 }
 
-export function isEmptyExtraction(r: { status: string | null; stepId: number | null; fields: Record<string, string> }): boolean {
-  return !r.status && !r.stepId && Object.keys(r.fields).length === 0
+export function isEmptyExtraction(r: { status: string | null; stepId: number | null; fields: Record<string, string>; project?: string | null }): boolean {
+  return !r.status && !r.stepId && !r.project && Object.keys(r.fields).length === 0
 }

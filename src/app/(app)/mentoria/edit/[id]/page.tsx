@@ -3,7 +3,8 @@ import { db } from '@/db'
 import { mentoringRecords } from '@/schema'
 import { eq } from 'drizzle-orm'
 import { auth } from '@/auth'
-import { getActiveTeams, getEventSteps } from '@/lib/event-data'
+import { getActiveTeams, getEventSteps, getEventProjects } from '@/lib/event-data'
+import { projectInfoByTeam } from '@/lib/project'
 import MentoriaForm from '@/components/mentoria/MentoriaForm'
 import AtendimentoForm from '@/components/mentoria/AtendimentoForm'
 import { redirect } from 'next/navigation'
@@ -48,7 +49,8 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
 
   const isAtendimento = record.kind === 'specialist'
   const block = record.block ? { id: record.block.id, label: record.block.label, date: record.block.date } : null
-  const [activeTeams, steps] = await Promise.all([getActiveTeams(record.eventId), getEventSteps(record.eventId)])
+  const [activeTeams, steps, projectRows] = await Promise.all([getActiveTeams(record.eventId), getEventSteps(record.eventId), getEventProjects(record.eventId)])
+  const projects = projectInfoByTeam(projectRows)
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 md:px-6 md:py-10">
@@ -60,8 +62,8 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
         <Link href="/painel" className="inline-flex items-center gap-1 text-slate-400 hover:text-navy text-sm font-bold transition-colors"><X aria-hidden="true" size={16} />Cancelar</Link>
       </div>
       {isAtendimento
-        ? <AtendimentoForm teams={activeTeams} activeBlock={block} recordToEdit={record} />
-        : <MentoriaForm teams={activeTeams} steps={steps} activeBlock={block} recordToEdit={record} />}
+        ? <AtendimentoForm teams={activeTeams} activeBlock={block} projects={projects} recordToEdit={record} />
+        : <MentoriaForm teams={activeTeams} steps={steps} activeBlock={block} projects={projects} recordToEdit={record} />}
     </div>
   )
 }
