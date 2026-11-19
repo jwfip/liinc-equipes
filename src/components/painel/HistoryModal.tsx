@@ -107,7 +107,8 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
           </div>
         </div>
 
-        <div className="p-5 md:p-7 overflow-y-auto bg-slate-50" role="tabpanel" id="history-panel" aria-labelledby={`tab-${tab}`}>
+        {/* key: cada aba ganha um painel novo, que começa no topo (o Safari do iPhone mantinha a rolagem da aba anterior e escondia o conteúdo curto). */}
+        <div key={tab} className="p-5 md:p-7 overflow-y-auto bg-slate-50" role="tabpanel" id="history-panel" aria-labelledby={`tab-${tab}`}>
           {tab === 'project' ? (
             <ProjectHistory teamId={team.id} rows={projects} blockOf={blockOf} canCorrect={canCorrectProject} onChanged={onProjectChanged} />
           ) : tab === 'mentoring' ? (
