@@ -10,9 +10,9 @@ type Stamp = string | Date | null | undefined
 const ts = (d: Stamp) => (d ? new Date(d).getTime() : 0)
 
 /** Texto do usuário vai como dado: corta o tamanho e neutraliza delimitadores falsos. */
-function clip(v: string | null | undefined): string {
+export function clip(v: string | null | undefined, tag = 'registros'): string {
   if (!v) return ''
-  const t = v.replace(/\s+/g, ' ').replace(/<\/?\s*registros\s*>/gi, '').trim()
+  const t = v.replace(/\s+/g, ' ').replace(new RegExp(`<\\/?\\s*(registros|${tag})\\s*>`, 'gi'), '').trim()
   return t.length > MAX_FIELD ? t.slice(0, MAX_FIELD) + '…' : t
 }
 const part = (label: string, v: string | null | undefined) => (clip(v) ? `${label}: ${clip(v)}` : '')
@@ -65,7 +65,7 @@ export function buildSpecialistSummaryMessages(team: string, records: Specialist
 }
 
 /** Limpa a saída do modelo: sem markdown/aspas, até 600 caracteres terminando em frase completa. */
-export function cleanSummary(text: string): string | null {
+export function cleanSummary(text: string, maxLen = MAX_SUMMARY): string | null {
   let t = text
     .replace(/^#+\s.*$/gm, '')
     .replace(/[*_`]+/g, '')
@@ -75,8 +75,8 @@ export function cleanSummary(text: string): string | null {
     .replace(/^["“”']+|["“”']+$/g, '')
     .trim()
   if (!t) return null
-  if (t.length > MAX_SUMMARY) {
-    const cut = t.slice(0, MAX_SUMMARY)
+  if (t.length > maxLen) {
+    const cut = t.slice(0, maxLen)
     const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '))
     t = end > 0 ? cut.slice(0, end + 1) : cut.trimEnd() + '…'
   }
