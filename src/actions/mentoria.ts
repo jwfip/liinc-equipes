@@ -13,6 +13,11 @@ import { toActionError, type ActionResult } from '@/lib/action-result'
 
 const STATUSES = ['ok', 'attention', 'emergency', 'flying']
 const opt = (fd: FormData, k: string) => (String(fd.get(k) ?? '').trim() || null)
+/** Transcrição do relato por áudio, se houver (na edição, não apaga a existente). */
+const transcriptOf = (fd: FormData) => {
+  const t = opt(fd, 'audioTranscript')
+  return t ? { audioTranscript: t.slice(0, 10_000) } : {}
+}
 
 async function requireParticipant(kind: RecordKind) {
   await requireActiveSession()
@@ -46,7 +51,7 @@ function readAtendimento(fd: FormData) {
   const topic  = opt(fd, 'topic')
   const advice = opt(fd, 'advice')
   if (!topic || !advice) throw new Error('Campos obrigatórios não preenchidos.')
-  return { topic, advice, obs: opt(fd, 'obs') }
+  return { ...transcriptOf(fd), topic, advice, obs: opt(fd, 'obs') }
 }
 
 async function readFields(fd: FormData, eventId: number) {
@@ -62,6 +67,7 @@ async function readFields(fd: FormData, eventId: number) {
   if (!step) throw new Error('Selecione a etapa da equipe.')
 
   return {
+    ...transcriptOf(fd),
     status, working, advice, stepId: step.id,
     pros: opt(fd, 'pros'), cons: opt(fd, 'cons'), obs: opt(fd, 'obs'), suggestion: opt(fd, 'suggestion'),
   }

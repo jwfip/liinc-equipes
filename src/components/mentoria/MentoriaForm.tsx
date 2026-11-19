@@ -2,11 +2,13 @@
 
 import { CirclePause, Clock, CircleCheck } from 'lucide-react'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { submitMentoria, updateMentoria } from '@/actions/mentoria'
 import { refreshTeamSummary } from '@/actions/summaries'
 import { STATUS_OPTIONS, type Step } from '@/lib/constants'
 import TeamPicker from './TeamPicker'
+import AudioRecorder, { type AudioResult } from './AudioRecorder'
+import AiHint from './AiHint'
 import { StatusIcon } from '@/components/ui/StatusIcon'
 
 type Team  = { id: string; number: number; name: string }
@@ -24,6 +26,23 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
   const [selectedTeam, setSelectedTeam] = useState(recordToEdit?.teamId || '')
   const [selectedStatus, setSelectedStatus] = useState(recordToEdit?.status || '')
   const [selectedStep, setSelectedStep] = useState<number | null>(recordToEdit?.stepId ?? null)
+  const [aiSuggested, setAiSuggested] = useState<{ status: boolean; step: boolean }>({ status: false, step: false })
+  const [transcript, setTranscript] = useState('')
+  const formRef = useRef<HTMLFormElement>(null)
+
+  /** Preenche só o que está vazio; status/etapa sugeridos ficam marcados para confirmação. */
+  function applyAudio(r: AudioResult) {
+    setTranscript(r.transcript)
+    const form = formRef.current
+    for (const [name, value] of Object.entries(r.fields)) {
+      const el = form?.elements.namedItem(name)
+      if (el instanceof HTMLTextAreaElement && !el.value.trim()) el.value = value
+    }
+    const sug = { status: false, step: false }
+    if (r.status && !selectedStatus) { setSelectedStatus(r.status); sug.status = true }
+    if (r.stepId && !selectedStep) { setSelectedStep(r.stepId); sug.step = true }
+    setAiSuggested(sug)
+  }
   const [success, setSuccess] = useState(false)
   const [error, setError]     = useState<string | null>(null)
 
@@ -61,6 +80,8 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
           setSelectedTeam('')
           setSelectedStatus('')
           setSelectedStep(null)
+          setAiSuggested({ status: false, step: false })
+          setTranscript('')
           form.reset()
         }
         setTimeout(() => setSuccess(false), 4000)
@@ -78,7 +99,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form ref={formRef} onSubmit={handleSubmit} method="post" className="space-y-5">
       {/* Active block banner */}
       {activeBlock && (
         <div className="card flex items-center gap-3 bg-orange/10 border-orange/30">
@@ -93,15 +114,19 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
 
       <TeamPicker teams={teams} value={selectedTeam} onChange={setSelectedTeam} />
 
+      <AudioRecorder kind="mentoring" onResult={applyAudio} />
+      <input type="hidden" name="audioTranscript" value={transcript} />
+
       {/* Status */}
       <div>
         <label className="label">Status da equipe *</label>
+        {aiSuggested.status && <AiHint />}
         <div className="grid grid-cols-2 gap-2">
           {STATUS_OPTIONS.map(opt => {
             const c = colorMap[opt.color]
             const isSelected = selectedStatus === opt.value
             return (
-              <button key={opt.value} type="button" onClick={() => setSelectedStatus(opt.value)}
+              <button key={opt.value} type="button" onClick={() => { setSelectedStatus(opt.value); setAiSuggested(a => ({ ...a, status: false })) }}
                 className={`rounded-xl border-2 py-3 px-4 text-[13px] font-bold transition-all
                   ${isSelected ? `${c.border} ${c.bg} ${c.text}` : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-300'}`}>
                 <span className="inline-flex items-center justify-center gap-1.5"><StatusIcon status={opt.value} size={15} />{opt.label}</span>
@@ -115,6 +140,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
       <div>
         <div className="flex items-center justify-between gap-2">
           <label className="label" id="step-label">Em qual etapa do processo a equipe está? *</label>
+          {aiSuggested.step && <AiHint />}
         </div>
         {steps.length === 0 ? (
           <p className="text-sm text-red-600 mt-2">Este evento ainda não tem etapas configuradas. Fale com a organização.</p>
@@ -123,7 +149,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
             {steps.map((s, i) => {
               const isSelected = selectedStep === s.id
               return (
-                <button key={s.id} type="button" role="radio" aria-checked={isSelected} onClick={() => setSelectedStep(s.id)}
+                <button key={s.id} type="button" role="radio" aria-checked={isSelected} onClick={() => { setSelectedStep(s.id); setAiSuggested(a => ({ ...a, step: false })) }}
                   className={`min-h-[52px] px-3 py-2 rounded-xl border-2 text-left transition-all flex items-center gap-2
                     ${isSelected
                       ? 'border-orange bg-orange/5 text-orange shadow-sm'

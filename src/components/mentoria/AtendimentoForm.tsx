@@ -2,11 +2,12 @@
 
 import { MessagesSquare, CircleCheck } from 'lucide-react'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { submitAtendimento, updateAtendimento } from '@/actions/mentoria'
 import { refreshTeamSummary } from '@/actions/summaries'
 import { fmtDate } from '@/lib/format'
 import TeamPicker from './TeamPicker'
+import AudioRecorder, { type AudioResult } from './AudioRecorder'
 
 type Team  = { id: string; number: number; name: string }
 type Block = { id: number; label: string; date: string } | null
@@ -22,6 +23,16 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
   const [teamId, setTeamId] = useState(recordToEdit?.teamId ?? '')
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [transcript, setTranscript] = useState('')
+  const formRef = useRef<HTMLFormElement>(null)
+
+  function applyAudio(r: AudioResult) {
+    setTranscript(r.transcript)
+    for (const [name, value] of Object.entries(r.fields)) {
+      const el = formRef.current?.elements.namedItem(name)
+      if (el instanceof HTMLTextAreaElement && !el.value.trim()) el.value = value
+    }
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -35,7 +46,7 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
         if (!r.ok) { setError(r.error); return }
         refreshTeamSummary(recordToEdit?.teamId ?? teamId, 'specialist').catch(() => {}) // em segundo plano
         setSuccess(true)
-        if (!recordToEdit) { setTeamId(''); form.reset() }
+        if (!recordToEdit) { setTeamId(''); setTranscript(''); form.reset() }
         setTimeout(() => setSuccess(false), 4000)
       } catch {
         setError('Erro inesperado. Tente novamente.')
@@ -44,7 +55,7 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
   }
 
   return (
-    <form onSubmit={handleSubmit} method="post" className="space-y-5">
+    <form ref={formRef} onSubmit={handleSubmit} method="post" className="space-y-5">
       <div className="card flex items-center gap-3 bg-orange/10 border-orange/30">
         <MessagesSquare aria-hidden="true" size={26} className="text-orange shrink-0" />
         <div>
@@ -64,6 +75,9 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
       </div>
 
       {!recordToEdit && <TeamPicker teams={teams} value={teamId} onChange={setTeamId} />}
+
+      <AudioRecorder kind="specialist" onResult={applyAudio} />
+      <input type="hidden" name="audioTranscript" value={transcript} />
 
       <Field name="topic"  label="Tema ou dúvida *" required defaultValue={recordToEdit?.topic} placeholder="Ex: Como precificar o produto" />
       <Field name="advice" label="Orientação dada *" required defaultValue={recordToEdit?.advice} />
