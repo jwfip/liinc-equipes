@@ -5,8 +5,9 @@ import { User, ThumbsUp, Wrench, MessagesSquare, History, ChevronUp, ChevronDown
 import { StatusIcon } from '@/components/ui/StatusIcon'
 import StepProgress from './StepProgress'
 import StepAdjuster from './StepAdjuster'
+import SummaryBox from './SummaryBox'
 
-export default function TeamCard({ team, record, steps, current, specialistCount = 0, isAdmin = false, onAdjusted, onHistoryClick }: any) {
+export default function TeamCard({ team, record, steps, current, specialistCount = 0, isAdmin = false, onAdjusted, onHistoryClick, summary }: any) {
   const step = current?.step ?? null
   const adjusted = current?.source === 'organization'
   const stepBlock = step ? (
@@ -80,6 +81,10 @@ export default function TeamCard({ team, record, steps, current, specialistCount
             {stepBlock}
             <div className="text-[13px] text-slate-400 italic py-2">Nenhum relatório de mentoria recebido ainda.</div>
           </>
+        )}
+
+        {summary?.hasRecords && (
+          <div className="mt-3"><SummaryBox {...summary} compact /></div>
         )}
 
         {specialistCount > 0 && (

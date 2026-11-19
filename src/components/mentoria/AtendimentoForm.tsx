@@ -4,6 +4,7 @@ import { MessagesSquare, CircleCheck } from 'lucide-react'
 
 import { useState, useTransition } from 'react'
 import { submitAtendimento, updateAtendimento } from '@/actions/mentoria'
+import { refreshTeamSummary } from '@/actions/summaries'
 import { fmtDate } from '@/lib/format'
 import TeamPicker from './TeamPicker'
 
@@ -32,6 +33,7 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
       try {
         const r = recordToEdit ? await updateAtendimento(recordToEdit.id, fd) : await submitAtendimento(fd)
         if (!r.ok) { setError(r.error); return }
+        refreshTeamSummary(recordToEdit?.teamId ?? teamId, 'specialist').catch(() => {}) // em segundo plano
         setSuccess(true)
         if (!recordToEdit) { setTeamId(''); form.reset() }
         setTimeout(() => setSuccess(false), 4000)

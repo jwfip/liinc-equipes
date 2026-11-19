@@ -2,7 +2,7 @@ import { auth } from '@/auth'
 import PainelClient from '@/components/painel/PainelClient'
 import NoEventNotice from '@/components/layout/NoEventNotice'
 import { getEventContext } from '@/lib/event-context'
-import { getActiveBlock, getActiveTeams, getEventRecords, getEventStepChanges, getEventSteps } from '@/lib/event-data'
+import { getActiveBlock, getActiveTeams, getEventRecords, getEventStepChanges, getEventSteps, getEventSummaries } from '@/lib/event-data'
 import type { RecordWithRelations } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
@@ -12,14 +12,16 @@ export default async function PainelPage() {
   if (!ctx.event) return <NoEventNotice />
   const eventId = ctx.event.id
 
-  const [records, teams, steps, activeBlock, stepChanges] = await Promise.all([
+  const [records, teams, steps, activeBlock, stepChanges, summaries] = await Promise.all([
     getEventRecords(eventId), getActiveTeams(eventId), getEventSteps(eventId), getActiveBlock(eventId), getEventStepChanges(eventId),
+    getEventSummaries(eventId),
   ])
 
   return (
     <PainelClient
       initialRecords={records as unknown as RecordWithRelations[]}
       initialStepChanges={stepChanges}
+      initialSummaries={summaries}
       viewerRole={ctx.role}
       isAdmin={ctx.isAdmin}
       teams={teams}
