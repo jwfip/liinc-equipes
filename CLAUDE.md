@@ -113,8 +113,8 @@ Acesso ao banco via Server Actions (`src/actions/`). Única API route de dados: 
 theme: {
   extend: {
     colors: {
-      orange: { DEFAULT: '#F47B20', dark: '#D4660F', pale: '#FFF3E8' },
-      navy:   { DEFAULT: '#1A2744', light: '#253459', muted: '#3D4F7A' },
+      orange: { DEFAULT: '#FF7F00', dark: '#C25E00', pale: '#FFF2E5' }, // laranja da logo Liinc
+      navy:   { DEFAULT: '#000222', light: '#0B1036', muted: '#3A3F66' }, // azul da logo Liinc
     },
     fontFamily: {
       sans:    ['Lato', 'sans-serif'],
@@ -124,12 +124,17 @@ theme: {
 }
 ```
 
-| Status | Cor |
-|--------|-----|
-| ok — 🛣️ No caminho | `#16A34A` |
-| attention — ⚠️ Atenção | `#CA8A04` |
-| emergency — 🚨 Emergência | `#DC2626` |
-| flying — 🚀 Voando | `#2563EB` |
+| Status | Cor | Ícone (lucide) |
+|--------|-----|----------------|
+| ok — No caminho | `#16A34A` | `Route` |
+| attention — Atenção | `#CA8A04` | `TriangleAlert` |
+| emergency — Emergência | `#DC2626` | `Siren` |
+| flying — Voando | `#2563EB` | `Rocket` |
+
+- **Logo**: `public/brand/liinc-logo.svg` (fundo claro) e `public/brand/liinc-logo-dark-bg.svg` (fundo escuro); favicon `src/app/icon.svg` (anéis). Origem: `liinc-logo.svg` no Google Drive do dono.
+- **Ícones**: `lucide-react` (não usar emoji na interface). Status via `StatusIcon`/`StatusLabel` em `src/components/ui/StatusIcon.tsx`.
+- **Navegação**: itens em `src/components/layout/nav-items.ts`; desktop = sidebar (`SidebarNav`), celular = barra inferior fixa (`MobileNav`) com menu "Mais".
+- **Gráfico de evolução**: `src/lib/evolution.ts` (`evolutionPoints`, pura) + `src/components/painel/EvolutionChart.tsx` (SVG sem hooks; `fit` no relatório impresso). Aparece no histórico (aba Mentorias) e no relatório.
 
 ---
 

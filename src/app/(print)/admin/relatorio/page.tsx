@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { ChevronLeft, User, MessagesSquare } from 'lucide-react'
+import { StatusIcon } from '@/components/ui/StatusIcon'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { db } from '@/db'
@@ -6,6 +8,8 @@ import { STATUS_ORDER, type StatusValue } from '@/lib/constants'
 import { getEventContext } from '@/lib/event-context'
 import { getEventSteps, getEventStepChanges } from '@/lib/event-data'
 import { currentStepFor } from '@/lib/records'
+import { evolutionPoints } from '@/lib/evolution'
+import EvolutionChart from '@/components/painel/EvolutionChart'
 import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
@@ -15,10 +19,10 @@ export const metadata = { title: 'Relatório do Evento — Liinc Mentorias' }
 const TZ = 'America/Sao_Paulo'
 
 const STATUS: Record<StatusValue, { label: string; pill: string; bar: string }> = {
-  emergency: { label: '🚨 Emergência', pill: 'bg-red-100 text-red-700 border-red-200',          bar: 'bg-red-600'    },
-  attention: { label: '⚠️ Atenção',    pill: 'bg-yellow-100 text-yellow-800 border-yellow-200', bar: 'bg-yellow-500' },
-  ok:        { label: '🛣️ No caminho', pill: 'bg-green-100 text-green-700 border-green-200',    bar: 'bg-green-600'  },
-  flying:    { label: '🚀 Voando',     pill: 'bg-blue-100 text-blue-700 border-blue-200',       bar: 'bg-blue-600'   },
+  emergency: { label: 'Emergência', pill: 'bg-red-100 text-red-700 border-red-200',          bar: 'bg-red-600'    },
+  attention: { label: 'Atenção',    pill: 'bg-yellow-100 text-yellow-800 border-yellow-200', bar: 'bg-yellow-500' },
+  ok:        { label: 'No caminho', pill: 'bg-green-100 text-green-700 border-green-200',    bar: 'bg-green-600'  },
+  flying:    { label: 'Voando',     pill: 'bg-blue-100 text-blue-700 border-blue-200',       bar: 'bg-blue-600'   },
 }
 
 function fmtDateTime(d: Date | string | null) {
@@ -44,7 +48,7 @@ function StatusPill({ status }: { status: string }) {
   if (!meta) return <span className="text-xs">{status}</span>
   return (
     <span className={`inline-block whitespace-nowrap text-[10px] font-bold px-2 py-0.5 rounded-full border ${meta.pill}`}>
-      {meta.label}
+      <span className="inline-flex items-center gap-1"><StatusIcon status={status} size={11} />{meta.label}</span>
     </span>
   )
 }
@@ -127,7 +131,7 @@ export default async function RelatorioPage() {
       <style>{`
         @page { size: A4; margin: 14mm 12mm; }
         @media print {
-          html, body { background: #fff !important; color: #1A2744 !important; }
+          html, body { background: #fff !important; color: #000222 !important; }
           * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .avoid-break { break-inside: avoid; page-break-inside: avoid; }
           .page-break { break-before: page; page-break-before: always; }
@@ -137,7 +141,7 @@ export default async function RelatorioPage() {
       {/* Barra de ações (não impressa) */}
       <div className="print:hidden sticky top-0 z-10 bg-navy text-white shadow-md">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-          <Link href="/admin/eventos" className="text-sm text-slate-300 hover:text-white">← Voltar</Link>
+          <Link href="/admin/eventos" className="inline-flex items-center gap-1 text-sm text-slate-300 hover:text-white"><ChevronLeft aria-hidden="true" size={16} />Voltar</Link>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline text-xs text-slate-400">Na janela de impressão, escolha “Salvar como PDF”</span>
             <PrintButton />
@@ -149,7 +153,8 @@ export default async function RelatorioPage() {
         {/* Capa / cabeçalho */}
         <header className="border-b-4 border-orange pb-5 mb-6">
           <div className="flex items-center gap-3">
-            <span className="font-display font-black text-3xl text-orange tracking-tighter">Liinc</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/brand/liinc-logo.svg" alt="Liinc" width={120} height={28} className="h-7 w-auto" />
             <div className="w-px h-8 bg-slate-300" />
             <span className="font-display font-semibold text-lg">Mentorias</span>
           </div>
@@ -296,6 +301,16 @@ export default async function RelatorioPage() {
                   </div>
                 </div>
 
+                {(() => {
+                  const pts = evolutionPoints(steps, list, stepChanges.filter(c => c.teamId === t.id))
+                  return pts.length > 0 && (
+                    <div className="avoid-break border border-slate-200 rounded-xl p-3.5 mb-4">
+                      <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Evolução</div>
+                      <EvolutionChart steps={steps} points={pts} fit />
+                    </div>
+                  )
+                })()}
+
                 {list.length === 0 ? (
                   <p className="text-sm text-slate-400 italic">Nenhuma mentoria registrada.</p>
                 ) : (
@@ -307,15 +322,15 @@ export default async function RelatorioPage() {
                           <span className="text-[11px] text-slate-500">{fmtDateTime(r.createdAt)}</span>
                           <StatusPill status={r.status ?? ''} />
                           <span className="text-[11px] text-orange font-bold">Etapa {stepLabel(r.stepId)}</span>
-                          <span className="ml-auto text-[11px] font-bold text-slate-600">👤 {r.mentor?.name ?? '—'}</span>
+                          <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold text-slate-600"><User aria-hidden="true" size={12} />{r.mentor?.name ?? '—'}</span>
                         </div>
                         <div className="grid gap-2">
                           <Field label="Projeto atual" value={r.working} />
                           <Field label="Orientação do mentor" value={r.advice} />
-                          <Field label="✅ Pontos positivos" value={r.pros} />
-                          <Field label="🔧 A melhorar" value={r.cons} />
-                          <Field label="📌 Observações" value={r.obs} />
-                          <Field label="💡 Sugestão p/ próximo mentor" value={r.suggestion} />
+                          <Field label="Pontos positivos" value={r.pros} />
+                          <Field label="A melhorar" value={r.cons} />
+                          <Field label="Observações" value={r.obs} />
+                          <Field label="Sugestão p/ próximo mentor" value={r.suggestion} />
                         </div>
                       </div>
                     ))}
@@ -324,14 +339,14 @@ export default async function RelatorioPage() {
 
                 {(atendimentosByTeam.get(t.id) ?? []).length > 0 && (
                   <div className="mt-5">
-                    <h3 className="font-display font-bold text-sm mb-2">💬 Atendimentos de especialistas</h3>
+                    <h3 className="font-display font-bold text-sm mb-2 flex items-center gap-1.5"><MessagesSquare aria-hidden="true" size={15} />Atendimentos de especialistas</h3>
                     <div className="space-y-2">
                       {atendimentosByTeam.get(t.id)!.map(a => (
                         <div key={a.id} className="avoid-break border border-blue-100 bg-blue-50/40 rounded-xl p-3">
                           <div className="flex flex-wrap items-center gap-2 mb-1.5">
                             <span className="font-display font-bold text-[12px]">{a.block?.label ?? 'Fora de bloco'}</span>
                             <span className="text-[11px] text-slate-500">{fmtDateTime(a.createdAt)}</span>
-                            <span className="ml-auto text-[11px] font-bold text-blue-700">💬 {a.mentor?.name ?? '—'}</span>
+                            <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold text-blue-700"><User aria-hidden="true" size={12} />{a.mentor?.name ?? '—'}</span>
                           </div>
                           <div className="grid gap-1.5">
                             <Field label="Tema ou dúvida" value={a.topic} />

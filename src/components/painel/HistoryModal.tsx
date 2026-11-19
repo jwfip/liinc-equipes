@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { X, MessagesSquare, User, ThumbsUp, Wrench, Pin, Lightbulb, Pencil, type LucideIcon } from 'lucide-react'
+import { StatusIcon } from '@/components/ui/StatusIcon'
 import StepProgress from './StepProgress'
+import EvolutionChart from './EvolutionChart'
+import { evolutionPoints } from '@/lib/evolution'
 import type { RecordWithRelations, Step } from '@/lib/constants'
 import type { StepChange } from '@/lib/records'
 
@@ -21,10 +25,10 @@ interface Props {
 }
 
 const STATUS: Record<string, { label: string; pill: string; dot: string }> = {
-  ok:        { label: '🛣️ No caminho', pill: 'bg-green-100 text-green-700',   dot: 'bg-green-500 ring-green-500' },
-  attention: { label: '⚠️ Atenção',    pill: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400 ring-yellow-400' },
-  emergency: { label: '🚨 Emergência', pill: 'bg-red-100 text-red-700',       dot: 'bg-red-600 ring-red-600' },
-  flying:    { label: '🚀 Voando',     pill: 'bg-blue-100 text-blue-700',     dot: 'bg-blue-500 ring-blue-500' },
+  ok:        { label: 'No caminho', pill: 'bg-green-100 text-green-700',   dot: 'bg-green-500 ring-green-500' },
+  attention: { label: 'Atenção',    pill: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-400 ring-yellow-400' },
+  emergency: { label: 'Emergência', pill: 'bg-red-100 text-red-700',       dot: 'bg-red-600 ring-red-600' },
+  flying:    { label: 'Voando',     pill: 'bg-blue-100 text-blue-700',     dot: 'bg-blue-500 ring-blue-500' },
 }
 
 function fmtDateTime(d: string | Date | null) {
@@ -50,6 +54,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
   ].sort((a, b) => b.at - a.at)
   const atendimentos = [...specialist].sort((a, b) => time(b.createdAt) - time(a.createdAt))
 
+  const points = evolutionPoints(steps, mentoring, stepChanges)
   const mentorNames = names(mentoring)
   const specialistNames = names(specialist)
 
@@ -62,7 +67,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
       <div className="bg-white md:rounded-2xl rounded-t-2xl w-full max-w-2xl shadow-2xl relative flex flex-col max-h-[92vh] md:max-h-[85vh]">
         <div className="bg-navy text-white p-5 md:p-6 rounded-t-2xl shrink-0">
           <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-4 md:hidden" />
-          <button onClick={onClose} aria-label="Fechar" className="absolute top-4 right-4 md:top-5 md:right-5 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors">✕</button>
+          <button onClick={onClose} aria-label="Fechar" className="absolute top-4 right-4 md:top-5 md:right-5 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"><X aria-hidden="true" size={18} /></button>
           <div className="font-display font-bold text-xs text-white/50 uppercase tracking-wider mb-0.5">Equipe #{team.number}</div>
           <div className="font-display font-bold text-xl md:text-2xl leading-tight pr-10">{team.name}</div>
           <div className="text-xs text-white/50 mt-1.5">Mentores: <span className="text-white/80">{mentorNames.length ? mentorNames.join(', ') : 'Nenhum'}</span></div>
@@ -71,7 +76,15 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
           )}
           <div role="tablist" className="flex gap-1 mt-4 -mb-1">
             {([['mentoring', `Mentorias (${mentoring.length})`], ['specialist', `Atendimentos (${specialist.length})`]] as const).map(([key, label]) => (
-              <button key={key} role="tab" aria-selected={tab === key} onClick={() => setTab(key)}
+              <button key={key} role="tab" id={`tab-${key}`} aria-controls="history-panel" aria-selected={tab === key}
+                tabIndex={tab === key ? 0 : -1} onClick={() => setTab(key)}
+                onKeyDown={e => {
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    const next: Tab = tab === 'mentoring' ? 'specialist' : 'mentoring'
+                    setTab(next)
+                    document.getElementById(`tab-${next}`)?.focus()
+                  }
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-display font-bold transition-colors ${
                   tab === key ? 'bg-white text-navy' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
                 {label}
@@ -80,11 +93,18 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
           </div>
         </div>
 
-        <div className="p-5 md:p-7 overflow-y-auto bg-slate-50" role="tabpanel">
+        <div className="p-5 md:p-7 overflow-y-auto bg-slate-50" role="tabpanel" id="history-panel" aria-labelledby={`tab-${tab}`}>
           {tab === 'mentoring' ? (
             timeline.length === 0 ? (
               <div className="text-center py-10 text-slate-400 text-sm">Nenhuma mentoria registrada ainda.</div>
             ) : (
+              <>
+              {points.length > 0 && (
+                <section className="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm" aria-label="Evolução da equipe">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Evolução</h3>
+                  <EvolutionChart steps={steps} points={points} />
+                </section>
+              )}
               <Timeline>
                 {timeline.map(item => item.type === 'change' ? (
                   <div key={`c${item.c.id}`} className="relative">
@@ -99,6 +119,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                   <MentoringItem key={item.r.id} r={item.r} steps={steps} canEdit={currentUser === item.r.mentor?.email} />
                 ))}
               </Timeline>
+              </>
             )
           ) : atendimentos.length === 0 ? (
             <div className="text-center py-10 text-slate-400 text-sm">Nenhum atendimento de especialista ainda.</div>
@@ -110,7 +131,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                   <div className="flex flex-wrap items-center gap-2 mb-2.5">
                     <div className="font-display font-bold text-[13px] text-navy">{r.block?.label ?? 'Fora de bloco'}</div>
                     <div className="text-[12px] text-slate-400">{fmtDateTime(r.createdAt)}</div>
-                    <div className="text-[11px] font-bold bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full md:ml-auto">💬 {r.mentor?.name}</div>
+                    <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full md:ml-auto"><MessagesSquare aria-hidden="true" size={12} />{r.mentor?.name}</div>
                   </div>
                   <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
                     <Field label="Tema ou dúvida" value={r.topic} dark />
@@ -145,22 +166,22 @@ function MentoringItem({ r, steps, canEdit }: { r: RecordWithRelations; steps: S
       <div className="flex flex-wrap items-center gap-2 mb-2.5">
         <div className="font-display font-bold text-[13px] text-navy">{r.block?.label}</div>
         <div className="text-[12px] text-slate-400">{fmtDateTime(r.createdAt)}</div>
-        <div className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${meta.pill}`}>{meta.label}</div>
-        <div className="text-[11px] font-bold bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full md:ml-auto">👤 {r.mentor?.name}</div>
+        <div className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${meta.pill}`}><StatusIcon status={r.status} size={12} />{meta.label}</div>
+        <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full md:ml-auto"><User aria-hidden="true" size={12} />{r.mentor?.name}</div>
       </div>
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
         <StepProgress steps={steps} current={r.step ?? null} size="sm" />
         <Field label="Projeto atual" value={r.working} dark />
         <Field label="Orientação do mentor" value={r.advice} />
-        <Field label="✅ Pontos positivos" value={r.pros} />
-        <Field label="🔧 A melhorar" value={r.cons} />
+        <Field label="Pontos positivos" icon={ThumbsUp} value={r.pros} />
+        <Field label="A melhorar" icon={Wrench} value={r.cons} />
         {r.obs && (
           <div className="bg-orange/10 rounded-lg p-3 flex gap-2 items-start mt-1">
-            <span className="text-[13px] shrink-0" aria-hidden="true">📌</span>
+            <Pin aria-hidden="true" size={14} className="text-orange-dark shrink-0 mt-0.5" />
             <div className="text-[12px] text-orange-dark leading-relaxed">{r.obs}</div>
           </div>
         )}
-        <Field label="💡 Sugestão p/ Próx. Mentor" value={r.suggestion} />
+        <Field label="Sugestão p/ próximo mentor" icon={Lightbulb} value={r.suggestion} />
         {canEdit && <EditLink id={r.id} />}
       </div>
     </div>
@@ -171,17 +192,17 @@ function EditLink({ id }: { id: string }) {
   return (
     <div className="mt-2 pt-3 border-t border-slate-100 flex justify-end">
       <Link href={`/mentoria/edit/${id}`} className="text-[12px] font-bold text-orange hover:text-orange-dark bg-orange/10 hover:bg-orange/20 px-3.5 py-2 rounded-xl transition-colors flex items-center gap-2">
-        ✏️ Editar
+        <Pencil aria-hidden="true" size={13} /> Editar
       </Link>
     </div>
   )
 }
 
-function Field({ label, value, dark = false }: { label: string; value: string | null | undefined; dark?: boolean }) {
+function Field({ label, value, dark = false, icon: Icon }: { label: string; value: string | null | undefined; dark?: boolean; icon?: LucideIcon }) {
   if (!value) return null
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{label}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center gap-1">{Icon && <Icon aria-hidden="true" size={11} />}{label}</div>
       <div className={`text-[13px] leading-relaxed whitespace-pre-line ${dark ? 'text-navy font-medium' : 'text-slate-600'}`}>{value}</div>
     </div>
   )

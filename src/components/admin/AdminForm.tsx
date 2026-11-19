@@ -1,5 +1,7 @@
 'use client'
 
+import { CircleCheck } from 'lucide-react'
+
 import { useRef, useState, useTransition } from 'react'
 import type { ActionResult } from '@/lib/action-result'
 import TempPasswordNotice from './TempPasswordNotice'
@@ -56,7 +58,7 @@ export default function AdminForm({
       </div>
       {feedback && (
         <p role="status" className={`mt-3 text-sm font-semibold ${feedback.ok ? 'text-green-700' : 'text-red-600'}`}>
-          {feedback.ok ? '✅ ' : ''}{feedback.text}
+          {feedback.ok && <CircleCheck aria-hidden="true" size={15} className="inline -mt-0.5 mr-1" />}{feedback.text}
         </p>
       )}
       {secret && <TempPasswordNotice username={secret.subject} password={secret.value} />}

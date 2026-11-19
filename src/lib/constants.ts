@@ -1,8 +1,8 @@
 export const STATUS_OPTIONS = [
-  { value: 'ok',        label: '🛣️ No caminho',  color: 'green'  },
-  { value: 'attention', label: '⚠️ Atenção',      color: 'yellow' },
-  { value: 'emergency', label: '🚨 Emergência',   color: 'red'    },
-  { value: 'flying',    label: '🚀 Voando',       color: 'blue'   },
+  { value: 'ok',        label: 'No caminho',  color: 'green'  },
+  { value: 'attention', label: 'Atenção',      color: 'yellow' },
+  { value: 'emergency', label: 'Emergência',   color: 'red'    },
+  { value: 'flying',    label: 'Voando',       color: 'blue'   },
 ] as const
 
 export type StatusValue = 'ok' | 'attention' | 'emergency' | 'flying'
@@ -13,10 +13,10 @@ export const STATUS_META: Record<StatusValue, {
   borderClass: string
   bgClass:     string
 }> = {
-  ok:        { label: '🛣️ No caminho',  badgeClass: 'badge-ok',        borderClass: 'border-l-green-500',  bgClass: 'bg-green-600/10'  },
-  attention: { label: '⚠️ Atenção',      badgeClass: 'badge-attention', borderClass: 'border-l-yellow-500', bgClass: 'bg-yellow-600/10' },
-  emergency: { label: '🚨 Emergência',   badgeClass: 'badge-emergency', borderClass: 'border-l-red-500',    bgClass: 'bg-red-600/10'    },
-  flying:    { label: '🚀 Voando',       badgeClass: 'badge-flying',    borderClass: 'border-l-blue-500',   bgClass: 'bg-blue-600/10'   },
+  ok:        { label: 'No caminho',  badgeClass: 'badge-ok',        borderClass: 'border-l-green-500',  bgClass: 'bg-green-600/10'  },
+  attention: { label: 'Atenção',      badgeClass: 'badge-attention', borderClass: 'border-l-yellow-500', bgClass: 'bg-yellow-600/10' },
+  emergency: { label: 'Emergência',   badgeClass: 'badge-emergency', borderClass: 'border-l-red-500',    bgClass: 'bg-red-600/10'    },
+  flying:    { label: 'Voando',       badgeClass: 'badge-flying',    borderClass: 'border-l-blue-500',   bgClass: 'bg-blue-600/10'   },
 }
 
 export const STATUS_ORDER: StatusValue[] = ['emergency', 'attention', 'ok', 'flying']

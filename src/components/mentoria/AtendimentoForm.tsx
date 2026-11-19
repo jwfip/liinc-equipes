@@ -1,5 +1,7 @@
 'use client'
 
+import { MessagesSquare, CircleCheck } from 'lucide-react'
+
 import { useState, useTransition } from 'react'
 import { submitAtendimento, updateAtendimento } from '@/actions/mentoria'
 import { fmtDate } from '@/lib/format'
@@ -42,7 +44,7 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
   return (
     <form onSubmit={handleSubmit} method="post" className="space-y-5">
       <div className="card flex items-center gap-3 bg-orange/10 border-orange/30">
-        <span className="text-2xl" aria-hidden="true">💬</span>
+        <MessagesSquare aria-hidden="true" size={26} className="text-orange shrink-0" />
         <div>
           {activeBlock ? (
             <>
@@ -66,7 +68,7 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
       <Field name="obs"    label="Observações" defaultValue={recordToEdit?.obs} />
 
       {error   && <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
-      {success && <div role="status" className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold">✅ Atendimento {recordToEdit ? 'atualizado' : 'registrado'}!</div>}
+      {success && <div role="status" className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold flex items-center gap-2"><CircleCheck aria-hidden="true" size={18} />Atendimento {recordToEdit ? 'atualizado' : 'registrado'}!</div>}
 
       <button type="submit" disabled={isPending || !teamId} className="btn-primary w-full justify-center py-3 text-base">
         {isPending ? 'Salvando...' : recordToEdit ? 'Salvar alterações' : 'Registrar atendimento'}
