@@ -10,7 +10,7 @@ describe('parseHidden', () => {
   })
   it('ignores unknown keys and keeps valid ones', () => {
     expect(Array.from(parseHidden('xyz,,cons'))).toEqual(['cons'])
-    expect([...parseHidden(['cons', 'chart'])].sort()).toEqual(['chart', 'cons'])
+    expect(Array.from(parseHidden(['cons', 'chart'])).sort()).toEqual(['chart', 'cons'])
   })
 })
 
