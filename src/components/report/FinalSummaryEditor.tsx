@@ -34,7 +34,7 @@ export default function FinalSummaryEditor({ teamId, content, edited }: Props) {
   })
 
   return (
-    <div className="avoid-break border-l-4 border-orange bg-orange-pale/60 rounded-r-xl p-4 mb-4">
+    <div className={`avoid-break border-l-4 border-orange bg-orange-pale/60 rounded-r-xl p-4 mb-4 ${content ? '' : 'print:hidden'}`}>
       <div className="flex flex-wrap items-center gap-2 mb-1.5">
         <h3 className="text-[10px] font-bold uppercase tracking-wider text-orange-dark">Parecer final</h3>
         {edited && <span className="print:hidden text-[10px] font-bold bg-white border border-orange/30 text-orange-dark px-1.5 rounded">Editado</span>}

@@ -59,7 +59,7 @@ export function generateTeamSummaryInBackground(teamId: string, kind: SummaryKin
 // ── Resumo final (relatório para a empresa) ──────────────────
 
 /** Gera o resumo final da equipe (kind 'final'). Devolve null em sucesso ou a mensagem de erro. */
-export async function generateFinalSummary(teamId: string): Promise<string | null> {
+export async function generateFinalSummary(teamId: string, opts: { overwriteEdited: boolean } = { overwriteEdited: false }): Promise<string | null> {
   if (!groqConfigured()) return 'IA não configurada.'
   const team = await db.query.teams.findFirst({ where: eq(teams.id, teamId) })
   if (!team) return 'Equipe não encontrada.'
@@ -85,7 +85,13 @@ export async function generateFinalSummary(teamId: string): Promise<string | nul
   if (!content) return 'A IA não devolveu um resumo. Tente de novo.'
 
   const values = { eventId: team.eventId, teamId, kind: 'final', content, basedOnRecordId: records[0].id, model: SUMMARY_MODEL(), editedByAdmin: false, createdAt: new Date() }
-  await db.insert(teamSummaries).values(values)
-    .onConflictDoUpdate({ target: [teamSummaries.teamId, teamSummaries.kind], set: values })
-  return null
+  // A checagem de "editado" é feita na própria gravação: se o admin editar enquanto a IA gera,
+  // a edição vence (a menos que ele tenha pedido para substituir).
+  const saved = await db.insert(teamSummaries).values(values)
+    .onConflictDoUpdate({
+      target: [teamSummaries.teamId, teamSummaries.kind], set: values,
+      ...(opts.overwriteEdited ? {} : { setWhere: eq(teamSummaries.editedByAdmin, false) }),
+    })
+    .returning({ id: teamSummaries.id })
+  return saved.length === 0 ? 'Texto editado preservado.' : null
 }

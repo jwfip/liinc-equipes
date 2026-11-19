@@ -89,7 +89,7 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
           ))}
         </fieldset>
         {progress && (
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}>
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden" role="progressbar" aria-label="Gerando resumos finais" aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}>
             <div className="h-full bg-orange transition-all" style={{ width: `${(progress.done / Math.max(1, progress.total)) * 100}%` }} />
           </div>
         )}
@@ -97,7 +97,10 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
           <div role="alert" className="text-xs bg-red-500/15 border border-red-400/30 rounded-lg p-2.5">
             <p className="font-bold mb-1">Não foi possível gerar para:</p>
             <ul className="list-disc pl-5">{failed.map(f => <li key={f.id}>{f.name}: {f.error}</li>)}</ul>
-            <button type="button" className="mt-2 underline font-bold" onClick={() => run(failed.map(f => f.id), overwrite)}>Tentar de novo</button>
+            <button type="button" className="mt-2 underline font-bold" onClick={() => {
+              if (overwrite && !window.confirm('Substituir também os resumos que você editou?')) return
+              run(failed.map(f => f.id), overwrite)
+            }}>Tentar de novo</button>
           </div>
         )}
         <p className="text-[11px] text-slate-400">Na janela de impressão, escolha “Salvar como PDF”. O que está visível aqui é o que sai no PDF.</p>

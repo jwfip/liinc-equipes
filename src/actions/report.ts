@@ -17,7 +17,7 @@ export async function generateFinal(teamId: string, opts: { overwriteEdited: boo
     await requireAdmin()
     const current = await db.query.teamSummaries.findFirst({ where: finalOf(teamId) })
     if (current?.editedByAdmin && !opts.overwriteEdited) return { ok: false, error: 'Texto editado preservado.' }
-    const error = await generateFinalSummary(teamId)
+    const error = await generateFinalSummary(teamId, opts)
     if (error) return { ok: false, error }
     revalidatePath('/admin/eventos', 'layout')
     return { ok: true }

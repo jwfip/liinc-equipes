@@ -106,7 +106,7 @@ export default async function FinalReportPage({ params, searchParams }: {
       <ReportToolbar
         eventId={eventId}
         hidden={Array.from(hidden)}
-        teams={teams.map(t => ({ id: t.id, name: t.name, number: t.number }))}
+        teams={teams.filter(t => teamIdsWithRecords.has(t.id)).map(t => ({ id: t.id, name: t.name, number: t.number }))}
         finals={finals.map(f => ({ teamId: f.teamId, editedByAdmin: f.editedByAdmin }))}
       />
 
