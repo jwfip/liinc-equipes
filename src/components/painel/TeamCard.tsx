@@ -2,8 +2,17 @@
 
 import { useState } from 'react'
 import StepProgress from './StepProgress'
+import StepAdjuster from './StepAdjuster'
 
-export default function TeamCard({ team, record, steps, onHistoryClick }: any) {
+export default function TeamCard({ team, record, steps, current, specialistCount = 0, isAdmin = false, onAdjusted, onHistoryClick }: any) {
+  const step = current?.step ?? null
+  const adjusted = current?.source === 'organization'
+  const stepBlock = step ? (
+    <div className="mb-3.5">
+      <StepProgress steps={steps} current={step} />
+      {adjusted && <p className="text-[10px] text-slate-400 mt-1 text-right">ajustada pela organização</p>}
+    </div>
+  ) : null
   const [expanded, setExpanded] = useState(false)
   
   const statusMap: any = {
@@ -11,7 +20,7 @@ export default function TeamCard({ team, record, steps, onHistoryClick }: any) {
     attention: { label: '⚠️ Atenção', pill: 'bg-yellow-100 text-yellow-700', stripe: 'bg-yellow-400', num: 'bg-yellow-400 text-navy', card: 'border-yellow-200 shadow-[0_0_0_2px_rgba(250,204,21,0.15)]' },
     emergency: { label: '🚨 Emergência', pill: 'bg-red-100 text-red-700', stripe: 'bg-gradient-to-r from-red-600 to-red-400', num: 'bg-red-600', card: 'border-red-200 shadow-[0_0_0_2px_rgba(220,38,38,0.15)]' },
     flying: { label: '🚀 Voando', pill: 'bg-blue-100 text-blue-700', stripe: 'bg-gradient-to-r from-blue-600 to-blue-400', num: 'bg-blue-600', card: 'border-blue-200 shadow-[0_0_0_2px_rgba(37,99,235,0.15)]' },
-    none: { label: 'Sem registro', pill: 'bg-slate-100 text-slate-500', stripe: 'bg-slate-300', num: 'bg-slate-400', card: 'border-slate-200 opacity-75' },
+    none: { label: 'Sem mentoria', pill: 'bg-slate-100 text-slate-500', stripe: 'bg-slate-300', num: 'bg-slate-400', card: 'border-slate-200 opacity-75' },
   }
   
   const meta = statusMap[record?.status || 'none']
@@ -45,9 +54,7 @@ export default function TeamCard({ team, record, steps, onHistoryClick }: any) {
 
         {record ? (
           <>
-            <div className="mb-3.5">
-              <StepProgress steps={steps} current={record.step ?? null} />
-            </div>
+            {stepBlock}
 
             <div className="mb-2">
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Trabalhando em</div>
@@ -67,11 +74,20 @@ export default function TeamCard({ team, record, steps, onHistoryClick }: any) {
             )}
           </>
         ) : (
-          <div className="text-[13px] text-slate-400 italic py-2">Nenhum relatório de mentoria recebido ainda.</div>
+          <>
+            {stepBlock}
+            <div className="text-[13px] text-slate-400 italic py-2">Nenhum relatório de mentoria recebido ainda.</div>
+          </>
+        )}
+
+        {specialistCount > 0 && (
+          <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-full">
+            💬 {specialistCount} atendimento{specialistCount > 1 ? 's' : ''}
+          </div>
         )}
 
         {/* Footer */}
-        <div className="border-t border-slate-100 mt-3 pt-3 flex gap-4">
+        <div className="border-t border-slate-100 mt-3 pt-3 flex flex-wrap items-center gap-4">
           <button onClick={(e) => { e.stopPropagation(); onHistoryClick(team) }} className="text-orange hover:text-orange-dark font-display font-bold text-xs flex items-center gap-1 transition-colors">
             📋 Histórico
           </button>
@@ -79,6 +95,9 @@ export default function TeamCard({ team, record, steps, onHistoryClick }: any) {
             <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded) }} className="text-slate-500 hover:text-navy font-display font-bold text-xs flex items-center gap-1 transition-colors">
               {expanded ? 'Menos ▲' : 'Detalhes ▼'}
             </button>
+          )}
+          {isAdmin && steps.length > 0 && (
+            <StepAdjuster teamId={team.id} teamName={team.name} steps={steps} currentStepId={step?.id ?? null} onAdjusted={onAdjusted} />
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-type LatestCandidate = { teamId: string; blockId: number; createdAt: string | null; kind: string }
+type LatestCandidate = { teamId: string; blockId: number | null; createdAt: string | Date | null; kind: string }
 
 /** Registro mais recente de cada equipe (maior blockId, depois maior createdAt). Só mentorias contam. */
 export function getLatestByTeam<R extends LatestCandidate>(records: R[]): Record<string, R> {
@@ -7,8 +7,8 @@ export function getLatestByTeam<R extends LatestCandidate>(records: R[]): Record
     const prev = acc[r.teamId]
     if (
       !prev ||
-      r.blockId > prev.blockId ||
-      (r.blockId === prev.blockId && (r.createdAt ?? '') > (prev.createdAt ?? ''))
+      (r.blockId ?? 0) > (prev.blockId ?? 0) ||
+      (r.blockId === prev.blockId && new Date(r.createdAt ?? 0).getTime() > new Date(prev.createdAt ?? 0).getTime())
     ) {
       acc[r.teamId] = r
     }
@@ -58,6 +58,8 @@ export function groupTeams<T extends { id: string; number: number }>(
 }
 
 type StepRef = { id: number; position: number; label: string }
+
+export type StepChange = { id: number; teamId: string; stepId: number; createdAt: string | Date | null; step: StepRef | null }
 type Stamp = string | Date | null | undefined
 const ts = (d: Stamp) => (d ? new Date(d).getTime() : 0)
 

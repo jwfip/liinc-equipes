@@ -30,8 +30,9 @@ export type RecordWithRelations = {
   stepId:    number | null
   teamId:    string
   mentorId:  string
-  blockId:   number
-  status:    string
+  blockId:   number | null
+  status:    string | null
+  topic:     string | null
   working:   string | null
   advice:    string | null
   pros:      string | null
