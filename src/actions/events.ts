@@ -7,12 +7,13 @@ import { EVENT_COOKIE } from '@/lib/event-pick'
 import { and, eq, max, sql, count } from 'drizzle-orm'
 import { db } from '@/db'
 import { events, eventSteps, eventMembers, mentoringRecords } from '@/schema'
-import { requireAdmin } from '@/lib/guards'
+import { requireAdmin, requireActiveSession } from '@/lib/guards'
 import { toActionError, type ActionResult } from '@/lib/action-result'
 import { swapPositions } from '@/lib/steps'
 import type { EventRole } from '@/lib/event-pick'
 
 export async function setCurrentEvent(eventId: number): Promise<void> {
+  await requireActiveSession()
   const ctx = await getEventContext()
   if (!ctx.options.some(o => o.id === eventId)) throw new Error('Evento indisponível.')
   cookies().set(EVENT_COOKIE, String(eventId), {

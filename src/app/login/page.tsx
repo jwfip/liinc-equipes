@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation'
 import { CredentialsSignin } from 'next-auth'
 import { signIn } from '@/auth'
-import { LOGIN_MESSAGES, type LoginReason } from '@/lib/login'
+import { loginMessage } from '@/lib/login'
 
 function messageFor(error?: string, code?: string) {
   if (!error) return null
-  if (error === 'CredentialsSignin') return LOGIN_MESSAGES[(code as LoginReason)] ?? LOGIN_MESSAGES.invalid
+  if (error === 'CredentialsSignin') return loginMessage(code)
   return 'Ocorreu um erro ao fazer login. Tente de novo.'
 }
 

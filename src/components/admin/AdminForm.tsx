@@ -45,7 +45,7 @@ export default function AdminForm({
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit} method="post" /* se o JS não carregar, senhas não vão para a URL */>
       <div className={className ?? 'flex flex-col sm:flex-row gap-3'}>
         {children}
         <div className="flex items-end">

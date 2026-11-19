@@ -4,7 +4,7 @@ import Credentials from 'next-auth/providers/credentials'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { db } from '@/db'
 import { users, accounts, sessions, verificationTokens, loginAttempts } from '@/schema'
-import { and, eq, gt } from 'drizzle-orm'
+import { and, eq, gt, lt } from 'drizzle-orm'
 import { checkLogin, normalizeUsername, type LoginReason } from '@/lib/login'
 import { LOCKOUT_WINDOW_MS } from '@/lib/lockout'
 import { verifyPassword } from '@/lib/password'
@@ -38,24 +38,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!username || !password) throw new LoginError('invalid')
 
         const now = new Date()
-        const [user, failures] = await Promise.all([
+        const since = new Date(now.getTime() - LOCKOUT_WINDOW_MS)
+        // Registra a tentativa ANTES de contar: requisições paralelas não escapam do bloqueio.
+        const [[attempt], user] = await Promise.all([
+          db.insert(loginAttempts).values({ username }).returning({ id: loginAttempts.id }),
           db.query.users.findFirst({ where: eq(users.email, username) }),
-          db.select({ at: loginAttempts.attemptedAt }).from(loginAttempts)
-            .where(and(eq(loginAttempts.username, username), gt(loginAttempts.attemptedAt, new Date(now.getTime() - LOCKOUT_WINDOW_MS)))),
         ])
+        const previous = await db.select({ at: loginAttempts.attemptedAt }).from(loginAttempts)
+          .where(and(eq(loginAttempts.username, username), gt(loginAttempts.attemptedAt, since), lt(loginAttempts.id, attempt.id)))
 
         const outcome = await checkLogin({
-          user, password, now, verify: verifyPassword, failures: failures.map(f => f.at),
+          user, password, now, verify: verifyPassword, failures: previous.map(f => f.at),
         })
 
         if (!outcome.ok) {
-          // Falhas contam também para usuário inexistente (não revela quem existe).
-          if (outcome.reason !== 'locked') await db.insert(loginAttempts).values({ username })
+          // A tentativa já ficou registrada (inclusive para usuário inexistente: não revela quem existe).
           throw new LoginError(outcome.reason)
         }
 
         await db.delete(loginAttempts).where(eq(loginAttempts.username, username))
-        return user!
+        const u = user!
+        return { id: u.id, name: u.name, email: u.email, role: u.role }
       },
     }),
   ],

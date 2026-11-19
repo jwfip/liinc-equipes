@@ -8,12 +8,14 @@ import { getEventContext } from '@/lib/event-context'
 import { getActiveBlock } from '@/lib/event-data'
 import { assertTeamInEvent } from '@/lib/records'
 import { registrationError } from '@/lib/participation'
+import { requireActiveSession } from '@/lib/guards'
 import { toActionError, type ActionResult } from '@/lib/action-result'
 
 const STATUSES = ['ok', 'attention', 'emergency', 'flying']
 const opt = (fd: FormData, k: string) => (String(fd.get(k) ?? '').trim() || null)
 
 async function requireParticipant() {
+  await requireActiveSession()
   const ctx = await getEventContext()
   const error = registrationError(ctx)
   if (error) throw new Error(error)
@@ -66,6 +68,7 @@ export async function submitMentoria(formData: FormData): Promise<ActionResult> 
 
 export async function updateMentoria(recordId: string, formData: FormData): Promise<ActionResult> {
   try {
+    await requireActiveSession()
     const { mentorId, mentorActive } = await getEventContext()
     if (!mentorId) throw new Error('Não autenticado')
     if (!mentorActive) throw new Error('Seu acesso de mentor está desativado.')

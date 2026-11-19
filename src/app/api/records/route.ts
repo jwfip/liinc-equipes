@@ -1,4 +1,5 @@
 import { auth } from '@/auth'
+import { sessionBlockReason } from '@/lib/session-rules'
 import { getEventContext } from '@/lib/event-context'
 import { getEventRecords } from '@/lib/event-data'
 import { NextResponse } from 'next/server'
@@ -10,9 +11,9 @@ export async function GET() {
   // Call headers() to guarantee that Next.js treats this endpoint as dynamic and doesn't cache it on Vercel
   headers()
 
-  const session = await auth()
-  if (!session) {
-    return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+  const blocked = sessionBlockReason(await auth())
+  if (blocked) {
+    return NextResponse.json({ error: blocked }, { status: 401 })
   }
 
   try {
