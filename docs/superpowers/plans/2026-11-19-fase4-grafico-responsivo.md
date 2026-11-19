@@ -59,6 +59,14 @@
 - Favicon: `src/app/icon.svg` com só os anéis (recorte do SVG oficial).
 - [ ] Screenshots login/painel/relatório. Commit `feat: official Liinc logo`.
 
+### Task 3b: Ícones e azul da marca (pedido do usuário)
+
+**Files:** `package.json` (`lucide-react`), `tailwind.config.ts`, `src/lib/constants.ts`, componentes com emoji (`SidebarNav`, `TeamCard`, `HistoryModal`, `FilterBar`, `SummaryStrip`, `PainelClient`, `MentoriaForm`, `AtendimentoForm`, `StepAdjuster`, `NoEventNotice`, admin, relatório).
+
+- `lucide-react` substitui os emojis da interface. `src/components/ui/StatusIcon.tsx`: ok → `Route`, attention → `TriangleAlert`, emergency → `Siren`, flying → `Rocket`. Labels de status sem emoji (`'No caminho'`, `'Atenção'`, `'Emergência'`, `'Voando'`) e ícone renderizado ao lado. Ícones decorativos com `aria-hidden`.
+- Azul da marca: `navy.DEFAULT` passa de `#1A2744` para `#000222` (cor das letras da logo oficial); `navy.light` `#0B1036`, `navy.muted` `#3A3F66`. Cor de status "Voando" (`#2563EB`) não muda.
+- [ ] Screenshots antes/depois; `grep` não encontra emoji nos componentes de interface (exceto conteúdo digitado pelo usuário). Commit `feat: lucide icons and Liinc brand navy`.
+
 ### Task 4: Responsividade e acessibilidade
 
 **Files:** conforme auditoria; certamente `src/app/(app)/layout.tsx`, `src/components/layout/SidebarNav.tsx`, `src/components/painel/{FilterBar,HistoryModal,StepAdjuster}.tsx`, `src/components/mentoria/{TeamPicker,MentoriaForm}.tsx`
