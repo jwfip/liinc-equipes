@@ -10,7 +10,7 @@ O **facilitador** conduz o evento. Precisa de um acesso próprio (papel por even
 
 - ~~**Visão rápida da evolução**~~ (feito: tela Acompanhamento): quais equipes estão evoluindo bem e quais estão ficando para trás (a partir do status, da etapa e do ritmo de avanço entre mentorias).
 - **Perfil dos mentores**: descrição/perfil de cada mentor e especialista (área de atuação, experiência), visível ao facilitador. Exige campos novos no cadastro de mentores.
-- **Sugestão de matching por IA**: a partir do projeto e da situação atual de cada equipe, sugerir quais mentores/especialistas combinam com ela, para orientar a distribuição nos próximos blocos.
+- **Sugestão de matching por IA**: a partir do projeto e da situação atual de cada equipe, sugerir quais mentores/especialistas combinam com ela, para orientar a distribuição nos próximos blocos. Pode entrar na própria tela **Acompanhamento** (`/acompanhamento`), junto de cada equipe — o facilitador já usa essa tela para decidir onde agir.
 
 Decidido na parte 1: facilitador não registra; observações para facilitadores são privadas (facilitador, admin e autor). Fica para o design do matching: sob demanda ou a cada nova mentoria? O matching usa o **projeto atual** da equipe (`team_projects`).
 
