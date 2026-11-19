@@ -6,7 +6,7 @@ import { db } from '@/db'
 import { events, eventMembers, teamSummaries } from '@/schema'
 import { getEventProjects, getEventSteps, getEventStepChanges } from '@/lib/event-data'
 import { projectContext } from '@/lib/project'
-import { currentStepFor, getLatestByTeam } from '@/lib/records'
+import { blockRankOf, currentStepFor, getLatestByTeam } from '@/lib/records'
 import { evolutionPoints } from '@/lib/evolution'
 import { parseHidden, type ReportSection } from '@/lib/report/options'
 import { STATUS_ORDER, type StatusValue } from '@/lib/constants'
@@ -69,7 +69,7 @@ export default async function FinalReportPage({ params, searchParams }: {
       orderBy: (r, { asc }) => [asc(r.createdAt)],
     }),
     db.query.teams.findMany({ where: (t, { eq }) => eq(t.eventId, eventId), orderBy: (t, { asc }) => [asc(t.number)] }),
-    db.query.blocks.findMany({ where: (b, { eq }) => eq(b.eventId, eventId), orderBy: (b, { asc }) => [asc(b.date)] }),
+    db.query.blocks.findMany({ where: (b, { eq }) => eq(b.eventId, eventId), orderBy: (b, { asc }) => [asc(b.date), asc(b.id)] }),
     getEventSteps(eventId),
     getEventStepChanges(eventId),
     db.select({ role: eventMembers.role }).from(eventMembers).where(eq(eventMembers.eventId, eventId)),
@@ -81,7 +81,7 @@ export default async function FinalReportPage({ params, searchParams }: {
   const atendimentos = records.filter(r => r.kind === 'specialist')
   const teamIdsWithRecords = new Set(records.map(r => r.teamId))
   const teams = allTeams.filter(t => t.active || teamIdsWithRecords.has(t.id))
-  const latestByTeam = getLatestByTeam(mentoring)
+  const latestByTeam = getLatestByTeam(mentoring, blockRankOf(blocks))
   const finalByTeam = new Map(finals.map(f => [f.teamId, f]))
 
   const statusCount: Record<StatusValue, number> = { emergency: 0, attention: 0, ok: 0, flying: 0 }

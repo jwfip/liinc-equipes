@@ -58,7 +58,7 @@ export function eventAlerts(input: AlertInput): Record<string, TeamAlert[]> {
     const i = steps ? steps.findIndex(x => x.id === s.id) : -1
     return i >= 0 ? i + 1 : s.position
   }
-  const latestByTeam = getLatestByTeam(records)
+  const latestByTeam = getLatestByTeam(records, blockOrder)
   const current = new Map(teams.map(t => [t.id, currentStepFor(latestByTeam[t.id], stepChanges.filter(c => c.teamId === t.id)).step]))
   const groupMedian = median(teams.map(t => current.get(t.id)).filter((s): s is StepRef => !!s).map(num))
   const checkpoint = checkpointBlock(blocks, today, new Set(records.map(r => r.blockId).filter((id): id is number => id !== null)))
@@ -94,7 +94,10 @@ export function eventAlerts(input: AlertInput): Record<string, TeamAlert[]> {
       if (run >= STUCK_BLOCKS) alerts.push({ code: 'stuck', text: `Parada na etapa ${num(last.step)} há ${run} blocos` })
     }
 
-    if (prev?.step && last?.step && step?.id === last.step.id && num(last.step) < num(prev.step)) {
+    if (latest?.step && step && step.id !== latest.step.id && num(step) < num(latest.step)) {
+      // Ajuste da organização para uma etapa anterior à da última mentoria.
+      alerts.push({ code: 'back', text: `Etapa ajustada para trás pela organização: ${num(latest.step)} → ${num(step)}` })
+    } else if (prev?.step && last?.step && step?.id === last.step.id && num(last.step) < num(prev.step)) {
       const pivoted = projects.some(p => p.teamId === t.id && p.kind === 'pivot' &&
         (p.recordId === last.id || (ts(p.createdAt) > ts(prev.createdAt) && ts(p.createdAt) <= ts(last.createdAt))))
       alerts.push(pivoted

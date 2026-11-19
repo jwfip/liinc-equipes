@@ -1,13 +1,22 @@
+/** Posição de cada bloco na lista (já em ordem cronológica): a ordem usada para "bloco mais recente". */
+export function blockRankOf(blocks: { id: number }[]): Map<number, number> {
+  return new Map(blocks.map((b, i) => [b.id, i]))
+}
+
 type LatestCandidate = { teamId: string; blockId: number | null; createdAt: string | Date | null; kind: string }
 
-/** Registro mais recente de cada equipe (maior blockId, depois maior createdAt). Só mentorias contam. */
-export function getLatestByTeam<R extends LatestCandidate>(records: R[]): Record<string, R> {
+/**
+ * Registro mais recente de cada equipe: bloco mais recente, depois maior createdAt. Só mentorias contam.
+ * `blockRank` (id do bloco → posição na ordem por data) define o bloco mais recente; sem ele, vale o maior blockId.
+ */
+export function getLatestByTeam<R extends LatestCandidate>(records: R[], blockRank?: Map<number, number>): Record<string, R> {
+  const rank = (b: number | null) => (b === null ? -1 : blockRank ? blockRank.get(b) ?? -1 : b)
   return records.reduce<Record<string, R>>((acc, r) => {
     if (r.kind !== 'mentoring') return acc
     const prev = acc[r.teamId]
     if (
       !prev ||
-      (r.blockId ?? 0) > (prev.blockId ?? 0) ||
+      rank(r.blockId) > rank(prev.blockId) ||
       (r.blockId === prev.blockId && new Date(r.createdAt ?? 0).getTime() > new Date(prev.createdAt ?? 0).getTime())
     ) {
       acc[r.teamId] = r

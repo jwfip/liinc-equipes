@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { currentProject, projectSince, recentPivot, projectInfoByTeam, projectContext, recentBlockIds, type ProjectRow } from './project'
+import { currentProject, projectSince, recentPivot, projectInfoByTeam, projectContext, recentBlockIds, heldBlockIds, type ProjectRow } from './project'
 
 const row = (id: number, kind: ProjectRow['kind'], at: string, extra: Partial<ProjectRow> = {}): ProjectRow => ({
   id, teamId: 't1', description: `p${id}`, kind, recordId: null, createdAt: at, author: null, ...extra,
@@ -67,5 +67,20 @@ describe('recentBlockIds', () => {
   })
   it('ignores future blocks and works with fewer blocks', () => {
     expect(recentBlockIds(blocks, '2026-01-01')).toEqual([1])
+  })
+})
+
+describe('recentBlockIds with held blocks', () => {
+  const blocks = [{ id: 1, date: '2026-01-03' }, { id: 2, date: '2026-01-03' }, { id: 3, date: '2026-01-03' }, { id: 4, date: '2026-01-03' }]
+  it('skips same-day blocks that did not happen yet', () => {
+    expect(recentBlockIds(blocks, '2026-01-03', 2, new Set([1, 2]))).toEqual([1, 2])
+  })
+})
+
+describe('heldBlockIds', () => {
+  it('keeps the active block and blocks with mentorias, ignoring atendimentos', () => {
+    const blocks = [{ id: 1, active: false }, { id: 2, active: false }, { id: 3, active: true }, { id: 4, active: false }]
+    const records = [{ blockId: 1, kind: 'mentoring' }, { blockId: 2, kind: 'specialist' }, { blockId: null, kind: 'specialist' }]
+    expect(Array.from(heldBlockIds(blocks, records)).sort()).toEqual([1, 3])
   })
 })

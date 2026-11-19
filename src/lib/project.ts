@@ -55,7 +55,16 @@ export function projectContext(rows: ProjectRow[], teamId: string): ProjectConte
   }
 }
 
-/** Ids dos últimos `n` blocos que já começaram (data <= hoje). `blocks` em ordem cronológica. */
-export function recentBlockIds(blocks: { id: number; date: string }[], today: string, n = 2): number[] {
-  return blocks.filter(b => b.date <= today).slice(-n).map(b => b.id)
+/**
+ * Ids dos últimos `n` blocos que já começaram (data <= hoje). `blocks` em ordem cronológica.
+ * Com `held` (blocos que de fato aconteceram: ativo ou com mentoria), blocos do mesmo dia ainda não realizados não contam.
+ */
+export function recentBlockIds(blocks: { id: number; date: string }[], today: string, n = 2, held?: Set<number>): number[] {
+  return blocks.filter(b => b.date <= today && (!held || held.has(b.id))).slice(-n).map(b => b.id)
+}
+
+/** Blocos que de fato aconteceram: o ativo e os que têm alguma mentoria. */
+export function heldBlockIds(blocks: { id: number; active: boolean }[], records: { blockId: number | null; kind: string }[]): Set<number> {
+  const withMentoring = new Set(records.filter(r => r.kind === 'mentoring' && r.blockId !== null).map(r => r.blockId as number))
+  return new Set(blocks.filter(b => b.active || withMentoring.has(b.id)).map(b => b.id))
 }

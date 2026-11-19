@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getLatestByTeam, assertTeamInEvent, assertSameKind, splitByKind, countByTeam, defaultHistoryTab, groupTeams, currentStepFor } from './records'
+import { getLatestByTeam, blockRankOf, assertTeamInEvent, assertSameKind, splitByKind, countByTeam, defaultHistoryTab, groupTeams, currentStepFor } from './records'
 
 const rec = (id: string, teamId: string, blockId: number, createdAt: string, kind = 'mentoring') =>
   ({ id, teamId, blockId, createdAt, kind }) as any
@@ -95,5 +95,20 @@ describe('currentStepFor', () => {
   })
   it('returns nothing when there is neither', () => {
     expect(currentStepFor(undefined, [])).toEqual({ step: null, source: null })
+  })
+})
+
+describe('getLatestByTeam with block order', () => {
+  it('follows the block order (date) instead of the block id when given', () => {
+    // Bloco 5 foi criado depois, mas acontece antes do bloco 3.
+    const rank = new Map([[5, 0], [3, 1]])
+    const r = getLatestByTeam([rec('a', 't1', 3, '2026-01-02'), rec('b', 't1', 5, '2026-01-01')], rank)
+    expect(r.t1.id).toBe('a')
+  })
+})
+
+describe('blockRankOf', () => {
+  it('maps each block id to its position in the list', () => {
+    expect(Array.from(blockRankOf([{ id: 5 }, { id: 3 }]).entries())).toEqual([[5, 0], [3, 1]])
   })
 })

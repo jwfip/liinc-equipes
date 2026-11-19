@@ -138,3 +138,25 @@ describe('absent with no active block and blocks sharing a date', () => {
     expect(codes(base({ blocks: [B(1, '2026-01-03'), B(2, '2026-01-03')], today: '2026-01-03' }))).toEqual([])
   })
 })
+
+describe('back by the organization', () => {
+  it('flags a step moved back by the organization after the last mentoria', () => {
+    const records = [rec('t1', 2, 'ok', 4, '2026-01-02T10:00')]
+    const stepChanges = [{ id: 1, teamId: 't1', stepId: 102, createdAt: '2026-01-02T12:00', step: S(2) }]
+    expect(texts(base({ records, stepChanges }))).toContain('Etapa ajustada para trás pela organização: 4 → 2')
+  })
+  it('does not flag an organization adjustment forward', () => {
+    const records = [rec('t1', 2, 'ok', 2, '2026-01-02T10:00')]
+    const stepChanges = [{ id: 1, teamId: 't1', stepId: 104, createdAt: '2026-01-02T12:00', step: S(4) }]
+    expect(codes(base({ records, stepChanges }))).not.toContain('back')
+  })
+})
+
+describe('block order', () => {
+  it('compares mentorias by block date, even when block ids are out of order', () => {
+    // B5 foi criado depois mas aconteceu antes de B3: a última é a de B3 (No caminho), a anterior a de B5 (Atenção).
+    const blocks = [B(5, '2026-01-01'), B(3, '2026-01-02', true)]
+    const records = [rec('t1', 5, 'attention', 1, '2026-01-01T10:00'), rec('t1', 3, 'ok', 2, '2026-01-02T10:00')]
+    expect(codes(base({ records, blocks, today: '2026-01-02' }))).not.toContain('status')
+  })
+})

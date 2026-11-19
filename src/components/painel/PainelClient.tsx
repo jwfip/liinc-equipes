@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { STATUS_ORDER, type RecordWithRelations, type Step } from '@/lib/constants'
 import {
-  getLatestByTeam, splitByKind, countByTeam, groupTeams, currentStepFor, defaultHistoryTab, type StepChange,
+  blockRankOf, getLatestByTeam, splitByKind, countByTeam, groupTeams, currentStepFor, defaultHistoryTab, type StepChange,
 } from '@/lib/records'
 import SummaryStrip from './SummaryStrip'
 import FilterBar    from './FilterBar'
@@ -12,7 +12,7 @@ import HistoryModal from './HistoryModal'
 import type { TeamSummary } from './SummaryBox'
 import { summaryBoxProps } from './summary-props'
 import type { EventRole } from '@/lib/event-pick'
-import { currentProject, recentPivot, recentBlockIds, type ProjectRow } from '@/lib/project'
+import { currentProject, recentPivot, recentBlockIds, heldBlockIds, type ProjectRow } from '@/lib/project'
 import { todayISO } from '@/lib/format'
 
 type Team = { id: string; number: number; name: string; active: boolean }
@@ -28,7 +28,7 @@ interface Props {
   viewerRole:         EventRole | null
   isAdmin:            boolean
   initialProjects:    ProjectRow[]
-  blocks:             { id: number; date: string }[]
+  blocks:             { id: number; label: string; date: string; active: boolean }[]
   canCorrectProject:  boolean
 }
 
@@ -43,12 +43,13 @@ const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 export default function PainelClient({
   initialRecords, initialStepChanges, initialSummaries, teams, steps, currentUser, viewerRole, isAdmin,
-  initialProjects, blocks, canCorrectProject,
+  initialProjects, blocks: initialBlocks, canCorrectProject,
 }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [stepChanges, setStepChanges]   = useState(initialStepChanges)
   const [summaries, setSummaries]       = useState(initialSummaries)
   const [projects, setProjects]         = useState(initialProjects)
+  const [blocks, setBlocks]             = useState(initialBlocks)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [historyTeam, setHistoryTeam]   = useState<Team | null>(null)
@@ -61,6 +62,7 @@ export default function PainelClient({
       if (Array.isArray(data?.stepChanges)) setStepChanges(data.stepChanges)
       if (Array.isArray(data?.summaries)) setSummaries(data.summaries)
       if (Array.isArray(data?.projects)) setProjects(data.projects)
+      if (Array.isArray(data?.blocks)) setBlocks(data.blocks)
     } catch { /* ignora: tenta de novo no próximo ciclo */ }
   }, [])
 
@@ -70,10 +72,10 @@ export default function PainelClient({
   }, [reload])
 
   const { mentoring, specialist } = splitByKind(records)
-  const latestByTeam = getLatestByTeam(mentoring)
+  const latestByTeam = getLatestByTeam(mentoring, blockRankOf(blocks))
   const specialistCount = countByTeam(specialist)
   const recordBlock = new Map(mentoring.filter(r => r.blockId !== null).map(r => [r.id, r.blockId as number]))
-  const recentBlocks = recentBlockIds(blocks, todayISO())
+  const recentBlocks = recentBlockIds(blocks, todayISO(), 2, heldBlockIds(blocks, mentoring))
   const changesFor = (teamId: string) => stepChanges.filter(c => c.teamId === teamId)
   const summaryProps = (teamId: string, kind: 'mentoring' | 'specialist') => summaryBoxProps(records, summaries, teamId, kind, reload)
 

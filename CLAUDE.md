@@ -51,7 +51,7 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /admin/mentores                     → cadastro global de pessoas
 /admin/eventos/[id]/relatorio       → relatório final para a empresa (capa + página por equipe, PDF pela impressão)
 /admin/relatorio                    → redireciona para o relatório final do evento selecionado
-/api/records                        → endpoint do polling (registros, ajustes de etapa e resumos do evento selecionado)
+/api/records                        → endpoint do polling (registros, ajustes de etapa, resumos, projetos e blocos do evento selecionado)
 /api/transcribe                     → upload do relato por áudio (Groq Whisper + extração)
 ```
 
@@ -179,7 +179,7 @@ Configurar também na Vercel em **Settings → Environment Variables**.
 
 ## Regras de negócio
 
-- **Status do card** = mentoria mais recente da equipe no evento (maior `blockId`, depois maior `createdAt`); só `kind = 'mentoring'` conta.
+- **Status do card** = mentoria mais recente da equipe no evento (bloco mais recente na ordem por data e id — `blockRankOf` —, depois maior `createdAt`); só `kind = 'mentoring'` conta.
 - **Etapa do card** = a mais recente entre a etapa da última mentoria e o último ajuste da organização (`currentStepFor`). Só admin ajusta.
 - **Atendimentos** não alteram status, etapa nem a "Distribuição por Mentor"; aparecem na aba própria do histórico e em seção própria do painel e do relatório. Não exigem bloco ativo.
 - **Papel decide o tipo**: Mentor só registra mentoria; Especialista só registra atendimento (`registrationError(ctx, kind)`).
@@ -192,7 +192,7 @@ Configurar também na Vercel em **Settings → Environment Variables**.
 - Para registrar, a pessoa precisa ser participante do evento (inclusive admins). Facilitador não registra (`registrationError`).
 - **Observações para facilitadores** (`obs`, de mentoria e atendimento) são privadas: só facilitador do evento, admin e o autor veem. O filtro é no servidor (`redactPrivateNotes` em `src/lib/privacy.ts`, aplicado no painel e no `/api/records`); `obs` não entra nos prompts dos resumos do painel.
 - **Projeto atual**: o primeiro mentor da equipe descreve o projeto; os seguintes o veem só leitura e marcam **"A equipe pivotou"** para trocar (`readProjectInput`). Editar mentoria não mexe no projeto. Corrigir o texto (sem ser pivô): facilitador (evento ativo) ou admin, na aba Projeto do histórico (`correctProject`). O campo `working` é "No que a equipe trabalhou nesta mentoria".
-- **Alertas do Acompanhamento** (`eventAlerts` em `src/lib/alerts.ts`, regras puras, sem IA): status Emergência/Atenção, status piorou, parada na mesma etapa por 2 blocos, etapa voltou (ou "pivotou e voltou"), 2+ etapas abaixo da mediana do grupo, sem mentoria no bloco anterior ao ativo. A plataforma só aponta; a intervenção é do facilitador.
+- **Alertas do Acompanhamento** (`eventAlerts` em `src/lib/alerts.ts`, regras puras, sem IA): status Emergência/Atenção, status piorou, parada na mesma etapa por 2 blocos, etapa voltou (ou "pivotou e voltou", ou ajustada para trás pela organização), 2+ etapas abaixo da mediana do grupo, sem mentoria no bloco anterior ao ativo (sem bloco ativo: no último bloco que teve mentoria). A plataforma só aponta; a intervenção é do facilitador.
 
 ---
 

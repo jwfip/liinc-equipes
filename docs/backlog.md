@@ -13,3 +13,9 @@ O **facilitador** conduz o evento. Precisa de um acesso próprio (papel por even
 - **Sugestão de matching por IA**: a partir do projeto e da situação atual de cada equipe, sugerir quais mentores/especialistas combinam com ela, para orientar a distribuição nos próximos blocos.
 
 Decidido na parte 1: facilitador não registra; observações para facilitadores são privadas (facilitador, admin e autor). Fica para o design do matching: sob demanda ou a cada nova mentoria? O matching usa o **projeto atual** da equipe (`team_projects`).
+
+## Facilitador ativa blocos de mentoria
+
+Permitir que o **facilitador** ative (e encerre) o bloco de mentoria do seu evento, sem depender do admin. Hoje só o admin faz isso em `/admin/eventos/[id]/blocos` (`activateBlock`).
+
+Pontos a decidir no design: o facilitador só ativa/encerra blocos já cadastrados ou também cria/edita blocos? Onde fica o controle (na tela Acompanhamento, que já mostra o bloco ativo, ou numa tela própria)? Vale só para evento ativo, como a correção de projeto.

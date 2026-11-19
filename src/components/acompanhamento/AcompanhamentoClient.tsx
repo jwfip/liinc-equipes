@@ -8,8 +8,8 @@ import type { TeamSummary } from '@/components/painel/SummaryBox'
 import { StatusIcon } from '@/components/ui/StatusIcon'
 import { eventAlerts } from '@/lib/alerts'
 import { sortForFollowUp, recentMentors } from '@/lib/follow-up'
-import { currentProject, type ProjectRow } from '@/lib/project'
-import { getLatestByTeam, splitByKind, type StepChange } from '@/lib/records'
+import { currentProject, heldBlockIds, type ProjectRow } from '@/lib/project'
+import { blockRankOf, getLatestByTeam, splitByKind, type StepChange } from '@/lib/records'
 import { todayISO } from '@/lib/format'
 import type { RecordWithRelations, Step } from '@/lib/constants'
 
@@ -33,12 +33,13 @@ const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 /** Tela do facilitador: equipes com sinais de que podem estar ficando para trás, com o motivo e as evidências. */
 export default function AcompanhamentoClient({
-  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks, canCorrectProject, currentUser,
+  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser,
 }: Props) {
   const [records, setRecords]         = useState(initialRecords)
   const [stepChanges, setStepChanges] = useState(initialStepChanges)
   const [summaries, setSummaries]     = useState(initialSummaries)
   const [projects, setProjects]       = useState(initialProjects)
+  const [blocks, setBlocks]           = useState(initialBlocks)
   const [historyTeam, setHistoryTeam] = useState<Team | null>(null)
 
   const reload = useCallback(async () => {
@@ -49,6 +50,7 @@ export default function AcompanhamentoClient({
       if (Array.isArray(data?.stepChanges)) setStepChanges(data.stepChanges)
       if (Array.isArray(data?.summaries)) setSummaries(data.summaries)
       if (Array.isArray(data?.projects)) setProjects(data.projects)
+      if (Array.isArray(data?.blocks)) setBlocks(data.blocks)
     } catch { /* tenta de novo no próximo ciclo */ }
   }, [])
 
@@ -59,14 +61,15 @@ export default function AcompanhamentoClient({
 
   const today = todayISO()
   const { mentoring, specialist } = splitByKind(records)
-  const latestByTeam = getLatestByTeam(mentoring)
+  const latestByTeam = getLatestByTeam(mentoring, blockRankOf(blocks))
   const alerts = useMemo(
     () => eventAlerts({ teams, records, stepChanges, projects, blocks, today, steps }),
     [teams, records, stepChanges, projects, blocks, today, steps],
   )
   const statusByTeam = Object.fromEntries(teams.map(t => [t.id, latestByTeam[t.id]?.status]))
   const { flagged, clear } = sortForFollowUp(teams, alerts, statusByTeam)
-  const startedBlocks = blocks.filter(b => b.date <= today)
+  const held = heldBlockIds(blocks, mentoring)
+  const startedBlocks = blocks.filter(b => b.date <= today && held.has(b.id))
   const activeBlock = blocks.find(b => b.active)
 
   const row = (team: Team) => {
