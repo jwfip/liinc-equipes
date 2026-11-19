@@ -8,7 +8,8 @@
 Sistema web multi-evento onde mentores e especialistas registram, direto na plataforma, cada sessão com as equipes. O painel atualiza sozinho (polling de 5s).
 
 - **Evento** é a entidade principal: cada evento tem suas **etapas**, **equipes**, **blocos** e **participantes**.
-- **Mentores** (pessoas que fazem login) são cadastrados uma vez e escalados por evento com um papel: **Mentor** (registra **Mentorias**: status, etapa e textos) ou **Especialista** (registra **Atendimentos**: tema/dúvida, orientação, observações — sem status nem etapa).
+- **Mentores** (pessoas que fazem login) são cadastrados uma vez e escalados por evento com um papel (um por pessoa por evento): **Mentor** (registra **Mentorias**: status, etapa e textos), **Especialista** (registra **Atendimentos**: tema/dúvida, orientação, observações — sem status nem etapa) ou **Facilitador** (conduz o evento: vê o painel, as observações privadas e a tela **Acompanhamento**; não registra).
+- Design do facilitador: `docs/superpowers/specs/2026-11-19-facilitador-design.md`.
 - Design da v2: `docs/superpowers/specs/2026-11-18-plataforma-v2-design.md`. Planos por fase: `docs/superpowers/plans/`.
 
 **Deploy:** `git push` → Vercel publica.
@@ -40,6 +41,7 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /painel                             → dashboard do evento selecionado (requer login)
 /mentoria                           → Nova mentoria (Mentor) ou Novo atendimento (Especialista)
 /mentoria/edit/[id]                 → edição do próprio registro
+/acompanhamento                     → alertas por equipe (facilitador do evento e admin)
 /admin/eventos                      → lista e criação de eventos
 /admin/eventos/[id]                 → dados do evento, encerrar/reativar
 /admin/eventos/[id]/etapas          → etapas do evento (ordem, renomear, remover se não usada)
@@ -63,10 +65,11 @@ Fonte da verdade: `src/schema.ts`.
 |--------|-------|
 | `events` | nome, empresa, datas, `active` (vários podem estar ativos) |
 | `event_steps` | etapas do evento, ordenadas por `position` |
-| `event_members` | (evento, mentor) → `role` `'mentor' \| 'specialist'` |
+| `event_members` | (evento, mentor) → `role` `'mentor' \| 'specialist' \| 'facilitator'` |
 | `teams`, `blocks` | pertencem a um evento (`event_id`) |
 | `mentoring_records` | `event_id`, `kind` (`'mentoring' \| 'specialist'`), `team_id`, `mentor_id`, `block_id` (nulo em atendimento fora de bloco), `status` (nulo em atendimento), `step_id`, `topic` (atendimento), textos |
 | `team_step_changes` | ajustes de etapa feitos pela organização (admin) |
+| `team_projects` | versões do projeto da equipe: `kind` `'initial' \| 'pivot' \| 'correction'`, `record_id` (mentoria que registrou), `created_by`; o projeto atual é a mais recente (`src/lib/project.ts`) |
 | `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma |
 | `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; `password_hash`, `must_change_password`; liga-se a `mentors` por `email` |
 | `login_attempts` | falhas de login por usuário (bloqueio) |
@@ -186,7 +189,10 @@ Configurar também na Vercel em **Settings → Environment Variables**.
 - **Equipes inativas** não aparecem no painel nem no formulário.
 - **Ordenação dos cards** = numérica dentro de cada grupo de status.
 - **Grupos de status** = Emergência → Atenção → No caminho → Voando → Sem mentoria ainda.
-- Para registrar, a pessoa precisa ser participante do evento (inclusive admins).
+- Para registrar, a pessoa precisa ser participante do evento (inclusive admins). Facilitador não registra (`registrationError`).
+- **Observações para facilitadores** (`obs`, de mentoria e atendimento) são privadas: só facilitador do evento, admin e o autor veem. O filtro é no servidor (`redactPrivateNotes` em `src/lib/privacy.ts`, aplicado no painel e no `/api/records`); `obs` não entra nos prompts dos resumos do painel.
+- **Projeto atual**: o primeiro mentor da equipe descreve o projeto; os seguintes o veem só leitura e marcam **"A equipe pivotou"** para trocar (`readProjectInput`). Editar mentoria não mexe no projeto. Corrigir o texto (sem ser pivô): facilitador (evento ativo) ou admin, na aba Projeto do histórico (`correctProject`). O campo `working` é "No que a equipe trabalhou nesta mentoria".
+- **Alertas do Acompanhamento** (`eventAlerts` em `src/lib/alerts.ts`, regras puras, sem IA): status Emergência/Atenção, status piorou, parada na mesma etapa por 2 blocos, etapa voltou (ou "pivotou e voltou"), 2+ etapas abaixo da mediana do grupo, sem mentoria no bloco anterior ao ativo. A plataforma só aponta; a intervenção é do facilitador.
 
 ---
 
