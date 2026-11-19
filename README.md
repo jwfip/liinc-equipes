@@ -21,7 +21,7 @@ Crie `.env.local`:
 ```env
 DATABASE_URL=postgresql://...
 AUTH_SECRET=...              # openssl rand -hex 32
-AUTH_URL=http://localhost:3000
+AUTH_URL=http://localhost:3000   # só para desenvolvimento local; não definir na Vercel
 GROQ_API_KEY=gsk_...         # opcional: resumos por IA e relato por áudio (console.groq.com)
 ```
 
@@ -73,4 +73,4 @@ npm test
 
 ### 5. Deploy na Vercel
 
-Conecte o repositório na Vercel e configure as variáveis em Settings → Environment Variables.
+Conecte o repositório na Vercel e configure as variáveis em Settings → Environment Variables (`DATABASE_URL`, `AUTH_SECRET`, `GROQ_API_KEY`). **Não defina `AUTH_URL` na Vercel**: com ela, o login sempre redireciona para aquele endereço, mesmo acessando pelo domínio próprio.

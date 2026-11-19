@@ -164,13 +164,13 @@ theme: {
 # .env.local
 DATABASE_URL=postgresql://...          # connection string do Neon
 AUTH_SECRET=...                        # openssl rand -hex 32
-AUTH_URL=https://seudominio.vercel.app
+AUTH_URL=http://localhost:3000            # só no .env.local; em produção NÃO definir (ver abaixo)
 GROQ_API_KEY=gsk_...                   # IA (resumos e áudio); sem ela a plataforma funciona, só sem IA
 GROQ_SUMMARY_MODEL=openai/gpt-oss-20b  # opcional
 GROQ_TRANSCRIBE_MODEL=whisper-large-v3-turbo  # opcional
 ```
 
-Configurar também na Vercel em **Settings → Environment Variables**.
+Configurar também na Vercel em **Settings → Environment Variables** — **exceto `AUTH_URL`**: na Vercel o NextAuth detecta o domínio de cada acesso. Se `AUTH_URL` for definido lá, todos os redirecionamentos do login vão para esse endereço (ex.: o `.vercel.app` mesmo entrando pelo domínio próprio). Para unificar domínios, use *Settings → Domains → Redirect to*.
 
 ---
 
