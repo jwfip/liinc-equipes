@@ -3,13 +3,13 @@ import { parseHidden, hiddenToQuery, teamsToGenerate, DEFAULT_HIDDEN } from './o
 
 describe('parseHidden', () => {
   it('uses the default when the parameter is absent', () => {
-    expect([...parseHidden(undefined)].sort()).toEqual([...DEFAULT_HIDDEN].sort())
+    expect(Array.from(parseHidden(undefined)).sort()).toEqual([...DEFAULT_HIDDEN].sort())
   })
   it('hides nothing when the parameter is empty', () => {
     expect(parseHidden('').size).toBe(0)
   })
   it('ignores unknown keys and keeps valid ones', () => {
-    expect([...parseHidden('xyz,,cons')]).toEqual(['cons'])
+    expect(Array.from(parseHidden('xyz,,cons'))).toEqual(['cons'])
     expect([...parseHidden(['cons', 'chart'])].sort()).toEqual(['chart', 'cons'])
   })
 })
@@ -18,7 +18,7 @@ describe('hiddenToQuery', () => {
   it('round-trips through parseHidden', () => {
     const h = new Set(['cons', 'atendimentos'] as const)
     const param = (q: string) => new URLSearchParams(q).get('ocultar') ?? undefined
-    expect([...parseHidden(param(hiddenToQuery(h)))].sort()).toEqual(['atendimentos', 'cons'])
+    expect(Array.from(parseHidden(param(hiddenToQuery(h)))).sort()).toEqual(['atendimentos', 'cons'])
     expect(parseHidden(param(hiddenToQuery(new Set()))).size).toBe(0)
   })
 })
