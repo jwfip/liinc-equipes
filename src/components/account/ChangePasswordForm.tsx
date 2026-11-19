@@ -1,5 +1,7 @@
 'use client'
 
+import { CircleCheck } from 'lucide-react'
+
 import { useState } from 'react'
 import AdminForm from '@/components/admin/AdminForm'
 import { changePassword } from '@/actions/account'
@@ -13,7 +15,7 @@ export default function ChangePasswordForm({ mandatory: mandatoryProp }: { manda
   if (done && mandatory) {
     return (
       <div className="text-center py-4">
-        <p className="text-green-700 font-semibold mb-4">✅ Senha definida.</p>
+        <p className="text-green-700 font-semibold mb-4 flex items-center justify-center gap-2"><CircleCheck aria-hidden="true" size={18} />Senha definida.</p>
         {/* <a> e não <Link>: o prefetch do Link guardaria o redirecionamento para /conta/senha feito antes da troca. */}
         <a href="/painel" className="btn-primary justify-center w-full sm:w-auto">Continuar</a>
       </div>

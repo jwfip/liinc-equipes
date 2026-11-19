@@ -1,3 +1,4 @@
+import { Ban, X } from 'lucide-react'
 import { db } from '@/db'
 import { mentoringRecords } from '@/schema'
 import { eq } from 'drizzle-orm'
@@ -36,7 +37,7 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="card text-center py-12">
-          <p className="text-4xl mb-3">⛔</p>
+          <Ban aria-hidden="true" size={40} className="mx-auto mb-3 text-red-500" />
           <h2 className="font-display font-bold text-lg mb-1">Acesso negado</h2>
           <p className="text-slate-500 text-sm mb-4">Você só pode editar os seus próprios registros de mentoria.</p>
           <Link href="/painel" className="btn-secondary">Voltar ao painel</Link>
@@ -56,7 +57,7 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
           <h2 className="font-display font-bold text-2xl text-navy">{isAtendimento ? 'Editar atendimento' : 'Editar mentoria'}</h2>
           <p className="text-slate-500 text-sm mt-1">Atualize as informações do seu registro.</p>
         </div>
-        <Link href="/painel" className="text-slate-400 hover:text-navy text-sm font-bold transition-colors">✕ Cancelar</Link>
+        <Link href="/painel" className="inline-flex items-center gap-1 text-slate-400 hover:text-navy text-sm font-bold transition-colors"><X aria-hidden="true" size={16} />Cancelar</Link>
       </div>
       {isAtendimento
         ? <AtendimentoForm teams={activeTeams} activeBlock={block} recordToEdit={record} />

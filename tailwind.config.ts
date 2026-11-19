@@ -15,9 +15,9 @@ const config: Config = {
           pale: '#FFF3E8',
         },
         navy: {
-          DEFAULT: '#1A2744',
-          light: '#253459',
-          muted: '#3D4F7A',
+          DEFAULT: '#000222', // azul da marca (letras da logo Liinc)
+          light: '#0B1036',
+          muted: '#3A3F66',
         },
       },
       fontFamily: {

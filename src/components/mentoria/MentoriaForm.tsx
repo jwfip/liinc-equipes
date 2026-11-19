@@ -1,9 +1,12 @@
 'use client'
 
+import { CirclePause, Clock, CircleCheck } from 'lucide-react'
+
 import { useState, useTransition } from 'react'
 import { submitMentoria, updateMentoria } from '@/actions/mentoria'
 import { STATUS_OPTIONS, type Step } from '@/lib/constants'
 import TeamPicker from './TeamPicker'
+import { StatusIcon } from '@/components/ui/StatusIcon'
 
 type Team  = { id: string; number: number; name: string }
 type Block = { id: number; label: string; date: string } | null
@@ -27,7 +30,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
   if (!activeBlock) {
     return (
       <div className="card text-center py-12">
-        <p className="text-4xl mb-3">⏸️</p>
+        <CirclePause aria-hidden="true" size={40} className="mx-auto mb-3 text-slate-400" />
         <h2 className="font-display font-bold text-lg mb-1">Nenhum bloco ativo no momento</h2>
         <p className="text-slate-500 text-sm">Aguarde o organizador ativar um bloco.</p>
       </div>
@@ -76,7 +79,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
       {/* Active block banner */}
       {activeBlock && (
         <div className="card flex items-center gap-3 bg-orange/10 border-orange/30">
-          <span className="text-2xl">🕐</span>
+          <Clock aria-hidden="true" size={26} className="text-orange shrink-0" />
           <div>
             <p className="text-xs text-orange font-semibold">{recordToEdit ? 'Bloco do registro' : 'Bloco ativo'}</p>
             <p className="font-display font-bold">{activeBlock.label}</p>
@@ -98,7 +101,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
               <button key={opt.value} type="button" onClick={() => setSelectedStatus(opt.value)}
                 className={`rounded-xl border-2 py-3 px-4 text-[13px] font-bold transition-all
                   ${isSelected ? `${c.border} ${c.bg} ${c.text}` : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-300'}`}>
-                {opt.label}
+                <span className="inline-flex items-center justify-center gap-1.5"><StatusIcon status={opt.value} size={15} />{opt.label}</span>
               </button>
             )
           })}
@@ -140,7 +143,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
       <Textarea name="suggestion" label="Sugestão para o próximo mentor" defaultValue={recordToEdit?.suggestion} />
 
       {error   && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
-      {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold">✅ Mentoria {recordToEdit ? 'atualizada' : 'registrada'}!</div>}
+      {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold flex items-center gap-2"><CircleCheck aria-hidden="true" size={18} />Mentoria {recordToEdit ? 'atualizada' : 'registrada'}!</div>}
 
       <button type="submit" disabled={isPending || !selectedTeam || !selectedStatus || !selectedStep}
         className="btn-primary w-full justify-center py-3 text-base">

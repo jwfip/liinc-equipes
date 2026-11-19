@@ -114,7 +114,7 @@ theme: {
   extend: {
     colors: {
       orange: { DEFAULT: '#F47B20', dark: '#D4660F', pale: '#FFF3E8' },
-      navy:   { DEFAULT: '#1A2744', light: '#253459', muted: '#3D4F7A' },
+      navy:   { DEFAULT: '#000222', light: '#0B1036', muted: '#3A3F66' }, // azul da logo Liinc
     },
     fontFamily: {
       sans:    ['Lato', 'sans-serif'],

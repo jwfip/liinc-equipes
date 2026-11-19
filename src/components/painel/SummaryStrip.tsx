@@ -1,6 +1,7 @@
 'use client'
 
-import { type RecordWithRelations } from '@/lib/constants'
+import { MessagesSquare } from 'lucide-react'
+import { StatusLabel } from '@/components/ui/StatusIcon'
 
 export default function SummaryStrip({ teams, records, latestByTeam, atendimentos = 0 }: any) {
   const total = teams.length
@@ -21,13 +22,13 @@ export default function SummaryStrip({ teams, records, latestByTeam, atendimento
     <div className={`grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8 ${!showStatus ? 'lg:grid-cols-3' : atendimentos > 0 ? 'lg:grid-cols-7' : 'lg:grid-cols-6'}`}>
       <StatCard label="Total de equipes" value={total} sub="no evento" color="text-orange" />
       {showStatus && <>
-        <StatCard label="🚨 Emergência" value={emg} sub="intervenção urgente" color="text-red-600" />
-        <StatCard label="⚠️ Atenção" value={att} sub="monitorar de perto" color="text-yellow-600" />
-        <StatCard label="🛣️ No caminho" value={ok} sub="evoluindo bem" color="text-green-600" />
-        <StatCard label="🚀 Voando" value={fly} sub="acima das expectativas" color="text-blue-600" />
+        <StatCard label={<StatusLabel status="emergency" size={12} />} value={emg} sub="intervenção urgente" color="text-red-600" />
+        <StatCard label={<StatusLabel status="attention" size={12} />} value={att} sub="monitorar de perto" color="text-yellow-600" />
+        <StatCard label={<StatusLabel status="ok" size={12} />} value={ok} sub="evoluindo bem" color="text-green-600" />
+        <StatCard label={<StatusLabel status="flying" size={12} />} value={fly} sub="acima das expectativas" color="text-blue-600" />
       </>}
       <StatCard label="Mentores" value={mentors} sub="com mentorias" color="text-navy" />
-      {atendimentos > 0 && <StatCard label="💬 Atendimentos" value={atendimentos} sub="de especialistas" color="text-blue-700" />}
+      {atendimentos > 0 && <StatCard label={<span className="inline-flex items-center gap-1.5"><MessagesSquare aria-hidden="true" size={12} />Atendimentos</span>} value={atendimentos} sub="de especialistas" color="text-blue-700" />}
     </div>
   )
 }

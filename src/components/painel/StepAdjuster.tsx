@@ -1,5 +1,7 @@
 'use client'
 
+import { ArrowLeftRight } from 'lucide-react'
+
 import { useState, useTransition } from 'react'
 import { adjustTeamStep } from '@/actions/admin'
 import type { Step } from '@/lib/constants'
@@ -22,8 +24,9 @@ export default function StepAdjuster({ teamId, teamName, steps, currentStepId, o
   if (!open) {
     return (
       <button type="button" onClick={() => { setOpen(true); setStepId(currentStepId ?? '') }}
-        className="ml-auto text-slate-500 hover:text-navy font-display font-bold text-xs transition-colors">
-        ⇄ Ajustar etapa
+        aria-label={`Ajustar etapa da equipe ${teamName}`}
+        className="ml-auto inline-flex items-center gap-1 text-slate-500 hover:text-navy font-display font-bold text-xs transition-colors">
+        <ArrowLeftRight aria-hidden="true" size={14} /> Ajustar etapa
       </button>
     )
   }

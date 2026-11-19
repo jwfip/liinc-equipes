@@ -1,7 +1,10 @@
 'use client'
 
+import { Search } from 'lucide-react'
+import { StatusLabel } from '@/components/ui/StatusIcon'
+
 export default function FilterBar({ search, onSearch, statusFilter, onStatusFilter }: any) {
-  const btn = (f: string, lbl: string, activeClass: string) => {
+  const btn = (f: string, lbl: React.ReactNode, activeClass: string) => {
     const active = statusFilter === f
     return (
       <button
@@ -20,14 +23,14 @@ export default function FilterBar({ search, onSearch, statusFilter, onStatusFilt
       <span className="hidden md:inline text-xs font-bold uppercase tracking-wide text-slate-400 ml-2">Filtrar:</span>
       <div className="flex flex-wrap gap-2">
         {btn('all', 'Todas', 'bg-navy text-white border-navy')}
-        {btn('emergency', '🚨 Emergência', 'bg-red-600 text-white border-red-600')}
-        {btn('attention', '⚠️ Atenção', 'bg-yellow-400 text-navy border-yellow-400')}
-        {btn('ok', '🛣️ No caminho', 'bg-green-600 text-white border-green-600')}
-        {btn('flying', '🚀 Voando', 'bg-blue-600 text-white border-blue-600')}
+        {btn('emergency', <StatusLabel status="emergency" />, 'bg-red-600 text-white border-red-600')}
+        {btn('attention', <StatusLabel status="attention" />, 'bg-yellow-400 text-navy border-yellow-400')}
+        {btn('ok', <StatusLabel status="ok" />, 'bg-green-600 text-white border-green-600')}
+        {btn('flying', <StatusLabel status="flying" />, 'bg-blue-600 text-white border-blue-600')}
         {btn('none', 'Sem mentoria', 'bg-slate-500 text-white border-slate-500')}
       </div>
       <div className="relative ml-auto w-full md:w-auto">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]">🔍</span>
+        <Search aria-hidden="true" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
           value={search}

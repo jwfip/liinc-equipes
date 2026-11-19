@@ -1,5 +1,7 @@
 'use client'
 
+import { ChevronDown } from 'lucide-react'
+
 import { useState } from 'react'
 
 type Team = { id: string; number: number; name: string }
@@ -20,7 +22,7 @@ export default function TeamPicker({ teams, value, onChange }: { teams: Team[]; 
         <span className={selected ? 'text-navy' : 'text-slate-400'}>
           {selected ? `${selected.number} — ${selected.name}` : 'Selecione a equipe...'}
         </span>
-        <span className="text-slate-500 text-xs" aria-hidden="true">▼</span>
+        <ChevronDown aria-hidden="true" size={16} className="text-slate-500" />
       </button>
       {open && (
         <div className="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">

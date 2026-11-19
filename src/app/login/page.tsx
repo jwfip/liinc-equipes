@@ -16,11 +16,10 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
     <div className="min-h-screen bg-navy flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-orange/20 border border-orange/30 mb-4">
-            <span className="text-3xl">🧭</span>
-          </div>
-          <h1 className="font-display font-bold text-2xl">Liinc Mentorias</h1>
-          <p className="text-slate-500 text-sm mt-1">Acesso à plataforma</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/liinc-logo-dark-bg.svg" alt="Liinc" width={180} height={42} className="mx-auto mb-4 h-auto" />
+          <h1 className="font-display font-bold text-xl text-white">Mentorias</h1>
+          <p className="text-slate-400 text-sm mt-1">Acesso à plataforma</p>
         </div>
 
         <div className="card">
