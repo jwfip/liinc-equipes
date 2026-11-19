@@ -9,6 +9,7 @@ const TABS = [
   { slug: 'equipes',       label: 'Equipes' },
   { slug: 'blocos',        label: 'Blocos' },
   { slug: 'participantes', label: 'Participantes' },
+  { slug: 'relatorio',     label: 'Relatório final' },
 ]
 
 export default function EventTabs({ eventId }: { eventId: number }) {

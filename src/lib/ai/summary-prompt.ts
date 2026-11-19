@@ -8,11 +8,13 @@ const STATUS_PT: Record<string, string> = { ok: 'No caminho', attention: 'Atenç
 
 type Stamp = string | Date | null | undefined
 const ts = (d: Stamp) => (d ? new Date(d).getTime() : 0)
+/** Linhas com data (dd/mm) em vez de números: o modelo confundia "1., 2." com números de bloco. */
+const day = (d: Stamp) => (d ? new Date(d).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', timeZone: 'America/Sao_Paulo' }) : '--/--')
 
 /** Texto do usuário vai como dado: corta o tamanho e neutraliza delimitadores falsos. */
-function clip(v: string | null | undefined): string {
+export function clip(v: string | null | undefined, tag = 'registros'): string {
   if (!v) return ''
-  const t = v.replace(/\s+/g, ' ').replace(/<\/?\s*registros\s*>/gi, '').trim()
+  const t = v.replace(/\s+/g, ' ').replace(new RegExp(`<\\/?\\s*(registros|${tag})\\s*>`, 'gi'), '').trim()
   return t.length > MAX_FIELD ? t.slice(0, MAX_FIELD) + '…' : t
 }
 const part = (label: string, v: string | null | undefined) => (clip(v) ? `${label}: ${clip(v)}` : '')
@@ -31,9 +33,9 @@ type MentoringRec = {
 }
 
 export function buildMentoringSummaryMessages(team: string, steps: { id: number; label: string }[], records: MentoringRec[]): ChatMessage[] {
-  const lines = lastN(records).map((r, i) => {
+  const lines = lastN(records).map((r) => {
     const idx = steps.findIndex(s => s.id === r.stepId)
-    return `${i + 1}. ` + [
+    return `- ${day(r.createdAt)} · ` + [
       r.block?.label ?? 'Sem bloco',
       r.status ? `Status: ${STATUS_PT[r.status] ?? r.status}` : '',
       idx >= 0 ? `Etapa ${idx + 1} — ${clip(steps[idx].label)}` : '',
@@ -53,7 +55,7 @@ export function buildMentoringSummaryMessages(team: string, steps: { id: number;
 type SpecialistRec = { createdAt: Stamp; topic: string | null; advice: string | null; obs: string | null; block?: { label: string } | null }
 
 export function buildSpecialistSummaryMessages(team: string, records: SpecialistRec[]): ChatMessage[] {
-  const lines = lastN(records).map((r, i) => `${i + 1}. ` + [
+  const lines = lastN(records).map((r) => `- ${day(r.createdAt)} · ` + [
     r.block?.label ?? 'Fora de bloco', part('Tema', r.topic), part('Orientação', r.advice), part('Observações', r.obs),
   ].filter(Boolean).join(' · '))
   return [
@@ -65,7 +67,7 @@ export function buildSpecialistSummaryMessages(team: string, records: Specialist
 }
 
 /** Limpa a saída do modelo: sem markdown/aspas, até 600 caracteres terminando em frase completa. */
-export function cleanSummary(text: string): string | null {
+export function cleanSummary(text: string, maxLen = MAX_SUMMARY): string | null {
   let t = text
     .replace(/^#+\s.*$/gm, '')
     .replace(/[*_`]+/g, '')
@@ -75,8 +77,8 @@ export function cleanSummary(text: string): string | null {
     .replace(/^["“”']+|["“”']+$/g, '')
     .trim()
   if (!t) return null
-  if (t.length > MAX_SUMMARY) {
-    const cut = t.slice(0, MAX_SUMMARY)
+  if (t.length > maxLen) {
+    const cut = t.slice(0, maxLen)
     const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '))
     t = end > 0 ? cut.slice(0, end + 1) : cut.trimEnd() + '…'
   }

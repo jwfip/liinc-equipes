@@ -18,7 +18,7 @@ describe('buildMentoringSummaryMessages', () => {
     expect(user.content).not.toContain('projeto 2\n')
     expect(user.content).toContain('projeto 3')
     expect(user.content).toContain('projeto 14')
-    expect((user.content.match(/^\d+\./gm) ?? []).length).toBe(MAX_RECORDS)
+    expect((user.content.match(/^- /gm) ?? []).length).toBe(MAX_RECORDS)
   })
   it('labels status and step in Portuguese', () => {
     const [, user] = buildMentoringSummaryMessages('ALFA', steps, [rec(1, { status: 'attention', stepId: 2 })])

@@ -16,7 +16,7 @@ export const ACCOUNT_NAV: NavItem = { href: '/conta/senha', label: 'Alterar senh
 export const ADMIN_NAV: NavItem[] = [
   { href: '/admin/eventos',   label: 'Eventos',         short: 'Eventos',   Icon: CalendarDays },
   { href: '/admin/mentores',  label: 'Mentores',        short: 'Mentores',  Icon: Users },
-  { href: '/admin/relatorio', label: 'Relatório (PDF)', short: 'Relatório', Icon: FileText },
+  { href: '/admin/relatorio', label: 'Relatório final', short: 'Relatório', Icon: FileText },
 ]
 
 export const isActive = (pathname: string, href: string) => pathname === href || pathname.startsWith(href + '/')
