@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/db'
-import { teams, mentors, blocks, users, loginAttempts } from '@/schema'
+import { teams, mentors, blocks, users, loginAttempts, eventSteps, teamStepChanges } from '@/schema'
 import { and, eq } from 'drizzle-orm'
 import { requireAdmin } from '@/lib/guards'
 import { revalidatePath } from 'next/cache'
@@ -140,6 +140,27 @@ export async function deactivateBlock(eventId: number, id: number): Promise<Acti
     await db.update(blocks).set({ active: false }).where(and(eq(blocks.id, id), eq(blocks.eventId, eventId)))
     revalidateEventPages(eventId)
     return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
+}
+
+// ── Ajuste de etapa pela organização ─────────────────────────
+
+export async function adjustTeamStep(teamId: string, stepId: number): Promise<ActionResult> {
+  try {
+    const session = await requireAdmin()
+    const team = await db.query.teams.findFirst({ where: eq(teams.id, teamId) })
+    if (!team) return { ok: false, error: 'Equipe não encontrada.' }
+    const step = await db.query.eventSteps.findFirst({
+      where: and(eq(eventSteps.id, stepId), eq(eventSteps.eventId, team.eventId)),
+    })
+    if (!step) return { ok: false, error: 'Etapa inválida para este evento.' }
+    await db.insert(teamStepChanges).values({
+      eventId: team.eventId, teamId, stepId, changedBy: session.user.id,
+    })
+    revalidatePath('/painel')
+    return { ok: true, message: `Etapa ajustada para ${step.label}.` }
   } catch (err) {
     return toActionError(err)
   }
