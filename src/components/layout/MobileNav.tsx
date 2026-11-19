@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X, LogOut } from 'lucide-react'
@@ -17,7 +17,25 @@ interface Props {
 export default function MobileNav({ role, eventRole, userLabel, signOut }: Props) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
+  const moreButton = useRef<HTMLButtonElement>(null)
+  const sheet = useRef<HTMLDivElement>(null)
   useEffect(() => setOpen(false), [pathname])
+
+  // Menu aberto: foco no primeiro item, Esc fecha, página atrás não rola; ao fechar, foco volta ao botão "Mais".
+  useEffect(() => {
+    if (!open) return
+    sheet.current?.querySelector<HTMLElement>('a, button:not([aria-label="Fechar menu"])')?.focus()
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    const overflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKey)
+    const button = moreButton.current
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = overflow
+      button?.focus()
+    }
+  }, [open])
 
   const main = mainNav(eventRole)
   const more = [...(role === 'admin' ? ADMIN_NAV : []), ACCOUNT_NAV]
@@ -27,12 +45,12 @@ export default function MobileNav({ role, eventRole, userLabel, signOut }: Props
     <>
       {open && (
         <div className="md:hidden fixed inset-0 z-[60] bg-navy/60" onClick={() => setOpen(false)}>
-          <div role="dialog" aria-modal="true" aria-label="Mais opções"
+          <div ref={sheet} role="dialog" aria-modal="true" aria-label="Mais opções"
             className="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl p-4 pb-[calc(env(safe-area-inset-bottom)+5rem)] shadow-2xl"
             onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-2 px-2">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest truncate">{userLabel}</span>
-              <button type="button" onClick={() => setOpen(false)} aria-label="Fechar menu" className="p-2 -mr-2 text-slate-500"><X size={20} /></button>
+              <button type="button" onClick={() => setOpen(false)} aria-label="Fechar menu" className="p-2 -mr-2 text-slate-500"><X aria-hidden="true" size={20} /></button>
             </div>
             <ul className="flex flex-col">
               {more.map(({ href, label, Icon }) => (
@@ -72,7 +90,7 @@ export default function MobileNav({ role, eventRole, userLabel, signOut }: Props
             )
           })}
           <li>
-            <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open}
+            <button ref={moreButton} type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} aria-haspopup="dialog"
               className={`w-full flex flex-col items-center justify-center gap-0.5 min-h-[56px] text-[11px] font-display font-bold ${
                 open || moreActive ? 'text-orange' : 'text-slate-300'}`}>
               <Menu aria-hidden="true" size={22} /> Mais

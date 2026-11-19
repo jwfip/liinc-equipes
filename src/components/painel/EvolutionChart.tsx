@@ -1,4 +1,4 @@
-import { describeEvolution, STATUS_LABEL, type EvolutionPoint } from '@/lib/evolution'
+import { describeEvolution, chartLayout, CHART_PAD as PAD, CHART_ROW as ROW, STATUS_LABEL, type EvolutionPoint } from '@/lib/evolution'
 
 const STATUS_COLOR: Record<string, string> = {
   ok: '#16A34A', attention: '#CA8A04', emergency: '#DC2626', flying: '#2563EB',
@@ -6,11 +6,10 @@ const STATUS_COLOR: Record<string, string> = {
 const NAVY = '#000222'
 const ORANGE = '#F47B20'
 
-const PAD = { l: 34, r: 18, t: 14, b: 34 }
-const ROW = 30       // altura por etapa
-const COL = 56       // largura por ponto
-const MAX_X_LABELS = 6
 
+function truncate(t: string, max: number) {
+  return t.length > max ? t.slice(0, max - 1) + '…' : t
+}
 function fmtShort(at: number) {
   return new Date(at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
@@ -33,24 +32,25 @@ export default function EvolutionChart({ steps, points, fit = false }: { steps: 
 
   const n = points.length
   const S = steps.length
-  const W = Math.max(360, PAD.l + PAD.r + (n - 1) * COL + 24)
-  const H = PAD.t + PAD.b + (S - 1) * ROW + 8
+  const { W, H, col, labeled } = chartLayout(n, S, fit)
   const plotW = W - PAD.l - PAD.r
-  const x = (i: number) => (n === 1 ? PAD.l + plotW / 2 : PAD.l + 12 + (i * (plotW - 24)) / (n - 1))
+  const x = (i: number) => (n === 1 ? PAD.l + plotW / 2 : PAD.l + 12 + i * col)
+  const showLabel = new Set(labeled)
+  const r = col < 18 ? 4.5 : 7 // pontos menores quando estão muito próximos (impressão de séries longas)
   const y = (stepIndex: number) => PAD.t + 4 + (S - 1 - stepIndex) * ROW
 
   let d = `M ${x(0)} ${y(points[0].stepIndex)}`
   points.slice(1).forEach((p, i) => { d += ` H ${x(i + 1)} V ${y(p.stepIndex)}` })
 
-  const every = Math.max(1, Math.ceil(n / MAX_X_LABELS))
   const description = describeEvolution(points)
 
   return (
     <figure className="m-0">
       {/* direction: rtl faz o quadro rolável abrir no fim (mentorias mais recentes) sem precisar de JS */}
       <div className={fit ? '' : 'overflow-x-auto -mx-1 px-1'} style={fit ? undefined : { direction: 'rtl' }}>
-        <svg viewBox={`0 0 ${W} ${H}`} width="100%"
-          role="img" aria-label={`Evolução da equipe: ${description}`} className="block" style={fit ? undefined : { direction: 'ltr', minWidth: Math.min(W, 300 + n * 22) }}>
+        {/* Desenhado em pixels reais (sem escala) para o texto manter o tamanho */}
+        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H}
+          role="img" aria-label={`Evolução da equipe: ${description}`} className="block" style={{ direction: 'ltr', maxWidth: 'none' }}>
           {steps.map((s, i) => (
             <g key={s.id}>
               <line x1={PAD.l} x2={W - PAD.r} y1={y(i)} y2={y(i)} stroke="#E2E8F0" strokeDasharray={i === 0 ? undefined : '3 4'} />
@@ -63,12 +63,12 @@ export default function EvolutionChart({ steps, points, fit = false }: { steps: 
           {points.map((p, i) => (
             <g key={i}>
               {p.source === 'organization'
-                ? <circle cx={x(i)} cy={y(p.stepIndex)} r="5.5" fill="#fff" stroke={NAVY} strokeWidth="2.5" />
-                : <circle cx={x(i)} cy={y(p.stepIndex)} r="7" fill={STATUS_COLOR[p.status ?? ''] ?? '#94A3B8'} stroke="#fff" strokeWidth="2.5" />}
+                ? <circle cx={x(i)} cy={y(p.stepIndex)} r={r - 1.5} fill="#fff" stroke={NAVY} strokeWidth="2.5" />
+                : <circle cx={x(i)} cy={y(p.stepIndex)} r={r} fill={STATUS_COLOR[p.status ?? ''] ?? '#94A3B8'} stroke="#fff" strokeWidth="2.5" />}
               <title>{pointTitle(p)}</title>
-              {(i % every === 0 || i === n - 1) && (
-                <text x={x(i)} y={H - 10} textAnchor="middle" fontSize="11" fill="#64748B">
-                  {p.blockLabel ?? fmtShort(p.at)}
+              {showLabel.has(i) && (
+                <text x={x(i)} y={H - 10} textAnchor={i === n - 1 && n > 1 ? 'end' : i === 0 && n > 1 ? 'start' : 'middle'} fontSize="11" fill="#64748B">
+                  {truncate(p.blockLabel ?? fmtShort(p.at), 12)}
                 </text>
               )}
             </g>

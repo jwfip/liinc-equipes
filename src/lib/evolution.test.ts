@@ -33,3 +33,28 @@ describe('describeEvolution', () => {
     expect(describeEvolution(p)).toBe('2 registros: de 1 — Ideação a 2 — Protótipo; status atual Atenção')
   })
 })
+
+import { chartLayout, LABEL_MIN_GAP } from './evolution'
+
+describe('chartLayout', () => {
+  it('uses native size on screen (no scaling): W grows with points', () => {
+    expect(chartLayout(3, 3, false).W).toBe(360)
+    expect(chartLayout(37, 3, false).col).toBe(56)
+  })
+  it('fits the printed page width, shrinking the gap between points', () => {
+    const l = chartLayout(37, 3, true)
+    expect(l.W).toBeLessThanOrEqual(700)
+    expect(l.col).toBeGreaterThanOrEqual(8)
+  })
+  it('does not stretch short series in print', () => {
+    expect(chartLayout(2, 6, true).W).toBe(360)
+  })
+  it('keeps x labels at least LABEL_MIN_GAP apart and always labels the last point', () => {
+    for (const [n, fit] of [[20, false], [37, true], [8, true], [5, false]] as const) {
+      const l = chartLayout(n, 3, fit)
+      const xs = l.labeled.map(i => i * l.col)
+      for (let k = 1; k < xs.length; k++) expect(xs[k] - xs[k - 1]).toBeGreaterThanOrEqual(LABEL_MIN_GAP)
+      expect(l.labeled[l.labeled.length - 1]).toBe(n - 1)
+    }
+  })
+})

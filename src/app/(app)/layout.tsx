@@ -47,7 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </div>
           </div>
           <div className="mt-5">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Evento</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Evento</p>
             {switcher}
           </div>
         </div>

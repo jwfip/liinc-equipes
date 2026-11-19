@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { ChevronDown } from 'lucide-react'
 
 type Team = { id: string; number: number; name: string }
@@ -14,22 +14,42 @@ export default function TeamPicker({ teams, value, onChange }: { teams: Team[]; 
   const filtered = teams.filter(t => `${t.number} ${t.name}`.toLowerCase().includes(search.toLowerCase()))
   const selected = teams.find(t => t.id === value)
   const optionId = (i: number) => `${uid}-opt-${i}`
+  const trigger = useRef<HTMLButtonElement>(null)
+  const root = useRef<HTMLDivElement>(null)
 
-  function choose(t: Team) {
-    onChange(t.id); setSearch(''); setOpen(false)
+  function close(refocus = true) {
+    setOpen(false); setSearch('')
+    if (refocus) trigger.current?.focus()
   }
+  function choose(t: Team) {
+    onChange(t.id); close()
+  }
+
+  // Mantém a opção destacada visível ao navegar com as setas.
+  useEffect(() => {
+    if (open) document.getElementById(optionId(active))?.scrollIntoView({ block: 'nearest' })
+  }, [active, open]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clique fora fecha.
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => { if (!root.current?.contains(e.target as Node)) close(false) }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [open])
 
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'ArrowDown') { e.preventDefault(); setActive(i => Math.min(i + 1, filtered.length - 1)) }
     else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(i => Math.max(i - 1, 0)) }
     else if (e.key === 'Enter') { e.preventDefault(); if (filtered[active]) choose(filtered[active]) }
-    else if (e.key === 'Escape') { e.preventDefault(); setOpen(false) }
+    else if (e.key === 'Escape') { e.preventDefault(); close() }
+    else if (e.key === 'Tab') { close(false) }
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={root}>
       <label className="label" id={`${uid}-label`}>Equipe *</label>
-      <button type="button" aria-labelledby={`${uid}-label`} aria-haspopup="listbox" aria-expanded={open}
+      <button ref={trigger} type="button" aria-labelledby={`${uid}-label`} aria-haspopup="listbox" aria-expanded={open}
         className="input min-h-[46px] cursor-pointer flex items-center justify-between text-left"
         onClick={() => { setOpen(v => !v); setActive(0) }}>
         <span className={selected ? 'text-navy' : 'text-slate-400'}>
