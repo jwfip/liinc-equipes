@@ -1,18 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import AdminForm from '@/components/admin/AdminForm'
 import { changePassword } from '@/actions/account'
 
-export default function ChangePasswordForm({ mandatory }: { mandatory: boolean }) {
+export default function ChangePasswordForm({ mandatory: mandatoryProp }: { mandatory: boolean }) {
+  // Congela o modo inicial: após salvar, a página é revalidada já com mandatory=false
+  // e o formulário voltaria no lugar do botão "Continuar".
+  const [mandatory] = useState(mandatoryProp)
   const [done, setDone] = useState(false)
 
   if (done && mandatory) {
     return (
       <div className="text-center py-4">
         <p className="text-green-700 font-semibold mb-4">✅ Senha definida.</p>
-        <Link href="/painel" className="btn-primary justify-center w-full sm:w-auto">Continuar</Link>
+        {/* <a> e não <Link>: o prefetch do Link guardaria o redirecionamento para /conta/senha feito antes da troca. */}
+        <a href="/painel" className="btn-primary justify-center w-full sm:w-auto">Continuar</a>
       </div>
     )
   }

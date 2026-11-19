@@ -22,7 +22,7 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 | Frontend + Backend | Next.js 14 (App Router, Server Actions) |
 | Banco de dados | Neon (Postgres serverless) via driver `neon-http` |
 | ORM | Drizzle ORM |
-| Autenticação | NextAuth.js v5 (Credentials, JWT) |
+| Autenticação | NextAuth.js v5 (Credentials com senha individual bcrypt, JWT) |
 | Estilo | Tailwind CSS |
 | Testes | Vitest (`npm test`) — regras de negócio puras em `src/lib/*.test.ts` |
 | Deploy | Vercel |
@@ -35,7 +35,8 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 
 ```
 /                                   → redireciona para /painel
-/login                              → login (usuário + código do evento; troca por senha na fase 2)
+/login                              → login (usuário + senha)
+/conta/senha                        → trocar a própria senha (obrigatório enquanto a senha for temporária)
 /painel                             → dashboard do evento selecionado (requer login)
 /mentoria                           → formulário de registro (requer participar do evento)
 /mentoria/edit/[id]                 → edição do próprio registro
@@ -64,7 +65,8 @@ Fonte da verdade: `src/schema.ts`.
 | `teams`, `blocks` | pertencem a um evento (`event_id`) |
 | `mentoring_records` | `event_id`, `kind` (`'mentoring' \| 'specialist'`), `team_id`, `mentor_id`, `block_id`, `status`, `step_id`, textos |
 | `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma |
-| `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; liga-se a `mentors` por `email` |
+| `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; `password_hash`, `must_change_password`; liga-se a `mentors` por `email` |
+| `login_attempts` | falhas de login por usuário (bloqueio) |
 
 ### Migrações
 
@@ -79,6 +81,17 @@ Mudanças com dados vão em SQL idempotente em `drizzle/NNNN_*.sql`, aplicado co
 - Não-admin vê só eventos em que é participante; admin vê todos (inclusive encerrados).
 - Escolha guardada no cookie `liinc_event` (`setCurrentEvent` em `src/actions/events.ts`); regra pura em `src/lib/event-pick.ts`.
 - Sem evento → páginas mostram `NoEventNotice`.
+
+---
+
+## Autenticação
+
+- Login por usuário + senha (`src/auth.ts`, regras puras em `src/lib/login.ts`, `src/lib/lockout.ts`, `src/lib/password.ts`).
+- Senha: mínimo 8 caracteres, diferente do usuário; hash bcrypt custo 10.
+- Admin gera **senha temporária** (10 caracteres, mostrada uma vez) ao cadastrar ou em "Redefinir senha"; `must_change_password = true` faz o middleware levar a pessoa a `/conta/senha` (`src/lib/auth-routes.ts`).
+- Bloqueio: 5 falhas em 15 minutos para o mesmo usuário. Mensagem genérica para usuário inexistente e senha errada.
+- Bootstrap/recuperação do admin: `npm run set-password -- <usuario>`.
+- Sem recuperação por e-mail.
 
 ---
 
@@ -128,7 +141,6 @@ theme: {
 DATABASE_URL=postgresql://...          # connection string do Neon
 AUTH_SECRET=...                        # openssl rand -hex 32
 AUTH_URL=https://seudominio.vercel.app
-EVENT_ACCESS_CODE=...                  # código de login (removido na fase 2)
 ```
 
 Configurar também na Vercel em **Settings → Environment Variables**.
