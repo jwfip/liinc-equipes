@@ -1,10 +1,17 @@
 import { auth, signOut } from '@/auth'
 import { redirect } from 'next/navigation'
 import SidebarNav from '@/components/layout/SidebarNav'
+import EventSwitcher from '@/components/layout/EventSwitcher'
+import { getEventContext } from '@/lib/event-context'
+
+const ROLE_LABEL: Record<string, string> = { mentor: 'Mentor', specialist: 'Especialista' }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   if (!session) redirect('/login')
+  const ctx = await getEventContext()
+  const roleLabel = ctx.isAdmin ? 'Administrador' : (ctx.role ? ROLE_LABEL[ctx.role] : 'Sem evento')
+  const switcher = <EventSwitcher options={ctx.options} current={ctx.event} isAdmin={ctx.isAdmin} />
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row text-navy font-sans">
@@ -19,6 +26,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <button type="submit" className="text-xs font-semibold text-slate-300 hover:text-white transition-colors">Sair</button>
         </form>
       </header>
+
+      {/* Mobile event switcher */}
+      <div className="md:hidden bg-navy px-4 pb-3">{switcher}</div>
 
       {/* Mobile Nav */}
       <div className="md:hidden bg-navy border-t border-white/10 overflow-x-auto">
@@ -35,8 +45,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="w-px h-8 bg-white/15" />
             <div>
               <p className="font-display font-semibold text-[15px] leading-tight text-white/90 tracking-wide">Mentorias</p>
-              <p className="text-[10px] text-orange/80 uppercase tracking-widest font-bold mt-1">{session.user.role === 'admin' ? 'Administrador' : 'Mentor'}</p>
+              <p className="text-[10px] text-orange/80 uppercase tracking-widest font-bold mt-1">{roleLabel}</p>
             </div>
+          </div>
+          <div className="mt-5">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Evento</p>
+            {switcher}
           </div>
         </div>
         <div className="flex-1 overflow-y-auto py-6">

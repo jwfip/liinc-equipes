@@ -9,9 +9,8 @@ const NAV_PUBLIC = [
 ]
 
 const NAV_ADMIN = [
-  { href: '/admin/equipes',  icon: '👥', label: 'Equipes' },
-  { href: '/admin/mentores', icon: '🎓', label: 'Mentores' },
-  { href: '/admin/blocos',   icon: '🕐', label: 'Blocos & Evento' },
+  { href: '/admin/eventos',   icon: '📅', label: 'Eventos' },
+  { href: '/admin/mentores',  icon: '🎓', label: 'Mentores' },
   { href: '/admin/relatorio', icon: '📄', label: 'Relatório (PDF)' },
 ]
 

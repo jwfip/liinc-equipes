@@ -1,7 +1,8 @@
 import { db } from '@/db'
-import { blocks, teams, mentoringRecords } from '@/schema'
+import { mentoringRecords } from '@/schema'
 import { eq } from 'drizzle-orm'
-import { auth, signOut } from '@/auth'
+import { auth } from '@/auth'
+import { getActiveTeams, getEventSteps } from '@/lib/event-data'
 import MentoriaForm from '@/components/mentoria/MentoriaForm'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
@@ -43,10 +44,7 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
     )
   }
 
-  const activeTeams = await db.query.teams.findMany({
-    where: eq(teams.active, true),
-    orderBy: (t, { asc }) => [asc(t.number)],
-  })
+  const [activeTeams, steps] = await Promise.all([getActiveTeams(record.eventId), getEventSteps(record.eventId)])
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
@@ -59,6 +57,7 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
       </div>
       <MentoriaForm
         teams={activeTeams}
+        steps={steps}
         activeBlock={record.block ? { id: record.block.id, label: record.block.label, date: record.block.date } : null}
         recordToEdit={record}
       />

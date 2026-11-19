@@ -1,87 +1,86 @@
 'use server'
 
-import { auth } from '@/auth'
-import { db } from '@/db'
-import { mentoringRecords, mentors, blocks } from '@/schema'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
+import { db } from '@/db'
+import { mentoringRecords, eventSteps, teams } from '@/schema'
+import { getEventContext } from '@/lib/event-context'
+import { getActiveBlock } from '@/lib/event-data'
+import { assertTeamInEvent } from '@/lib/records'
+import { registrationError } from '@/lib/participation'
+import { toActionError, type ActionResult } from '@/lib/action-result'
 
-export async function submitMentoria(formData: FormData) {
-  const session = await auth()
-  if (!session?.user?.email) throw new Error('Não autenticado')
+const STATUSES = ['ok', 'attention', 'emergency', 'flying']
+const opt = (fd: FormData, k: string) => (String(fd.get(k) ?? '').trim() || null)
 
-  const mentor = await db.query.mentors.findFirst({
-    where: eq(mentors.email, session.user.email),
-  })
-  if (!mentor) throw new Error('Mentor não encontrado. Contate o organizador.')
-  if (!mentor.active) throw new Error('Seu acesso de mentor está desativado.')
-
-  const block = await db.query.blocks.findFirst({
-    where: eq(blocks.active, true),
-  })
-  if (!block) throw new Error('Nenhum bloco ativo no momento.')
-
-  const teamId = formData.get('teamId') as string
-  const status = formData.get('status') as string
-  const working = formData.get('working') as string
-  const advice  = formData.get('advice')  as string
-  const step    = parseInt(formData.get('step') as string) || 1
-
-  if (!teamId || !status || !working || !advice) {
-    throw new Error('Campos obrigatórios não preenchidos.')
-  }
-
-  await db.insert(mentoringRecords).values({
-    teamId,
-    mentorId: mentor.id,
-    blockId:  block.id,
-    status,
-    working,
-    advice,
-    pros:       (formData.get('pros') as string) || null,
-    cons:       (formData.get('cons') as string) || null,
-    obs:        (formData.get('obs')  as string) || null,
-    suggestion: (formData.get('suggestion') as string) || null,
-    step,
-  })
-
-  revalidatePath('/painel')
+async function requireParticipant() {
+  const ctx = await getEventContext()
+  const error = registrationError(ctx)
+  if (error) throw new Error(error)
+  return { eventId: ctx.event!.id, mentorId: ctx.mentorId! }
 }
 
-export async function updateMentoria(recordId: string, formData: FormData) {
-  const session = await auth()
-  if (!session?.user?.email) throw new Error('Não autenticado')
+async function readFields(fd: FormData, eventId: number) {
+  const status  = String(fd.get('status') ?? '')
+  const working = opt(fd, 'working')
+  const advice  = opt(fd, 'advice')
+  const stepId  = Number(fd.get('stepId'))
+  if (!STATUSES.includes(status) || !working || !advice) throw new Error('Campos obrigatórios não preenchidos.')
 
-  const mentor = await db.query.mentors.findFirst({
-    where: eq(mentors.email, session.user.email),
-  })
-  if (!mentor) throw new Error('Mentor não encontrado. Contate o organizador.')
+  const step = Number.isInteger(stepId) && stepId > 0
+    ? await db.query.eventSteps.findFirst({ where: and(eq(eventSteps.id, stepId), eq(eventSteps.eventId, eventId)) })
+    : undefined
+  if (!step) throw new Error('Selecione a etapa da equipe.')
 
-  const record = await db.query.mentoringRecords.findFirst({
-    where: eq(mentoringRecords.id, recordId)
-  })
-  if (!record) throw new Error('Registro não encontrado.')
-  if (record.mentorId !== mentor.id) throw new Error('Você não tem permissão para editar este registro.')
-
-  const status = formData.get('status') as string
-  const working = formData.get('working') as string
-  const advice  = formData.get('advice')  as string
-  const step    = parseInt(formData.get('step') as string) || 1
-
-  if (!status || !working || !advice) {
-    throw new Error('Campos obrigatórios não preenchidos.')
+  return {
+    status, working, advice, stepId: step.id,
+    pros: opt(fd, 'pros'), cons: opt(fd, 'cons'), obs: opt(fd, 'obs'), suggestion: opt(fd, 'suggestion'),
   }
+}
 
-  await db.update(mentoringRecords).set({
-    status,
-    working,
-    advice,
-    pros:       (formData.get('pros') as string) || null,
-    cons:       (formData.get('cons') as string) || null,
-    obs:        (formData.get('obs')  as string) || null,
-    suggestion: (formData.get('suggestion') as string) || null,
-    step,
-  }).where(eq(mentoringRecords.id, recordId))
+// As actions retornam ActionResult: em produção o Next.js troca mensagens de erro lançadas
+// por uma genérica, então o motivo da recusa precisa voltar como valor.
 
-  revalidatePath('/painel')
+export async function submitMentoria(formData: FormData): Promise<ActionResult> {
+  try {
+    const { eventId, mentorId } = await requireParticipant()
+
+    const block = await getActiveBlock(eventId)
+    if (!block) throw new Error('Nenhum bloco ativo no momento.')
+
+    const teamId = String(formData.get('teamId') ?? '')
+    const team = teamId ? await db.query.teams.findFirst({ where: eq(teams.id, teamId) }) : undefined
+    assertTeamInEvent(team, eventId)
+
+    const fields = await readFields(formData, eventId)
+    await db.insert(mentoringRecords).values({
+      ...fields, eventId, teamId, mentorId, blockId: block.id, kind: 'mentoring',
+    })
+
+    revalidatePath('/painel')
+    return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
+}
+
+export async function updateMentoria(recordId: string, formData: FormData): Promise<ActionResult> {
+  try {
+    const { mentorId, mentorActive } = await getEventContext()
+    if (!mentorId) throw new Error('Não autenticado')
+    if (!mentorActive) throw new Error('Seu acesso de mentor está desativado.')
+
+    const record = await db.query.mentoringRecords.findFirst({ where: eq(mentoringRecords.id, recordId) })
+    if (!record) throw new Error('Registro não encontrado.')
+    if (record.mentorId !== mentorId) throw new Error('Você não tem permissão para editar este registro.')
+
+    // Edição vale no evento do próprio registro, mesmo que o usuário esteja vendo outro evento.
+    const fields = await readFields(formData, record.eventId)
+    await db.update(mentoringRecords).set(fields).where(eq(mentoringRecords.id, recordId))
+
+    revalidatePath('/painel')
+    return { ok: true }
+  } catch (err) {
+    return toActionError(err)
+  }
 }

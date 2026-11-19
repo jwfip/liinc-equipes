@@ -2,22 +2,23 @@
 
 import { useState, useTransition } from 'react'
 import { submitMentoria, updateMentoria } from '@/actions/mentoria'
-import { STATUS_OPTIONS, PROCESS_STEPS } from '@/lib/constants'
+import { STATUS_OPTIONS, type Step } from '@/lib/constants'
 
 type Team  = { id: string; number: number; name: string }
 type Block = { id: number; label: string; date: string } | null
 
 interface Props {
   teams:        Team[]
+  steps:        Step[]
   activeBlock:  Block
   recordToEdit?: any
 }
 
-export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props) {
+export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }: Props) {
   const [isPending, startTransition] = useTransition()
   const [selectedTeam, setSelectedTeam] = useState(recordToEdit?.teamId || '')
   const [selectedStatus, setSelectedStatus] = useState(recordToEdit?.status || '')
-  const [selectedStep, setSelectedStep] = useState(recordToEdit?.step || 1)
+  const [selectedStep, setSelectedStep] = useState<number | null>(recordToEdit?.stepId ?? null)
   const [teamSearch, setTeamSearch] = useState('')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -46,22 +47,24 @@ export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props
     setError(null)
     startTransition(async () => {
       try {
-        if (recordToEdit) {
-          await updateMentoria(recordToEdit.id, formData)
-        } else {
-          await submitMentoria(formData)
+        const result = recordToEdit
+          ? await updateMentoria(recordToEdit.id, formData)
+          : await submitMentoria(formData)
+        if (!result.ok) {
+          setError(result.error)
+          return
         }
         setSuccess(true)
         if (!recordToEdit) {
           setSelectedTeam('')
           setSelectedStatus('')
-          setSelectedStep(1)
+          setSelectedStep(null)
           setTeamSearch('')
           e.currentTarget?.reset()
         }
         setTimeout(() => setSuccess(false), 4000)
       } catch (err: any) {
-        setError(err.message)
+        setError(err?.message || 'Erro inesperado. Tente novamente.')
       }
     })
   }
@@ -138,31 +141,29 @@ export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props
 
       {/* Step Progress Selector */}
       <div>
-        <div className="flex items-center justify-between">
-          <label className="label">Em qual etapa do processo a equipe está? *</label>
-          <span className="text-[11px] font-bold text-orange">Etapa {selectedStep} — {PROCESS_STEPS[selectedStep - 1]}</span>
+        <div className="flex items-center justify-between gap-2">
+          <label className="label" id="step-label">Em qual etapa do processo a equipe está? *</label>
         </div>
-        <div className="flex gap-2 mt-2">
-          {[1, 2, 3, 4, 5, 6].map(s => {
-            const isSelected = selectedStep === s
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSelectedStep(s)}
-                className={`flex-1 py-2.5 rounded-xl border-2 font-display font-bold text-xs transition-all flex flex-col items-center justify-center
-                  ${isSelected
-                    ? 'border-orange bg-orange/5 text-orange shadow-sm'
-                    : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:border-slate-300'
-                  }`}
-              >
-                <span className="text-[9px] uppercase text-slate-400 font-bold tracking-wider leading-none mb-1 opacity-85">Etapa</span>
-                <span className="text-base leading-none">{s}</span>
-              </button>
-            )
-          })}
-        </div>
-        <input type="hidden" name="step" value={selectedStep} />
+        {steps.length === 0 ? (
+          <p className="text-sm text-red-600 mt-2">Este evento ainda não tem etapas configuradas. Fale com a organização.</p>
+        ) : (
+          <div role="radiogroup" aria-labelledby="step-label" className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+            {steps.map((s, i) => {
+              const isSelected = selectedStep === s.id
+              return (
+                <button key={s.id} type="button" role="radio" aria-checked={isSelected} onClick={() => setSelectedStep(s.id)}
+                  className={`min-h-[52px] px-3 py-2 rounded-xl border-2 text-left transition-all flex items-center gap-2
+                    ${isSelected
+                      ? 'border-orange bg-orange/5 text-orange shadow-sm'
+                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:border-slate-300'}`}>
+                  <span className={`w-6 h-6 rounded-full font-display font-bold text-[11px] flex items-center justify-center shrink-0 ${isSelected ? 'bg-orange text-white' : 'bg-slate-100 text-slate-500'}`}>{i + 1}</span>
+                  <span className="text-[12px] font-bold leading-tight">{s.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        )}
+        <input type="hidden" name="stepId" value={selectedStep ?? ''} />
       </div>
 
       <Textarea name="working" label="Qual o projeto da equipe atualmente? *" defaultValue={recordToEdit?.working} required />
@@ -175,7 +176,7 @@ export default function MentoriaForm({ teams, activeBlock, recordToEdit }: Props
       {error   && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
       {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold">✅ Mentoria {recordToEdit ? 'atualizada' : 'registrada'}!</div>}
 
-      <button type="submit" disabled={isPending || !selectedTeam || !selectedStatus}
+      <button type="submit" disabled={isPending || !selectedTeam || !selectedStatus || !selectedStep}
         className="btn-primary w-full justify-center py-3 text-base">
         {isPending ? (recordToEdit ? 'Atualizando...' : 'Registrando...') : (recordToEdit ? 'Salvar alterações' : 'Registrar mentoria')}
       </button>

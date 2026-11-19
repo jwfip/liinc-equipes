@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { PROCESS_STEPS } from '@/lib/constants'
+import StepProgress from './StepProgress'
 
-export default function TeamCard({ team, record, onHistoryClick }: any) {
+export default function TeamCard({ team, record, steps, onHistoryClick }: any) {
   const [expanded, setExpanded] = useState(false)
   
   const statusMap: any = {
@@ -16,15 +16,6 @@ export default function TeamCard({ team, record, onHistoryClick }: any) {
   
   const meta = statusMap[record?.status || 'none']
   
-  const getStep = (r: any) => {
-    if (!r) return 1
-    if (typeof r.step === 'number') return r.step
-    if (r.status === 'emergency') return 1
-    const w = (r.working || '').toLowerCase()
-    if ((w.includes('soluç') || w.includes('solução')) && !w.includes('definindo')) return 2
-    return 1
-  }
-  const step = getStep(record)
 
   return (
     <div className={`bg-white rounded-xl shadow-sm overflow-hidden border transition-all hover:shadow-lg hover:-translate-y-0.5 ${meta.card}`}>
@@ -54,14 +45,8 @@ export default function TeamCard({ team, record, onHistoryClick }: any) {
 
         {record ? (
           <>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Etapa do processo</span>
-              <span className="text-[11px] font-bold text-orange">{step} — {PROCESS_STEPS[step - 1]}</span>
-            </div>
-            <div className="flex gap-1 mb-3.5">
-              {[1,2,3,4,5,6].map(i => (
-                <div key={i} className={`flex-1 h-1.5 rounded-full ${i < step ? 'bg-green-500' : i === step ? 'bg-orange' : 'bg-slate-200'}`} />
-              ))}
+            <div className="mb-3.5">
+              <StepProgress steps={steps} current={record.step ?? null} />
             </div>
 
             <div className="mb-2">
