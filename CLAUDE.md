@@ -48,7 +48,8 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /admin/eventos/[id]/participantes   → escalar mentores (papel Mentor/Especialista), copiar de outro evento
 /admin/mentores                     → cadastro global de pessoas
 /admin/relatorio                    → relatório imprimível do evento selecionado
-/api/records                        → endpoint do polling (registros do evento selecionado)
+/api/records                        → endpoint do polling (registros, ajustes de etapa e resumos do evento selecionado)
+/api/transcribe                     → upload do relato por áudio (Groq Whisper + extração)
 ```
 
 ---
@@ -100,7 +101,7 @@ Mudanças com dados vão em SQL idempotente em `drizzle/NNNN_*.sql`, aplicado co
 ## IA (Groq)
 
 - Cliente em `src/lib/groq.ts` (`chat`, `transcribe`; timeout 20 s; sem SDK). Chave só no servidor.
-- **Resumos** (`team_summaries`, um por equipe e tipo `mentoring`/`specialist`): `refreshTeamSummary` em `src/actions/summaries.ts`, disparado pelos formulários depois de salvar (em segundo plano; falha nunca impede o registro). Prompts e limpeza em `src/lib/ai/summary-prompt.ts` (últimos 12 registros, conteúdo entre `<registros>` tratado como dado).
+- **Resumos** (`team_summaries`, um por equipe e tipo `mentoring`/`specialist`): `generateTeamSummary` em `src/lib/ai/team-summary.ts`, disparado no servidor pelas actions de mentoria/atendimento depois de salvar via `waitUntil` (`@vercel/functions`) — o mentor não espera e falha nunca impede o registro. Botão "Gerar/Atualizar resumo" usa `refreshTeamSummary` (`src/actions/summaries.ts`). Prompts e limpeza em `src/lib/ai/summary-prompt.ts` (últimos 12 registros, conteúdo entre `<registros>` tratado como dado).
 - **Relato por áudio**: `AudioRecorder` → `POST /api/transcribe` (única outra API route; upload binário) → Whisper + extração em JSON validada por `parseExtraction` (`src/lib/ai/extraction.ts`). Preenche só campos vazios; status/etapa marcados "Sugerido pela IA — confirme". Áudio não é guardado; transcrição vai em `audio_transcript`.
 
 ---
