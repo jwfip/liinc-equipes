@@ -47,7 +47,8 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /admin/eventos/[id]/blocos          → blocos do evento (1 ativo por evento)
 /admin/eventos/[id]/participantes   → escalar mentores (papel Mentor/Especialista), copiar de outro evento
 /admin/mentores                     → cadastro global de pessoas
-/admin/relatorio                    → relatório imprimível do evento selecionado
+/admin/eventos/[id]/relatorio       → relatório final para a empresa (capa + página por equipe, PDF pela impressão)
+/admin/relatorio                    → redireciona para o relatório final do evento selecionado
 /api/records                        → endpoint do polling (registros, ajustes de etapa e resumos do evento selecionado)
 /api/transcribe                     → upload do relato por áudio (Groq Whisper + extração)
 ```
@@ -69,7 +70,7 @@ Fonte da verdade: `src/schema.ts`.
 | `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma |
 | `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; `password_hash`, `must_change_password`; liga-se a `mentors` por `email` |
 | `login_attempts` | falhas de login por usuário (bloqueio) |
-| `team_summaries` | resumo por IA atual de cada equipe (`kind`, `content`, `based_on_record_id`) |
+| `team_summaries` | resumo atual de cada equipe por `kind`: `mentoring`, `specialist` (painel) e `final` (parecer do relatório, editável; `edited_by_admin` protege o texto) |
 
 ### Migrações
 
@@ -103,6 +104,13 @@ Mudanças com dados vão em SQL idempotente em `drizzle/NNNN_*.sql`, aplicado co
 - Cliente em `src/lib/groq.ts` (`chat`, `transcribe`; timeout 20 s; sem SDK). Chave só no servidor.
 - **Resumos** (`team_summaries`, um por equipe e tipo `mentoring`/`specialist`): `generateTeamSummary` em `src/lib/ai/team-summary.ts`, disparado no servidor pelas actions de mentoria/atendimento depois de salvar via `waitUntil` (`@vercel/functions`) — o mentor não espera e falha nunca impede o registro. Botão "Gerar/Atualizar resumo" usa `refreshTeamSummary` (`src/actions/summaries.ts`). Prompts e limpeza em `src/lib/ai/summary-prompt.ts` (últimos 12 registros, conteúdo entre `<registros>` tratado como dado).
 - **Relato por áudio**: `AudioRecorder` → `POST /api/transcribe` (única outra API route; upload binário) → Whisper + extração em JSON validada por `parseExtraction` (`src/lib/ai/extraction.ts`). Preenche só campos vazios; status/etapa marcados "Sugerido pela IA — confirme". Áudio não é guardado; transcrição vai em `audio_transcript`.
+
+---
+
+## Relatório final
+
+- Página `src/app/(print)/admin/eventos/[id]/relatorio/page.tsx` (só admin). Seções ocultáveis pela URL `?ocultar=` (`src/lib/report/options.ts`); padrão oculta `obs` e `suggestion` (notas internas).
+- Parecer final por equipe: `generateFinalSummary` (`src/lib/ai/team-summary.ts`, prompt em `src/lib/ai/final-summary.ts`, sem notas internas), ações `generateFinal`/`saveFinalSummary` em `src/actions/report.ts`. "Gerar resumos finais" roda no navegador, uma equipe por vez; textos editados pelo admin não são substituídos sem confirmação.
 
 ---
 
