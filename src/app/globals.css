@@ -31,4 +31,12 @@
   .label {
     @apply block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2;
   }
+  /* Selos de status (eram usados no código sem estar definidos) */
+  .badge-ok, .badge-attention, .badge-emergency, .badge-flying {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold border;
+  }
+  .badge-ok        { @apply bg-green-50  text-green-700  border-green-200; }
+  .badge-attention { @apply bg-yellow-50 text-yellow-800 border-yellow-200; }
+  .badge-emergency { @apply bg-red-50    text-red-700    border-red-200; }
+  .badge-flying    { @apply bg-blue-50   text-blue-700   border-blue-200; }
 }

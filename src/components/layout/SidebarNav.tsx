@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 const NAV_PUBLIC = [
   { href: '/painel',   icon: '📊', label: 'Painel Geral' },
   { href: '/mentoria', icon: '📝', label: 'Nova Mentoria' },
+  { href: '/conta/senha', icon: '🔑', label: 'Alterar senha' },
 ]
 
 const NAV_ADMIN = [

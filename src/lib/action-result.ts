@@ -1,4 +1,7 @@
-export type ActionResult = { ok: true; message?: string } | { ok: false; error: string }
+/** `secret`: valor sensível (ex.: senha temporária) exibido uma única vez; `subject` diz de quem é. */
+export type ActionResult =
+  | { ok: true; message?: string; secret?: string; subject?: string }
+  | { ok: false; error: string }
 
 function pgCode(err: unknown): string | undefined {
   if (!err || typeof err !== 'object') return undefined

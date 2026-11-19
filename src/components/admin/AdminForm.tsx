@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react'
 import type { ActionResult } from '@/lib/action-result'
+import TempPasswordNotice from './TempPasswordNotice'
 
 interface Props {
   action:          (fd: FormData) => Promise<ActionResult>
@@ -18,11 +19,13 @@ export default function AdminForm({
   const formRef = useRef<HTMLFormElement>(null)
   const [isPending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null)
+  const [secret, setSecret] = useState<{ subject: string; value: string } | null>(null)
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const fd = new FormData(e.currentTarget)
     setFeedback(null)
+    setSecret(null)
     startTransition(async () => {
       let result: ActionResult
       try {
@@ -33,7 +36,8 @@ export default function AdminForm({
       if (result.ok) {
         if (resetOnSuccess) formRef.current?.reset()
         setFeedback({ ok: true, text: result.message ?? successMessage })
-        setTimeout(() => setFeedback(f => (f?.ok ? null : f)), 3000)
+        if (result.secret) setSecret({ subject: result.subject ?? '', value: result.secret })
+        else setTimeout(() => setFeedback(f => (f?.ok ? null : f)), 3000)
       } else {
         setFeedback({ ok: false, text: result.error })
       }
@@ -41,7 +45,7 @@ export default function AdminForm({
   }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit} method="post" /* se o JS não carregar, senhas não vão para a URL */>
       <div className={className ?? 'flex flex-col sm:flex-row gap-3'}>
         {children}
         <div className="flex items-end">
@@ -55,6 +59,7 @@ export default function AdminForm({
           {feedback.ok ? '✅ ' : ''}{feedback.text}
         </p>
       )}
+      {secret && <TempPasswordNotice username={secret.subject} password={secret.value} />}
     </form>
   )
 }

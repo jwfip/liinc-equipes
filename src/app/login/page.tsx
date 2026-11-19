@@ -1,10 +1,16 @@
+import { redirect } from 'next/navigation'
+import { CredentialsSignin } from 'next-auth'
 import { signIn } from '@/auth'
-import { AuthError } from 'next-auth'
+import { loginMessage } from '@/lib/login'
 
-export default function LoginPage({ searchParams }: { searchParams: { error?: string } }) {
-  const errorMsg = searchParams.error === 'CredentialsSignin' 
-    ? 'Usuário ou código incorretos.' 
-    : searchParams.error ? 'Ocorreu um erro ao fazer login.' : null
+function messageFor(error?: string, code?: string) {
+  if (!error) return null
+  if (error === 'CredentialsSignin') return loginMessage(code)
+  return 'Ocorreu um erro ao fazer login. Tente de novo.'
+}
+
+export default function LoginPage({ searchParams }: { searchParams: { error?: string; code?: string } }) {
+  const errorMsg = messageFor(searchParams.error, searchParams.code)
 
   return (
     <div className="min-h-screen bg-navy flex items-center justify-center px-4">
@@ -23,25 +29,27 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
               'use server'
               try {
                 await signIn('credentials', {
-                  username: formData.get('username'),
-                  code:     formData.get('code'),
+                  username:   formData.get('username'),
+                  password:   formData.get('password'),
                   redirectTo: '/painel',
                 })
               } catch (error) {
-                if (error instanceof AuthError) {
-                  // NextAuth redirects to /login?error=CredentialsSignin on failure
-                  throw error
+                if (error instanceof CredentialsSignin) {
+                  redirect(`/login?error=CredentialsSignin&code=${encodeURIComponent(error.code)}`)
                 }
-                throw error
+                throw error // inclui o redirect de sucesso do NextAuth
               }
             }}
             className="space-y-4"
           >
             <div>
-              <label className="label">Nome de Usuário</label>
+              <label className="label" htmlFor="username">Nome de usuário</label>
               <input
+                id="username"
                 type="text"
                 name="username"
+                autoComplete="username"
+                autoCapitalize="none"
                 required
                 placeholder="Ex: joao.silva"
                 className="input"
@@ -49,18 +57,20 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
               />
             </div>
             <div>
-              <label className="label">Código do Evento</label>
+              <label className="label" htmlFor="password">Senha</label>
               <input
+                id="password"
                 type="password"
-                name="code"
+                name="password"
+                autoComplete="current-password"
                 required
-                placeholder="Senha de acesso"
+                placeholder="Sua senha"
                 className="input"
               />
             </div>
             
             {errorMsg && (
-              <div className="bg-red-600/20 border border-red-500/30 rounded-lg p-3 text-sm text-red-400 font-semibold text-center">
+              <div role="alert" className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700 font-semibold text-center">
                 {errorMsg}
               </div>
             )}
