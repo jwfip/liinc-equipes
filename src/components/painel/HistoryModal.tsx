@@ -6,6 +6,7 @@ import { X, MessagesSquare, User, ThumbsUp, Wrench, Pin, Lightbulb, Pencil, type
 import { StatusIcon } from '@/components/ui/StatusIcon'
 import StepProgress from './StepProgress'
 import EvolutionChart from './EvolutionChart'
+import SummaryBox from './SummaryBox'
 import { evolutionPoints } from '@/lib/evolution'
 import type { RecordWithRelations, Step } from '@/lib/constants'
 import type { StepChange } from '@/lib/records'
@@ -22,6 +23,8 @@ interface Props {
   initialTab:  Tab
   currentUser: string
   onClose:     () => void
+  mentoringSummary?:  React.ComponentProps<typeof SummaryBox>
+  specialistSummary?: React.ComponentProps<typeof SummaryBox>
 }
 
 const STATUS: Record<string, { label: string; pill: string; dot: string }> = {
@@ -38,7 +41,7 @@ function fmtDateTime(d: string | Date | null) {
 const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 const names = (rs: RecordWithRelations[]) => Array.from(new Set(rs.map(r => r.mentor?.name).filter(Boolean)))
 
-export default function HistoryModal({ team, mentoring, specialist, stepChanges, steps, initialTab, currentUser, onClose }: Props) {
+export default function HistoryModal({ team, mentoring, specialist, stepChanges, steps, initialTab, currentUser, onClose, mentoringSummary, specialistSummary }: Props) {
   const [tab, setTab] = useState<Tab>(initialTab)
 
   useEffect(() => {
@@ -99,6 +102,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
               <div className="text-center py-10 text-slate-400 text-sm">Nenhuma mentoria registrada ainda.</div>
             ) : (
               <>
+              {mentoringSummary && <div className="mb-4"><SummaryBox {...mentoringSummary} /></div>}
               {points.length > 0 && (
                 <section className="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm" aria-label="Evolução da equipe">
                   <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Evolução</h3>
@@ -124,6 +128,8 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
           ) : atendimentos.length === 0 ? (
             <div className="text-center py-10 text-slate-400 text-sm">Nenhum atendimento de especialista ainda.</div>
           ) : (
+            <>
+            {specialistSummary && <div className="mb-6"><SummaryBox {...specialistSummary} /></div>}
             <Timeline>
               {atendimentos.map(r => (
                 <div key={r.id} className="relative">
@@ -142,6 +148,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                 </div>
               ))}
             </Timeline>
+            </>
           )}
         </div>
       </div>

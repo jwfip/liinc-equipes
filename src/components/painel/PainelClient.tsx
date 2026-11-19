@@ -9,12 +9,15 @@ import SummaryStrip from './SummaryStrip'
 import FilterBar    from './FilterBar'
 import TeamCard     from './TeamCard'
 import HistoryModal from './HistoryModal'
+import type { TeamSummary } from './SummaryBox'
+import { isSummaryStale } from '@/lib/ai/summary-prompt'
 
 type Team = { id: string; number: number; name: string; active: boolean }
 
 interface Props {
   initialRecords:     RecordWithRelations[]
   initialStepChanges: StepChange[]
+  initialSummaries:   TeamSummary[]
   teams:              Team[]
   steps:              Step[]
   activeBlock:        { label: string } | null
@@ -33,10 +36,11 @@ const DOT: Record<string, string> = { emergency: 'bg-red-600', attention: 'bg-ye
 const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 export default function PainelClient({
-  initialRecords, initialStepChanges, teams, steps, currentUser, viewerRole, isAdmin,
+  initialRecords, initialStepChanges, initialSummaries, teams, steps, currentUser, viewerRole, isAdmin,
 }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [stepChanges, setStepChanges]   = useState(initialStepChanges)
+  const [summaries, setSummaries]       = useState(initialSummaries)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [historyTeam, setHistoryTeam]   = useState<Team | null>(null)
@@ -47,6 +51,7 @@ export default function PainelClient({
       const data = await res.json()
       if (Array.isArray(data?.records)) setRecords(data.records)
       if (Array.isArray(data?.stepChanges)) setStepChanges(data.stepChanges)
+      if (Array.isArray(data?.summaries)) setSummaries(data.summaries)
     } catch { /* ignora: tenta de novo no próximo ciclo */ }
   }, [])
 
@@ -59,6 +64,19 @@ export default function PainelClient({
   const latestByTeam = getLatestByTeam(mentoring)
   const specialistCount = countByTeam(specialist)
   const changesFor = (teamId: string) => stepChanges.filter(c => c.teamId === teamId)
+  const summaryOf = (teamId: string, kind: string) => summaries.find(x => x.teamId === teamId && x.kind === kind)
+  /** Registro mais recente (por data) da equipe naquele tipo — base do resumo. */
+  const newest = (rs: RecordWithRelations[], teamId: string) =>
+    rs.filter(r => r.teamId === teamId).reduce<RecordWithRelations | undefined>((a, r) => (!a || time(r.createdAt) > time(a.createdAt) ? r : a), undefined)
+  const summaryProps = (teamId: string, kind: 'mentoring' | 'specialist') => {
+    const rs = kind === 'mentoring' ? mentoring : specialist
+    const latest = newest(rs, teamId)
+    const summary = summaryOf(teamId, kind)
+    return {
+      summary, stale: isSummaryStale(summary, latest?.id ?? null), hasRecords: !!latest,
+      latestAt: latest ? time(latest.createdAt) : undefined, teamId, kind, onRefreshed: reload,
+    }
+  }
 
   const filtered = teams.filter(t => {
     const matchSearch = t.name.toLowerCase().includes(search.toLowerCase()) || String(t.number).includes(search)
@@ -72,7 +90,8 @@ export default function PainelClient({
     <TeamCard key={team.id} team={team} record={latestByTeam[team.id]} steps={steps}
       current={currentStepFor(latestByTeam[team.id], changesFor(team.id))}
       specialistCount={specialistCount[team.id] ?? 0}
-      isAdmin={isAdmin} onAdjusted={reload} onHistoryClick={setHistoryTeam} />
+      isAdmin={isAdmin} onAdjusted={reload} onHistoryClick={setHistoryTeam}
+      summary={summaryProps(team.id, 'mentoring')} />
   )
 
   // Distribuição por mentor: só mentorias.
@@ -195,6 +214,8 @@ export default function PainelClient({
           stepChanges={changesFor(historyTeam.id).sort((a, b) => time(b.createdAt) - time(a.createdAt))}
           steps={steps}
           initialTab={defaultHistoryTab(viewerRole)}
+          mentoringSummary={summaryProps(historyTeam.id, 'mentoring')}
+          specialistSummary={summaryProps(historyTeam.id, 'specialist')}
           currentUser={currentUser}
           onClose={() => setHistoryTeam(null)}
         />

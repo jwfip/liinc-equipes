@@ -48,7 +48,8 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /admin/eventos/[id]/participantes   → escalar mentores (papel Mentor/Especialista), copiar de outro evento
 /admin/mentores                     → cadastro global de pessoas
 /admin/relatorio                    → relatório imprimível do evento selecionado
-/api/records                        → endpoint do polling (registros do evento selecionado)
+/api/records                        → endpoint do polling (registros, ajustes de etapa e resumos do evento selecionado)
+/api/transcribe                     → upload do relato por áudio (Groq Whisper + extração)
 ```
 
 ---
@@ -68,6 +69,7 @@ Fonte da verdade: `src/schema.ts`.
 | `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma |
 | `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; `password_hash`, `must_change_password`; liga-se a `mentors` por `email` |
 | `login_attempts` | falhas de login por usuário (bloqueio) |
+| `team_summaries` | resumo por IA atual de cada equipe (`kind`, `content`, `based_on_record_id`) |
 
 ### Migrações
 
@@ -96,9 +98,17 @@ Mudanças com dados vão em SQL idempotente em `drizzle/NNNN_*.sql`, aplicado co
 
 ---
 
+## IA (Groq)
+
+- Cliente em `src/lib/groq.ts` (`chat`, `transcribe`; timeout 20 s; sem SDK). Chave só no servidor.
+- **Resumos** (`team_summaries`, um por equipe e tipo `mentoring`/`specialist`): `generateTeamSummary` em `src/lib/ai/team-summary.ts`, disparado no servidor pelas actions de mentoria/atendimento depois de salvar via `waitUntil` (`@vercel/functions`) — o mentor não espera e falha nunca impede o registro. Botão "Gerar/Atualizar resumo" usa `refreshTeamSummary` (`src/actions/summaries.ts`). Prompts e limpeza em `src/lib/ai/summary-prompt.ts` (últimos 12 registros, conteúdo entre `<registros>` tratado como dado).
+- **Relato por áudio**: `AudioRecorder` → `POST /api/transcribe` (única outra API route; upload binário) → Whisper + extração em JSON validada por `parseExtraction` (`src/lib/ai/extraction.ts`). Preenche só campos vazios; status/etapa marcados "Sugerido pela IA — confirme". Áudio não é guardado; transcrição vai em `audio_transcript`.
+
+---
+
 ## Server Actions
 
-Acesso ao banco via Server Actions (`src/actions/`). Única API route de dados: `/api/records` (polling).
+Acesso ao banco via Server Actions (`src/actions/`). API routes só para `/api/records` (polling) e `/api/transcribe` (upload de áudio).
 
 - Ações de admin retornam `ActionResult` (`src/lib/action-result.ts`) em vez de lançar; a UI usa `AdminForm` (limpa os campos no sucesso, mostra erro legível) e `ActionButton`.
 - `requireAdmin()` em `src/lib/guards.ts`.
@@ -147,6 +157,9 @@ theme: {
 DATABASE_URL=postgresql://...          # connection string do Neon
 AUTH_SECRET=...                        # openssl rand -hex 32
 AUTH_URL=https://seudominio.vercel.app
+GROQ_API_KEY=gsk_...                   # IA (resumos e áudio); sem ela a plataforma funciona, só sem IA
+GROQ_SUMMARY_MODEL=openai/gpt-oss-20b  # opcional
+GROQ_TRANSCRIBE_MODEL=whisper-large-v3-turbo  # opcional
 ```
 
 Configurar também na Vercel em **Settings → Environment Variables**.
