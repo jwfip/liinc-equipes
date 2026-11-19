@@ -8,7 +8,7 @@
 Sistema web multi-evento onde mentores e especialistas registram, direto na plataforma, cada sessão com as equipes. O painel atualiza sozinho (polling de 5s).
 
 - **Evento** é a entidade principal: cada evento tem suas **etapas**, **equipes**, **blocos** e **participantes**.
-- **Mentores** (pessoas que fazem login) são cadastrados uma vez e escalados por evento com um papel: **Mentor** (acompanha a evolução) ou **Especialista** (tira dúvidas, registra atendimentos — fase 3).
+- **Mentores** (pessoas que fazem login) são cadastrados uma vez e escalados por evento com um papel: **Mentor** (registra **Mentorias**: status, etapa e textos) ou **Especialista** (registra **Atendimentos**: tema/dúvida, orientação, observações — sem status nem etapa).
 - Design da v2: `docs/superpowers/specs/2026-11-18-plataforma-v2-design.md`. Planos por fase: `docs/superpowers/plans/`.
 
 **Deploy:** `git push` → Vercel publica.
@@ -38,7 +38,7 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /login                              → login (usuário + senha)
 /conta/senha                        → trocar a própria senha (obrigatório enquanto a senha for temporária)
 /painel                             → dashboard do evento selecionado (requer login)
-/mentoria                           → formulário de registro (requer participar do evento)
+/mentoria                           → Nova mentoria (Mentor) ou Novo atendimento (Especialista)
 /mentoria/edit/[id]                 → edição do próprio registro
 /admin/eventos                      → lista e criação de eventos
 /admin/eventos/[id]                 → dados do evento, encerrar/reativar
@@ -63,7 +63,8 @@ Fonte da verdade: `src/schema.ts`.
 | `event_steps` | etapas do evento, ordenadas por `position` |
 | `event_members` | (evento, mentor) → `role` `'mentor' \| 'specialist'` |
 | `teams`, `blocks` | pertencem a um evento (`event_id`) |
-| `mentoring_records` | `event_id`, `kind` (`'mentoring' \| 'specialist'`), `team_id`, `mentor_id`, `block_id`, `status`, `step_id`, textos |
+| `mentoring_records` | `event_id`, `kind` (`'mentoring' \| 'specialist'`), `team_id`, `mentor_id`, `block_id` (nulo em atendimento fora de bloco), `status` (nulo em atendimento), `step_id`, `topic` (atendimento), textos |
+| `team_step_changes` | ajustes de etapa feitos pela organização (admin) |
 | `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma |
 | `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; `password_hash`, `must_change_password`; liga-se a `mentors` por `email` |
 | `login_attempts` | falhas de login por usuário (bloqueio) |
@@ -150,12 +151,15 @@ Configurar também na Vercel em **Settings → Environment Variables**.
 ## Regras de negócio
 
 - **Status do card** = mentoria mais recente da equipe no evento (maior `blockId`, depois maior `createdAt`); só `kind = 'mentoring'` conta.
+- **Etapa do card** = a mais recente entre a etapa da última mentoria e o último ajuste da organização (`currentStepFor`). Só admin ajusta.
+- **Atendimentos** não alteram status, etapa nem a "Distribuição por Mentor"; aparecem na aba própria do histórico e em seção própria do painel e do relatório. Não exigem bloco ativo.
+- **Papel decide o tipo**: Mentor só registra mentoria; Especialista só registra atendimento (`registrationError(ctx, kind)`).
 - **Bloco ativo** = no máximo um por evento (índice único parcial); sem bloco ativo, o formulário avisa.
 - **Etapas** são do evento e valem para todas as equipes dele; etapa usada em registros não pode ser removida.
 - **Registros** são editáveis apenas pelo autor; cada envio cria um novo registro.
 - **Equipes inativas** não aparecem no painel nem no formulário.
 - **Ordenação dos cards** = numérica dentro de cada grupo de status.
-- **Grupos de status** = Emergência → Atenção → No caminho → Voando → Sem registro.
+- **Grupos de status** = Emergência → Atenção → No caminho → Voando → Sem mentoria ainda.
 - Para registrar, a pessoa precisa ser participante do evento (inclusive admins).
 
 ---
