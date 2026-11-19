@@ -6,6 +6,7 @@ import { mentoringRecords, teamSummaries, teams } from '@/schema'
 import { getEventSteps } from '@/lib/event-data'
 import { chat, groqConfigured, GroqError, SUMMARY_MODEL } from '@/lib/groq'
 import { buildMentoringSummaryMessages, buildSpecialistSummaryMessages, cleanSummary } from './summary-prompt'
+import { buildFinalSummaryMessages, cleanFinalSummary } from './final-summary'
 
 export type SummaryKind = 'mentoring' | 'specialist'
 
@@ -53,4 +54,38 @@ export async function generateTeamSummary(teamId: string, kind: SummaryKind): Pr
  */
 export function generateTeamSummaryInBackground(teamId: string, kind: SummaryKind) {
   waitUntil(generateTeamSummary(teamId, kind).catch(() => null))
+}
+
+// ── Resumo final (relatório para a empresa) ──────────────────
+
+/** Gera o resumo final da equipe (kind 'final'). Devolve null em sucesso ou a mensagem de erro. */
+export async function generateFinalSummary(teamId: string): Promise<string | null> {
+  if (!groqConfigured()) return 'IA não configurada.'
+  const team = await db.query.teams.findFirst({ where: eq(teams.id, teamId) })
+  if (!team) return 'Equipe não encontrada.'
+
+  const records = await db.query.mentoringRecords.findMany({
+    where: and(eq(mentoringRecords.teamId, teamId), eq(mentoringRecords.eventId, team.eventId)),
+    columns: { audioTranscript: false },
+    with: { block: true },
+    orderBy: [desc(mentoringRecords.createdAt)],
+  })
+  if (records.length === 0) return 'Sem registros suficientes para um resumo.'
+
+  let content: string | null
+  try {
+    const messages = buildFinalSummaryMessages(
+      team.name, await getEventSteps(team.eventId),
+      records.filter(r => r.kind === 'mentoring'), records.filter(r => r.kind === 'specialist'),
+    )
+    content = cleanFinalSummary(await chat({ messages, maxTokens: 700 }))
+  } catch (err) {
+    return err instanceof GroqError ? err.message : 'A IA não respondeu agora. Tente de novo.'
+  }
+  if (!content) return 'A IA não devolveu um resumo. Tente de novo.'
+
+  const values = { eventId: team.eventId, teamId, kind: 'final', content, basedOnRecordId: records[0].id, model: SUMMARY_MODEL(), editedByAdmin: false, createdAt: new Date() }
+  await db.insert(teamSummaries).values(values)
+    .onConflictDoUpdate({ target: [teamSummaries.teamId, teamSummaries.kind], set: values })
+  return null
 }
