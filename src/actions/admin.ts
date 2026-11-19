@@ -1,11 +1,12 @@
 'use server'
 
 import { db } from '@/db'
-import { teams, mentors, blocks, users } from '@/schema'
+import { teams, mentors, blocks, users, loginAttempts } from '@/schema'
 import { and, eq } from 'drizzle-orm'
 import { requireAdmin } from '@/lib/guards'
 import { revalidatePath } from 'next/cache'
 import { toActionError, type ActionResult } from '@/lib/action-result'
+import { generateTempPassword, hashPassword } from '@/lib/password'
 
 // ── Teams ────────────────────────────────────────────────────
 
@@ -54,13 +55,34 @@ export async function createMentor(fd: FormData): Promise<ActionResult> {
     const existing = await db.query.mentors.findFirst({ where: eq(mentors.email, username) })
     if (existing) return { ok: false, error: 'Já existe um mentor com esse usuário.' }
 
+    const temp = generateTempPassword()
+    const passwordHash = await hashPassword(temp)
     await db.insert(mentors).values({ name, email: username })
-    // Cria usuário para login via NextAuth (pode já existir, ex.: admin)
+    // Cria o usuário de login; se já existir (ex.: admin), apenas define a senha temporária.
     await db.insert(users)
-      .values({ id: crypto.randomUUID(), name, email: username, role: 'mentor' })
-      .onConflictDoNothing({ target: users.email })
+      .values({ id: crypto.randomUUID(), name, email: username, role: 'mentor', passwordHash, mustChangePassword: true })
+      .onConflictDoUpdate({ target: users.email, set: { passwordHash, mustChangePassword: true } })
     revalidatePath('/admin/mentores')
-    return { ok: true, message: `Mentor ${name} cadastrado.` }
+    return { ok: true, message: `Mentor ${name} cadastrado.`, secret: temp, subject: username }
+  } catch (err) {
+    return toActionError(err)
+  }
+}
+
+export async function resetPassword(mentorId: string): Promise<ActionResult> {
+  try {
+    await requireAdmin()
+    const mentor = await db.query.mentors.findFirst({ where: eq(mentors.id, mentorId) })
+    if (!mentor) return { ok: false, error: 'Mentor não encontrado.' }
+
+    const temp = generateTempPassword()
+    const passwordHash = await hashPassword(temp)
+    await db.insert(users)
+      .values({ id: crypto.randomUUID(), name: mentor.name, email: mentor.email, role: 'mentor', passwordHash, mustChangePassword: true })
+      .onConflictDoUpdate({ target: users.email, set: { passwordHash, mustChangePassword: true } })
+    await db.delete(loginAttempts).where(eq(loginAttempts.username, mentor.email))
+    revalidatePath('/admin/mentores')
+    return { ok: true, message: 'Nova senha temporária gerada.', secret: temp, subject: mentor.email }
   } catch (err) {
     return toActionError(err)
   }
