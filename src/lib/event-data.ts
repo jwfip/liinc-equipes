@@ -29,6 +29,7 @@ export async function getEventRecords(eventId: number) {
 export async function getEventStepChanges(eventId: number) {
   return db.query.teamStepChanges.findMany({
     where: eq(teamStepChanges.eventId, eventId),
+    columns: { id: true, teamId: true, stepId: true, createdAt: true },
     with: { step: true },
     orderBy: (c, { asc }) => [asc(c.createdAt)],
   })

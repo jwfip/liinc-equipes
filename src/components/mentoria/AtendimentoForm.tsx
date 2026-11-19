@@ -46,14 +46,14 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
         <div>
           {activeBlock ? (
             <>
-              <p className="text-xs text-orange font-semibold">Bloco ativo</p>
+              <p className="text-xs text-orange font-semibold">{recordToEdit ? 'Bloco do registro' : 'Bloco ativo'}</p>
               <p className="font-display font-bold">{activeBlock.label}</p>
               <p className="text-xs text-slate-500">{fmtDate(activeBlock.date)}</p>
             </>
           ) : (
             <>
               <p className="font-display font-bold">Fora de bloco</p>
-              <p className="text-xs text-slate-500">Nenhum bloco ativo agora. O atendimento fica registrado mesmo assim.</p>
+              <p className="text-xs text-slate-500">{recordToEdit ? 'Registrado sem bloco ativo.' : 'Nenhum bloco ativo agora. O atendimento fica registrado mesmo assim.'}</p>
             </>
           )}
         </div>

@@ -4,7 +4,8 @@ import { auth } from '@/auth'
 import { db } from '@/db'
 import { STATUS_ORDER, type StatusValue } from '@/lib/constants'
 import { getEventContext } from '@/lib/event-context'
-import { getEventSteps } from '@/lib/event-data'
+import { getEventSteps, getEventStepChanges } from '@/lib/event-data'
+import { currentStepFor } from '@/lib/records'
 import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
@@ -55,7 +56,7 @@ export default async function RelatorioPage() {
   if (!ctx.event) redirect('/admin/eventos')
   const eventId = ctx.event.id
 
-  const [records, allTeams, allMentors, allBlocks, steps, atendimentos] = await Promise.all([
+  const [records, allTeams, allMentors, allBlocks, steps, atendimentos, stepChanges] = await Promise.all([
     db.query.mentoringRecords.findMany({
       where: (r, { and, eq }) => and(eq(r.eventId, eventId), eq(r.kind, 'mentoring')),
       with: { team: true, mentor: true, block: true },
@@ -70,10 +71,17 @@ export default async function RelatorioPage() {
       with: { mentor: true, block: true },
       orderBy: (r, { asc }) => [asc(r.createdAt)],
     }),
+    getEventStepChanges(eventId),
   ])
   const atendimentosByTeam = new Map<string, typeof atendimentos>()
   for (const a of atendimentos) atendimentosByTeam.set(a.teamId, [...(atendimentosByTeam.get(a.teamId) ?? []), a])
   const stepLabel = makeStepLabel(steps)
+  // Mesma regra do painel: etapa mais recente entre a última mentoria e o último ajuste da organização.
+  const currentStepId = (teamId: string, last: { stepId: number | null; createdAt: Date | null } | undefined) =>
+    currentStepFor(
+      last ? { step: steps.find(s => s.id === last.stepId) ?? null, createdAt: last.createdAt } : undefined,
+      stepChanges.filter(c => c.teamId === teamId),
+    ).step?.id
 
   // Equipes no relatório: ativas + inativas que tenham registros
   const teamIdsWithRecords = new Set([...records, ...atendimentos].map(r => r.teamId))
@@ -210,7 +218,7 @@ export default async function RelatorioPage() {
                       {t.name}{!t.active && <span className="text-slate-400 text-[10px]"> (inativa)</span>}
                     </td>
                     <td className="py-1.5 pr-2">{last ? <StatusPill status={last.status ?? ''} /> : <span className="text-slate-400">—</span>}</td>
-                    <td className="py-1.5 pr-2">{last ? stepLabel(last.stepId) : '—'}</td>
+                    <td className="py-1.5 pr-2">{stepLabel(currentStepId(t.id, last))}</td>
                     <td className="py-1.5 pr-2 text-center">{recordsByTeam.get(t.id)?.length ?? 0}</td>
                     <td className="py-1.5">{last?.mentor?.name ?? '—'}</td>
                   </tr>
