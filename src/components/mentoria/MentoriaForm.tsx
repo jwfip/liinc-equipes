@@ -165,7 +165,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
       <Textarea name="advice"  label="Que orientação você deu? *"       defaultValue={recordToEdit?.advice} required />
       <Textarea name="pros"       label="Pontos positivos" defaultValue={recordToEdit?.pros} />
       <Textarea name="cons"       label="A melhorar" defaultValue={recordToEdit?.cons} />
-      <Textarea name="obs"        label="Observações para facilitadores" defaultValue={recordToEdit?.obs} />
+      <Textarea name="obs"        label="Observações para facilitadores" hint="Visível só para facilitadores e organização." defaultValue={recordToEdit?.obs} />
       <Textarea name="suggestion" label="Sugestão para o próximo mentor" defaultValue={recordToEdit?.suggestion} />
 
       {error   && <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
@@ -179,11 +179,12 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
   )
 }
 
-function Textarea({ name, label, required, defaultValue }: { name: string; label: string; required?: boolean; defaultValue?: string }) {
+function Textarea({ name, label, required, defaultValue, hint }: { name: string; label: string; required?: boolean; defaultValue?: string; hint?: string }) {
   return (
     <div>
-      <label className="label">{label}</label>
-      <textarea name={name} required={required} defaultValue={defaultValue} rows={3} className="input resize-y" />
+      <label className="label" htmlFor={`f-${name}`}>{label}</label>
+      <textarea id={`f-${name}`} name={name} required={required} defaultValue={defaultValue} rows={3} className="input resize-y" />
+      {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
     </div>
   )
 }

@@ -142,7 +142,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                   <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
                     <Field label="Tema ou dúvida" value={r.topic} dark />
                     <Field label="Orientação dada" value={r.advice} />
-                    <Field label="Observações" value={r.obs} />
+                    <Field label="Para facilitadores" value={r.obs} />
                     {currentUser === r.mentor?.email && <EditLink id={r.id} />}
                   </div>
                 </div>
@@ -185,7 +185,7 @@ function MentoringItem({ r, steps, canEdit }: { r: RecordWithRelations; steps: S
         {r.obs && (
           <div className="bg-orange/10 rounded-lg p-3 flex gap-2 items-start mt-1">
             <Pin aria-hidden="true" size={14} className="text-orange-dark shrink-0 mt-0.5" />
-            <div className="text-[12px] text-orange-dark leading-relaxed">{r.obs}</div>
+            <div className="text-[12px] text-orange-dark leading-relaxed"><span className="font-bold">Para facilitadores: </span>{r.obs}</div>
           </div>
         )}
         <Field label="Sugestão p/ próximo mentor" icon={Lightbulb} value={r.suggestion} />

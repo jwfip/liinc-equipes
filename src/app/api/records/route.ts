@@ -3,6 +3,8 @@ import { sessionBlockReason } from '@/lib/session-rules'
 import { getEventContext } from '@/lib/event-context'
 import { getEventRecords, getEventStepChanges, getEventSummaries } from '@/lib/event-data'
 import { NextResponse } from 'next/server'
+import { canSeePrivateNotes } from '@/lib/participation'
+import { redactPrivateNotes } from '@/lib/privacy'
 import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +23,8 @@ export async function GET() {
     const [records, stepChanges, summaries] = ctx.event
       ? await Promise.all([getEventRecords(ctx.event.id), getEventStepChanges(ctx.event.id), getEventSummaries(ctx.event.id)])
       : [[], [], []]
-    return NextResponse.json({ records, stepChanges, summaries }, {
+    const visible = redactPrivateNotes(records, { canSeeAll: canSeePrivateNotes(ctx), mentorId: ctx.mentorId })
+    return NextResponse.json({ records: visible, stepChanges, summaries }, {
       headers: {
         'Cache-Control': 'no-store, max-age=0, must-revalidate',
       },

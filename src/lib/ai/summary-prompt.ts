@@ -40,7 +40,7 @@ export function buildMentoringSummaryMessages(team: string, steps: { id: number;
       r.status ? `Status: ${STATUS_PT[r.status] ?? r.status}` : '',
       idx >= 0 ? `Etapa ${idx + 1} — ${clip(steps[idx].label)}` : '',
       part('Projeto', r.working), part('Orientação', r.advice), part('Pontos positivos', r.pros),
-      part('A melhorar', r.cons), part('Observações', r.obs), part('Sugestão ao próximo mentor', r.suggestion),
+      part('A melhorar', r.cons), part('Sugestão ao próximo mentor', r.suggestion),
     ].filter(Boolean).join(' · ')
   })
   return [
@@ -56,7 +56,7 @@ type SpecialistRec = { createdAt: Stamp; topic: string | null; advice: string | 
 
 export function buildSpecialistSummaryMessages(team: string, records: SpecialistRec[]): ChatMessage[] {
   const lines = lastN(records).map((r) => `- ${day(r.createdAt)} · ` + [
-    r.block?.label ?? 'Fora de bloco', part('Tema', r.topic), part('Orientação', r.advice), part('Observações', r.obs),
+    r.block?.label ?? 'Fora de bloco', part('Tema', r.topic), part('Orientação', r.advice),
   ].filter(Boolean).join(' · '))
   return [
     { role: 'system', content:

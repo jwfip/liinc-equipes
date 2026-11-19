@@ -79,7 +79,7 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
 
       <Field name="topic"  label="Tema ou dúvida *" required defaultValue={recordToEdit?.topic} placeholder="Ex: Como precificar o produto" />
       <Field name="advice" label="Orientação dada *" required defaultValue={recordToEdit?.advice} />
-      <Field name="obs"    label="Observações" defaultValue={recordToEdit?.obs} />
+      <Field name="obs"    label="Observações para facilitadores" hint="Visível só para facilitadores e organização." defaultValue={recordToEdit?.obs} />
 
       {error   && <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
       {success && <div role="status" className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold flex items-center gap-2"><CircleCheck aria-hidden="true" size={18} />Atendimento {recordToEdit ? 'atualizado' : 'registrado'}!</div>}
@@ -91,14 +91,15 @@ export default function AtendimentoForm({ teams, activeBlock, recordToEdit }: Pr
   )
 }
 
-function Field({ name, label, required, defaultValue, placeholder }: {
-  name: string; label: string; required?: boolean; defaultValue?: string | null; placeholder?: string
+function Field({ name, label, required, defaultValue, placeholder, hint }: {
+  name: string; label: string; required?: boolean; defaultValue?: string | null; placeholder?: string; hint?: string
 }) {
   return (
     <div>
       <label className="label" htmlFor={`f-${name}`}>{label}</label>
       <textarea id={`f-${name}`} name={name} required={required} defaultValue={defaultValue ?? undefined}
         placeholder={placeholder} rows={3} className="input resize-y" />
+      {hint && <p className="text-xs text-slate-500 mt-1">{hint}</p>}
     </div>
   )
 }

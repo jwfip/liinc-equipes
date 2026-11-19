@@ -4,6 +4,8 @@ import NoEventNotice from '@/components/layout/NoEventNotice'
 import { getEventContext } from '@/lib/event-context'
 import { getActiveBlock, getActiveTeams, getEventRecords, getEventStepChanges, getEventSteps, getEventSummaries } from '@/lib/event-data'
 import type { RecordWithRelations } from '@/lib/constants'
+import { canSeePrivateNotes } from '@/lib/participation'
+import { redactPrivateNotes } from '@/lib/privacy'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,7 +21,7 @@ export default async function PainelPage() {
 
   return (
     <PainelClient
-      initialRecords={records as unknown as RecordWithRelations[]}
+      initialRecords={redactPrivateNotes(records, { canSeeAll: canSeePrivateNotes(ctx), mentorId: ctx.mentorId }) as unknown as RecordWithRelations[]}
       initialStepChanges={stepChanges}
       initialSummaries={summaries}
       viewerRole={ctx.role}
