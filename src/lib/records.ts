@@ -19,3 +19,7 @@ export function getLatestByTeam<R extends LatestCandidate>(records: R[]): Record
 export function assertTeamInEvent(team: { eventId: number; active: boolean } | undefined, eventId: number): void {
   if (!team || team.eventId !== eventId || !team.active) throw new Error('Equipe inválida para este evento.')
 }
+
+export function assertSameKind(record: { kind: string }, kind: 'mentoring' | 'specialist'): void {
+  if (record.kind !== kind) throw new Error('Registro não encontrado.')
+}

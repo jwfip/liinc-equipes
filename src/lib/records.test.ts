@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getLatestByTeam, assertTeamInEvent } from './records'
+import { getLatestByTeam, assertTeamInEvent, assertSameKind } from './records'
 
 const rec = (id: string, teamId: string, blockId: number, createdAt: string, kind = 'mentoring') =>
   ({ id, teamId, blockId, createdAt, kind }) as any
@@ -31,5 +31,14 @@ describe('assertTeamInEvent', () => {
   })
   it('accepts an active team of the event', () => {
     expect(() => assertTeamInEvent({ eventId: 1, active: true }, 1)).not.toThrow()
+  })
+})
+
+describe('assertSameKind', () => {
+  it('rejects a record of another kind as not found', () => {
+    expect(() => assertSameKind({ kind: 'specialist' }, 'mentoring')).toThrow('Registro não encontrado.')
+  })
+  it('accepts the same kind', () => {
+    expect(() => assertSameKind({ kind: 'mentoring' }, 'mentoring')).not.toThrow()
   })
 })
