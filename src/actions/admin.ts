@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/db'
-import { teams, mentors, blocks, users, loginAttempts, eventSteps, teamStepChanges } from '@/schema'
+import { teams, mentors, blocks, users, loginAttempts, eventSteps, teamStepChanges, events } from '@/schema'
 import { and, eq } from 'drizzle-orm'
 import { requireAdmin } from '@/lib/guards'
 import { revalidatePath } from 'next/cache'
@@ -152,6 +152,9 @@ export async function adjustTeamStep(teamId: string, stepId: number): Promise<Ac
     const session = await requireAdmin()
     const team = await db.query.teams.findFirst({ where: eq(teams.id, teamId) })
     if (!team) return { ok: false, error: 'Equipe não encontrada.' }
+    if (!team.active) return { ok: false, error: 'Equipe inativa.' }
+    const event = await db.query.events.findFirst({ where: eq(events.id, team.eventId) })
+    if (!event?.active) return { ok: false, error: 'Evento encerrado.' }
     const step = await db.query.eventSteps.findFirst({
       where: and(eq(eventSteps.id, stepId), eq(eventSteps.eventId, team.eventId)),
     })

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { X, MessagesSquare, User, ThumbsUp, Wrench, Pin, Lightbulb, Pencil, type LucideIcon } from 'lucide-react'
 import { StatusIcon } from '@/components/ui/StatusIcon'
 import StepProgress from './StepProgress'
+import EvolutionChart from './EvolutionChart'
+import { evolutionPoints } from '@/lib/evolution'
 import type { RecordWithRelations, Step } from '@/lib/constants'
 import type { StepChange } from '@/lib/records'
 
@@ -52,6 +54,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
   ].sort((a, b) => b.at - a.at)
   const atendimentos = [...specialist].sort((a, b) => time(b.createdAt) - time(a.createdAt))
 
+  const points = evolutionPoints(steps, mentoring, stepChanges)
   const mentorNames = names(mentoring)
   const specialistNames = names(specialist)
 
@@ -73,7 +76,15 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
           )}
           <div role="tablist" className="flex gap-1 mt-4 -mb-1">
             {([['mentoring', `Mentorias (${mentoring.length})`], ['specialist', `Atendimentos (${specialist.length})`]] as const).map(([key, label]) => (
-              <button key={key} role="tab" aria-selected={tab === key} onClick={() => setTab(key)}
+              <button key={key} role="tab" id={`tab-${key}`} aria-controls="history-panel" aria-selected={tab === key}
+                tabIndex={tab === key ? 0 : -1} onClick={() => setTab(key)}
+                onKeyDown={e => {
+                  if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    const next: Tab = tab === 'mentoring' ? 'specialist' : 'mentoring'
+                    setTab(next)
+                    document.getElementById(`tab-${next}`)?.focus()
+                  }
+                }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-display font-bold transition-colors ${
                   tab === key ? 'bg-white text-navy' : 'text-white/70 hover:text-white hover:bg-white/10'}`}>
                 {label}
@@ -82,11 +93,18 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
           </div>
         </div>
 
-        <div className="p-5 md:p-7 overflow-y-auto bg-slate-50" role="tabpanel">
+        <div className="p-5 md:p-7 overflow-y-auto bg-slate-50" role="tabpanel" id="history-panel" aria-labelledby={`tab-${tab}`}>
           {tab === 'mentoring' ? (
             timeline.length === 0 ? (
               <div className="text-center py-10 text-slate-400 text-sm">Nenhuma mentoria registrada ainda.</div>
             ) : (
+              <>
+              {points.length > 0 && (
+                <section className="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm" aria-label="Evolução da equipe">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Evolução</h3>
+                  <EvolutionChart steps={steps} points={points} />
+                </section>
+              )}
               <Timeline>
                 {timeline.map(item => item.type === 'change' ? (
                   <div key={`c${item.c.id}`} className="relative">
@@ -101,6 +119,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                   <MentoringItem key={item.r.id} r={item.r} steps={steps} canEdit={currentUser === item.r.mentor?.email} />
                 ))}
               </Timeline>
+              </>
             )
           ) : atendimentos.length === 0 ? (
             <div className="text-center py-10 text-slate-400 text-sm">Nenhum atendimento de especialista ainda.</div>

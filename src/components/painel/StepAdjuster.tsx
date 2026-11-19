@@ -2,7 +2,7 @@
 
 import { ArrowLeftRight } from 'lucide-react'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { adjustTeamStep } from '@/actions/admin'
 import type { Step } from '@/lib/constants'
 
@@ -20,6 +20,8 @@ export default function StepAdjuster({ teamId, teamName, steps, currentStepId, o
   const [stepId, setStepId] = useState<number | ''>(currentStepId ?? '')
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
+  const selectRef = useRef<HTMLSelectElement>(null)
+  useEffect(() => { if (open) selectRef.current?.focus() }, [open])
 
   if (!open) {
     return (
@@ -34,7 +36,7 @@ export default function StepAdjuster({ teamId, teamName, steps, currentStepId, o
   return (
     <div className="w-full flex flex-col gap-2 pt-1">
       <label className="sr-only" htmlFor={`adj-${teamId}`}>Etapa da equipe {teamName}</label>
-      <select id={`adj-${teamId}`} className="input py-2" value={stepId} onChange={e => setStepId(Number(e.target.value))}>
+      <select ref={selectRef} id={`adj-${teamId}`} className="input py-2" value={stepId} onChange={e => setStepId(Number(e.target.value))}>
         <option value="" disabled>Selecione a etapa...</option>
         {steps.map((s, i) => <option key={s.id} value={s.id}>{i + 1} — {s.label}</option>)}
       </select>

@@ -8,6 +8,8 @@ import { STATUS_ORDER, type StatusValue } from '@/lib/constants'
 import { getEventContext } from '@/lib/event-context'
 import { getEventSteps, getEventStepChanges } from '@/lib/event-data'
 import { currentStepFor } from '@/lib/records'
+import { evolutionPoints } from '@/lib/evolution'
+import EvolutionChart from '@/components/painel/EvolutionChart'
 import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
@@ -298,6 +300,16 @@ export default async function RelatorioPage() {
                     {list.length} mentoria(s) · Mentores: {mentorsOfTeam.length ? mentorsOfTeam.join(', ') : 'nenhum'}
                   </div>
                 </div>
+
+                {(() => {
+                  const pts = evolutionPoints(steps, list, stepChanges.filter(c => c.teamId === t.id))
+                  return pts.length > 0 && (
+                    <div className="avoid-break border border-slate-200 rounded-xl p-3.5 mb-4">
+                      <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Evolução</div>
+                      <EvolutionChart steps={steps} points={pts} />
+                    </div>
+                  )
+                })()}
 
                 {list.length === 0 ? (
                   <p className="text-sm text-slate-400 italic">Nenhuma mentoria registrada.</p>
