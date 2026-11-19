@@ -1,7 +1,7 @@
 import { auth } from '@/auth'
 import { sessionBlockReason } from '@/lib/session-rules'
 import { getEventContext } from '@/lib/event-context'
-import { getEventRecords, getEventStepChanges, getEventSummaries } from '@/lib/event-data'
+import { getEventProjects, getEventRecords, getEventStepChanges, getEventSummaries } from '@/lib/event-data'
 import { NextResponse } from 'next/server'
 import { canSeePrivateNotes } from '@/lib/participation'
 import { redactPrivateNotes } from '@/lib/privacy'
@@ -20,11 +20,11 @@ export async function GET() {
 
   try {
     const ctx = await getEventContext()
-    const [records, stepChanges, summaries] = ctx.event
-      ? await Promise.all([getEventRecords(ctx.event.id), getEventStepChanges(ctx.event.id), getEventSummaries(ctx.event.id)])
-      : [[], [], []]
+    const [records, stepChanges, summaries, projects] = ctx.event
+      ? await Promise.all([getEventRecords(ctx.event.id), getEventStepChanges(ctx.event.id), getEventSummaries(ctx.event.id), getEventProjects(ctx.event.id)])
+      : [[], [], [], []]
     const visible = redactPrivateNotes(records, { canSeeAll: canSeePrivateNotes(ctx), mentorId: ctx.mentorId })
-    return NextResponse.json({ records: visible, stepChanges, summaries }, {
+    return NextResponse.json({ records: visible, stepChanges, summaries, projects }, {
       headers: {
         'Cache-Control': 'no-store, max-age=0, must-revalidate',
       },

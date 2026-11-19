@@ -46,3 +46,11 @@ describe('record lines', () => {
     expect(user.content).toMatch(/^- 01\/01 · B · /m)
   })
 })
+
+describe('buildFinalSummaryMessages with the current project', () => {
+  it('includes the current project and its pivots', () => {
+    const [, user] = buildFinalSummaryMessages('ALFA', steps, [m(1)], [], { current: 'App Y', pivots: [{ at: '2026-03-05T15:00:00Z', description: 'App Y' }] })
+    expect(user.content).toContain('Projeto atual: App Y')
+    expect(user.content).toContain('05/03 · Pivô para: App Y')
+  })
+})

@@ -1,4 +1,5 @@
 import type { ChatMessage } from '@/lib/groq'
+import type { ProjectContext } from '@/lib/project'
 
 export const MAX_RECORDS = 12
 const MAX_FIELD = 600
@@ -21,6 +22,15 @@ const part = (label: string, v: string | null | undefined) => (clip(v) ? `${labe
 const lastN = <T extends { createdAt: Stamp }>(rs: T[]) => [...rs].sort((a, b) => ts(a.createdAt) - ts(b.createdAt)).slice(-MAX_RECORDS)
 const wrap = (lines: string[]) => `<registros>\n${lines.join('\n')}\n</registros>`
 
+/** Linhas do projeto atual e dos pivôs (datados), para ir junto dos registros. */
+export function projectLines(project: ProjectContext | undefined, cut: (v: string | null | undefined) => string = clip): string[] {
+  if (!project?.current) return []
+  return [
+    `- Projeto atual: ${cut(project.current)}`,
+    ...project.pivots.map(p => `- ${day(p.at)} · Pivô para: ${cut(p.description)}`),
+  ]
+}
+
 const RULES =
   'Regras: 3 a 5 frases curtas, texto corrido, sem markdown, sem títulos e sem listas. ' +
   'Não afirme que algo foi feito se o registro só diz que foi orientado. Não invente fatos, números ou nomes. ' +
@@ -32,14 +42,14 @@ type MentoringRec = {
   obs: string | null; suggestion: string | null; block?: { label: string } | null
 }
 
-export function buildMentoringSummaryMessages(team: string, steps: { id: number; label: string }[], records: MentoringRec[]): ChatMessage[] {
+export function buildMentoringSummaryMessages(team: string, steps: { id: number; label: string }[], records: MentoringRec[], project?: ProjectContext): ChatMessage[] {
   const lines = lastN(records).map((r) => {
     const idx = steps.findIndex(s => s.id === r.stepId)
     return `- ${day(r.createdAt)} · ` + [
       r.block?.label ?? 'Sem bloco',
       r.status ? `Status: ${STATUS_PT[r.status] ?? r.status}` : '',
       idx >= 0 ? `Etapa ${idx + 1} — ${clip(steps[idx].label)}` : '',
-      part('Projeto', r.working), part('Orientação', r.advice), part('Pontos positivos', r.pros),
+      part('Trabalhou em', r.working), part('Orientação', r.advice), part('Pontos positivos', r.pros),
       part('A melhorar', r.cons), part('Sugestão ao próximo mentor', r.suggestion),
     ].filter(Boolean).join(' · ')
   })
@@ -48,7 +58,7 @@ export function buildMentoringSummaryMessages(team: string, steps: { id: number;
       'Você é assistente de uma maratona de inovação. Resuma, em português do Brasil, a situação ATUAL da equipe ' +
       `"${clip(team)}" usando somente os registros de mentoria (em ordem cronológica; o último é o mais recente). ` +
       'Diga a situação atual (status e etapa do registro mais recente), o que avançou, o principal risco e o próximo passo orientado. ' + RULES },
-    { role: 'user', content: wrap(lines) },
+    { role: 'user', content: wrap([...projectLines(project), ...lines]) },
   ]
 }
 

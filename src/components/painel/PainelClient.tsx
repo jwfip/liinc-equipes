@@ -12,6 +12,8 @@ import HistoryModal from './HistoryModal'
 import type { TeamSummary } from './SummaryBox'
 import { isSummaryStale } from '@/lib/ai/summary-prompt'
 import type { EventRole } from '@/lib/event-pick'
+import { currentProject, recentPivot, recentBlockIds, type ProjectRow } from '@/lib/project'
+import { todayISO } from '@/lib/format'
 
 type Team = { id: string; number: number; name: string; active: boolean }
 
@@ -25,6 +27,9 @@ interface Props {
   currentUser:        string
   viewerRole:         EventRole | null
   isAdmin:            boolean
+  initialProjects:    ProjectRow[]
+  blocks:             { id: number; date: string }[]
+  canCorrectProject:  boolean
 }
 
 const SECTION_META: Record<string, { title: string; dot: string }> = {
@@ -38,10 +43,12 @@ const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 export default function PainelClient({
   initialRecords, initialStepChanges, initialSummaries, teams, steps, currentUser, viewerRole, isAdmin,
+  initialProjects, blocks, canCorrectProject,
 }: Props) {
   const [records, setRecords]           = useState(initialRecords)
   const [stepChanges, setStepChanges]   = useState(initialStepChanges)
   const [summaries, setSummaries]       = useState(initialSummaries)
+  const [projects, setProjects]         = useState(initialProjects)
   const [search, setSearch]             = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [historyTeam, setHistoryTeam]   = useState<Team | null>(null)
@@ -53,6 +60,7 @@ export default function PainelClient({
       if (Array.isArray(data?.records)) setRecords(data.records)
       if (Array.isArray(data?.stepChanges)) setStepChanges(data.stepChanges)
       if (Array.isArray(data?.summaries)) setSummaries(data.summaries)
+      if (Array.isArray(data?.projects)) setProjects(data.projects)
     } catch { /* ignora: tenta de novo no próximo ciclo */ }
   }, [])
 
@@ -64,6 +72,8 @@ export default function PainelClient({
   const { mentoring, specialist } = splitByKind(records)
   const latestByTeam = getLatestByTeam(mentoring)
   const specialistCount = countByTeam(specialist)
+  const recordBlock = new Map(mentoring.filter(r => r.blockId !== null).map(r => [r.id, r.blockId as number]))
+  const recentBlocks = recentBlockIds(blocks, todayISO())
   const changesFor = (teamId: string) => stepChanges.filter(c => c.teamId === teamId)
   const summaryOf = (teamId: string, kind: string) => summaries.find(x => x.teamId === teamId && x.kind === kind)
   /** Registro mais recente (por data) da equipe naquele tipo — base do resumo. */
@@ -91,6 +101,8 @@ export default function PainelClient({
     <TeamCard key={team.id} team={team} record={latestByTeam[team.id]} steps={steps}
       current={currentStepFor(latestByTeam[team.id], changesFor(team.id))}
       specialistCount={specialistCount[team.id] ?? 0}
+      project={currentProject(projects, team.id)?.description ?? null}
+      pivoted={!!recentPivot(projects, team.id, recordBlock, recentBlocks)}
       isAdmin={isAdmin} onAdjusted={reload} onHistoryClick={setHistoryTeam}
       summary={summaryProps(team.id, 'mentoring')} />
   )
@@ -218,6 +230,9 @@ export default function PainelClient({
           mentoringSummary={summaryProps(historyTeam.id, 'mentoring')}
           specialistSummary={summaryProps(historyTeam.id, 'specialist')}
           currentUser={currentUser}
+          projects={projects.filter(p => p.teamId === historyTeam.id)}
+          canCorrectProject={canCorrectProject}
+          onProjectChanged={reload}
           onClose={() => setHistoryTeam(null)}
         />
       )}

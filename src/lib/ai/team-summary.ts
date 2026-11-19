@@ -3,10 +3,14 @@ import { and, desc, eq } from 'drizzle-orm'
 import { waitUntil } from '@vercel/functions'
 import { db } from '@/db'
 import { mentoringRecords, teamSummaries, teams } from '@/schema'
-import { getEventSteps } from '@/lib/event-data'
+import { getEventProjects, getEventSteps } from '@/lib/event-data'
+import { projectContext } from '@/lib/project'
 import { chat, groqConfigured, GroqError, SUMMARY_MODEL } from '@/lib/groq'
 import { buildMentoringSummaryMessages, buildSpecialistSummaryMessages, cleanSummary } from './summary-prompt'
 import { buildFinalSummaryMessages, cleanFinalSummary } from './final-summary'
+
+const teamProjectContext = async (eventId: number, teamId: string) =>
+  projectContext(await getEventProjects(eventId), teamId)
 
 export type SummaryKind = 'mentoring' | 'specialist'
 
@@ -34,7 +38,7 @@ export async function generateTeamSummary(teamId: string, kind: SummaryKind): Pr
   let content: string | null
   try {
     const messages = kind === 'mentoring'
-      ? buildMentoringSummaryMessages(team.name, await getEventSteps(team.eventId), records)
+      ? buildMentoringSummaryMessages(team.name, await getEventSteps(team.eventId), records, await teamProjectContext(team.eventId, teamId))
       : buildSpecialistSummaryMessages(team.name, records)
     content = cleanSummary(await chat({ messages, maxTokens: 500 }))
   } catch (err) {
@@ -77,6 +81,7 @@ export async function generateFinalSummary(teamId: string, opts: { overwriteEdit
     const messages = buildFinalSummaryMessages(
       team.name, await getEventSteps(team.eventId),
       records.filter(r => r.kind === 'mentoring'), records.filter(r => r.kind === 'specialist'),
+      await teamProjectContext(team.eventId, teamId),
     )
     content = cleanFinalSummary(await chat({ messages, maxTokens: 700 }))
   } catch (err) {

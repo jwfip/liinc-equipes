@@ -1,13 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { User, ThumbsUp, Wrench, MessagesSquare, History, ChevronUp, ChevronDown } from 'lucide-react'
+import { User, ThumbsUp, Wrench, MessagesSquare, History, ChevronUp, ChevronDown, Shuffle } from 'lucide-react'
 import { StatusIcon } from '@/components/ui/StatusIcon'
 import StepProgress from './StepProgress'
 import StepAdjuster from './StepAdjuster'
 import SummaryBox from './SummaryBox'
 
-export default function TeamCard({ team, record, steps, current, specialistCount = 0, isAdmin = false, onAdjusted, onHistoryClick, summary }: any) {
+export default function TeamCard({ team, record, steps, current, specialistCount = 0, isAdmin = false, onAdjusted, onHistoryClick, summary, project = null, pivoted = false }: any) {
   const step = current?.step ?? null
   const adjusted = current?.source === 'organization'
   const stepBlock = step ? (
@@ -54,6 +54,16 @@ export default function TeamCard({ team, record, steps, current, specialistCount
             <span className="inline-flex items-center gap-1"><StatusIcon status={record?.status} size={12} />{meta.label}</span>
           </div>
         </div>
+
+        {project && (
+          <div className="mb-3">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Projeto</span>
+              {pivoted && <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-orange-pale text-orange-dark px-2 py-0.5 rounded-full"><Shuffle aria-hidden="true" size={11} />Pivotou</span>}
+            </div>
+            <div className="text-[13px] text-slate-700 leading-relaxed line-clamp-2">{project}</div>
+          </div>
+        )}
 
         {record ? (
           <>

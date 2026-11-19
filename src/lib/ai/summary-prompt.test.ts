@@ -80,3 +80,16 @@ describe('private notes stay out of panel summaries', () => {
     expect(msgs.map(m => m.content).join('\n')).not.toContain('segredo')
   })
 })
+
+describe('mentoring summary with the current project', () => {
+  it('gives the current project and labels each record work as "Trabalhou em"', () => {
+    const [, user] = buildMentoringSummaryMessages('ALFA', steps, [rec(1)], { current: 'App X', pivots: [] })
+    expect(user.content).toContain('Projeto atual: App X')
+    expect(user.content).toContain('Trabalhou em: projeto 1')
+    expect(user.content).not.toContain('Projeto: projeto 1')
+  })
+  it('dates each pivot', () => {
+    const [, user] = buildMentoringSummaryMessages('ALFA', steps, [rec(1)], { current: 'App Y', pivots: [{ at: '2026-03-05T15:00:00Z', description: 'App Y' }] })
+    expect(user.content).toContain('05/03 · Pivô para: App Y')
+  })
+})

@@ -4,7 +4,8 @@ import { MessagesSquare, User } from 'lucide-react'
 import { auth } from '@/auth'
 import { db } from '@/db'
 import { events, eventMembers, teamSummaries } from '@/schema'
-import { getEventSteps, getEventStepChanges } from '@/lib/event-data'
+import { getEventProjects, getEventSteps, getEventStepChanges } from '@/lib/event-data'
+import { projectContext } from '@/lib/project'
 import { currentStepFor, getLatestByTeam } from '@/lib/records'
 import { evolutionPoints } from '@/lib/evolution'
 import { parseHidden, type ReportSection } from '@/lib/report/options'
@@ -60,7 +61,7 @@ export default async function FinalReportPage({ params, searchParams }: {
   const hidden = parseHidden(searchParams.ocultar)
   const show = (s: ReportSection) => !hidden.has(s)
 
-  const [records, allTeams, blocks, steps, stepChanges, members, finals] = await Promise.all([
+  const [records, allTeams, blocks, steps, stepChanges, members, finals, projects] = await Promise.all([
     db.query.mentoringRecords.findMany({
       where: (r, { eq }) => eq(r.eventId, eventId),
       columns: { audioTranscript: false },
@@ -73,6 +74,7 @@ export default async function FinalReportPage({ params, searchParams }: {
     getEventStepChanges(eventId),
     db.select({ role: eventMembers.role }).from(eventMembers).where(eq(eventMembers.eventId, eventId)),
     db.select().from(teamSummaries).where(and(eq(teamSummaries.eventId, eventId), eq(teamSummaries.kind, 'final'))),
+    getEventProjects(eventId),
   ])
 
   const mentoring = records.filter(r => r.kind === 'mentoring')
@@ -169,6 +171,7 @@ export default async function FinalReportPage({ params, searchParams }: {
           const pts = evolutionPoints(steps, tm, changes)
           const final = finalByTeam.get(t.id)
           const mentorNames = Array.from(new Set(tm.map(r => r.mentor?.name).filter(Boolean)))
+          const proj = projectContext(projects, t.id)
 
           return (
             <article key={t.id} className="page-break pt-10 print:pt-0 border-t-4 border-orange mt-10 print:mt-0 print:border-t-0">
@@ -182,6 +185,20 @@ export default async function FinalReportPage({ params, searchParams }: {
                   {mentorNames.length > 0 && <span>· Mentores: {mentorNames.join(', ')}</span>}
                 </div>
               </header>
+
+              {proj.current && (
+                <div className="avoid-break border border-slate-200 rounded-xl p-3.5 mb-4">
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Projeto atual</div>
+                  <p className="text-[13px] leading-relaxed whitespace-pre-line">{proj.current}</p>
+                  {proj.pivots.length > 0 && (
+                    <ul className="mt-2 text-[11px] text-slate-600 space-y-0.5">
+                      {proj.pivots.map((p, i) => (
+                        <li key={i}><span className="font-bold text-orange-dark">Pivô em {fmtDateTime(p.at ?? null)}:</span> {p.description}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
 
               <FinalSummaryEditor teamId={t.id} content={final?.content ?? null} edited={!!final?.editedByAdmin} />
 
@@ -208,7 +225,7 @@ export default async function FinalReportPage({ params, searchParams }: {
                             <span className="ml-auto inline-flex items-center gap-1 text-[11px] font-bold text-slate-600"><User aria-hidden="true" size={12} />{r.mentor?.name ?? '—'}</span>
                           </div>
                           <div className="grid gap-1.5">
-                            <Field label="Projeto" value={r.working} />
+                            <Field label="Trabalhou em" value={r.working} />
                             <Field label="Orientação" value={r.advice} />
                             <Field label="Pontos positivos" value={r.pros} />
                             {show('cons') && <Field label="A melhorar" value={r.cons} />}

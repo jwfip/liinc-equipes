@@ -43,3 +43,19 @@ export function projectInfoByTeam(rows: ProjectRow[]): Record<string, ProjectInf
   }
   return out
 }
+
+export type ProjectContext = { current: string | null; pivots: { at: Stamp; description: string }[] }
+
+/** Projeto atual e pivôs (do mais antigo ao mais novo), para os prompts da IA. */
+export function projectContext(rows: ProjectRow[], teamId: string): ProjectContext {
+  const team = ofTeam(rows, teamId)
+  return {
+    current: team[0]?.description ?? null,
+    pivots: team.filter(r => r.kind === 'pivot').reverse().map(r => ({ at: r.createdAt, description: r.description })),
+  }
+}
+
+/** Ids dos últimos `n` blocos que já começaram (data <= hoje). `blocks` em ordem cronológica. */
+export function recentBlockIds(blocks: { id: number; date: string }[], today: string, n = 2): number[] {
+  return blocks.filter(b => b.date <= today).slice(-n).map(b => b.id)
+}

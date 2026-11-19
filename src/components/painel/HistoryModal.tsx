@@ -2,17 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { X, MessagesSquare, User, ThumbsUp, Wrench, Pin, Lightbulb, Pencil, type LucideIcon } from 'lucide-react'
+import { X, MessagesSquare, User, ThumbsUp, Wrench, Pin, Lightbulb, Pencil, Shuffle, type LucideIcon } from 'lucide-react'
 import { StatusIcon } from '@/components/ui/StatusIcon'
 import StepProgress from './StepProgress'
 import EvolutionChart from './EvolutionChart'
 import SummaryBox from './SummaryBox'
+import ProjectHistory from './ProjectHistory'
+import { currentProject, type ProjectRow } from '@/lib/project'
 import { evolutionPoints } from '@/lib/evolution'
 import type { RecordWithRelations, Step } from '@/lib/constants'
 import type { StepChange } from '@/lib/records'
 
 type Team = { id: string; number: number; name: string }
-type Tab = 'mentoring' | 'specialist'
+type Tab = 'mentoring' | 'specialist' | 'project'
+const TABS: Tab[] = ['mentoring', 'specialist', 'project']
 
 interface Props {
   team:        Team
@@ -23,6 +26,9 @@ interface Props {
   initialTab:  Tab
   currentUser: string
   onClose:     () => void
+  projects?:   ProjectRow[]
+  canCorrectProject?: boolean
+  onProjectChanged?:  () => void
   mentoringSummary?:  React.ComponentProps<typeof SummaryBox>
   specialistSummary?: React.ComponentProps<typeof SummaryBox>
 }
@@ -41,7 +47,7 @@ function fmtDateTime(d: string | Date | null) {
 const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 const names = (rs: RecordWithRelations[]) => Array.from(new Set(rs.map(r => r.mentor?.name).filter(Boolean)))
 
-export default function HistoryModal({ team, mentoring, specialist, stepChanges, steps, initialTab, currentUser, onClose, mentoringSummary, specialistSummary }: Props) {
+export default function HistoryModal({ team, mentoring, specialist, stepChanges, steps, initialTab, currentUser, onClose, mentoringSummary, specialistSummary, projects = [], canCorrectProject = false, onProjectChanged }: Props) {
   const [tab, setTab] = useState<Tab>(initialTab)
 
   useEffect(() => {
@@ -60,6 +66,9 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
   const points = evolutionPoints(steps, mentoring, stepChanges)
   const mentorNames = names(mentoring)
   const specialistNames = names(specialist)
+  const project = currentProject(projects, team.id)
+  const pivotRecordIds = new Set(projects.filter(p => p.kind === 'pivot' && p.recordId).map(p => p.recordId!))
+  const blockOf = (recordId: string) => mentoring.find(r => r.id === recordId)?.block?.label ?? null
 
   return (
     <div
@@ -73,17 +82,19 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
           <button onClick={onClose} aria-label="Fechar" className="absolute top-4 right-4 md:top-5 md:right-5 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-colors"><X aria-hidden="true" size={18} /></button>
           <div className="font-display font-bold text-xs text-white/50 uppercase tracking-wider mb-0.5">Equipe #{team.number}</div>
           <div className="font-display font-bold text-xl md:text-2xl leading-tight pr-10">{team.name}</div>
+          {project && <div className="text-xs text-white/50 mt-1.5 line-clamp-2">Projeto: <span className="text-white/80">{project.description}</span></div>}
           <div className="text-xs text-white/50 mt-1.5">Mentores: <span className="text-white/80">{mentorNames.length ? mentorNames.join(', ') : 'Nenhum'}</span></div>
           {specialistNames.length > 0 && (
             <div className="text-xs text-white/50 mt-0.5">Especialistas: <span className="text-white/80">{specialistNames.join(', ')}</span></div>
           )}
           <div role="tablist" className="flex gap-1 mt-4 -mb-1">
-            {([['mentoring', `Mentorias (${mentoring.length})`], ['specialist', `Atendimentos (${specialist.length})`]] as const).map(([key, label]) => (
+            {([['mentoring', `Mentorias (${mentoring.length})`], ['specialist', `Atendimentos (${specialist.length})`], ['project', 'Projeto']] as const).map(([key, label]) => (
               <button key={key} role="tab" id={`tab-${key}`} aria-controls="history-panel" aria-selected={tab === key}
                 tabIndex={tab === key ? 0 : -1} onClick={() => setTab(key)}
                 onKeyDown={e => {
                   if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                    const next: Tab = tab === 'mentoring' ? 'specialist' : 'mentoring'
+                    const i = TABS.indexOf(tab), d = e.key === 'ArrowRight' ? 1 : -1
+                    const next = TABS[(i + d + TABS.length) % TABS.length]
                     setTab(next)
                     document.getElementById(`tab-${next}`)?.focus()
                   }
@@ -97,7 +108,9 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
         </div>
 
         <div className="p-5 md:p-7 overflow-y-auto bg-slate-50" role="tabpanel" id="history-panel" aria-labelledby={`tab-${tab}`}>
-          {tab === 'mentoring' ? (
+          {tab === 'project' ? (
+            <ProjectHistory teamId={team.id} rows={projects} blockOf={blockOf} canCorrect={canCorrectProject} onChanged={onProjectChanged} />
+          ) : tab === 'mentoring' ? (
             timeline.length === 0 ? (
               <div className="text-center py-10 text-slate-400 text-sm">Nenhuma mentoria registrada ainda.</div>
             ) : (
@@ -120,7 +133,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                     </div>
                   </div>
                 ) : (
-                  <MentoringItem key={item.r.id} r={item.r} steps={steps} canEdit={currentUser === item.r.mentor?.email} />
+                  <MentoringItem key={item.r.id} r={item.r} steps={steps} canEdit={currentUser === item.r.mentor?.email} pivoted={pivotRecordIds.has(item.r.id)} />
                 ))}
               </Timeline>
               </>
@@ -165,7 +178,7 @@ function Timeline({ children }: { children: React.ReactNode }) {
   )
 }
 
-function MentoringItem({ r, steps, canEdit }: { r: RecordWithRelations; steps: Step[]; canEdit: boolean }) {
+function MentoringItem({ r, steps, canEdit, pivoted = false }: { r: RecordWithRelations; steps: Step[]; canEdit: boolean; pivoted?: boolean }) {
   const meta = STATUS[r.status ?? ''] ?? { label: r.status ?? '', pill: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400 ring-slate-400' }
   return (
     <div className="relative">
@@ -174,11 +187,12 @@ function MentoringItem({ r, steps, canEdit }: { r: RecordWithRelations; steps: S
         <div className="font-display font-bold text-[13px] text-navy">{r.block?.label}</div>
         <div className="text-[12px] text-slate-400">{fmtDateTime(r.createdAt)}</div>
         <div className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${meta.pill}`}><StatusIcon status={r.status} size={12} />{meta.label}</div>
+        {pivoted && <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-orange-pale text-orange-dark px-2.5 py-0.5 rounded-full"><Shuffle aria-hidden="true" size={12} />Pivotou</div>}
         <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full md:ml-auto"><User aria-hidden="true" size={12} />{r.mentor?.name}</div>
       </div>
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
         <StepProgress steps={steps} current={r.step ?? null} size="sm" />
-        <Field label="Projeto atual" value={r.working} dark />
+        <Field label="Trabalhou em" value={r.working} dark />
         <Field label="Orientação do mentor" value={r.advice} />
         <Field label="Pontos positivos" icon={ThumbsUp} value={r.pros} />
         <Field label="A melhorar" icon={Wrench} value={r.cons} />
