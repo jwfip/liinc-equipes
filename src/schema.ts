@@ -9,6 +9,7 @@ import {
   serial,
   primaryKey,
   uniqueIndex,
+  index,
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 
@@ -95,8 +96,18 @@ export const users = pgTable('users', {
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image:         text('image'),
   role:          text('role').notNull().default('mentor'), // 'mentor' | 'admin'
+  passwordHash:       text('password_hash'),
+  mustChangePassword: boolean('must_change_password').notNull().default(true),
   createdAt:     timestamp('created_at').defaultNow(),
 })
+
+export const loginAttempts = pgTable('login_attempts', {
+  id:          serial('id').primaryKey(),
+  username:    text('username').notNull(),
+  attemptedAt: timestamp('attempted_at').notNull().defaultNow(),
+}, (t) => ({
+  byUser: index('login_attempts_username_idx').on(t.username, t.attemptedAt),
+}))
 
 export const accounts = pgTable('accounts', {
   userId:            text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
