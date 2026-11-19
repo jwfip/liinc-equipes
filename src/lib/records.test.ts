@@ -60,6 +60,7 @@ describe('defaultHistoryTab', () => {
     expect(defaultHistoryTab('specialist')).toBe('specialist')
     expect(defaultHistoryTab('mentor')).toBe('mentoring')
     expect(defaultHistoryTab(null)).toBe('mentoring')
+    expect(defaultHistoryTab('facilitator')).toBe('mentoring')
   })
 })
 

@@ -37,7 +37,7 @@ export default function MobileNav({ role, eventRole, userLabel, signOut }: Props
     }
   }, [open])
 
-  const main = mainNav(eventRole)
+  const main = mainNav(eventRole, role === 'admin')
   const more = [...(role === 'admin' ? ADMIN_NAV : []), ACCOUNT_NAV]
   const moreActive = more.some(i => isActive(pathname, i.href))
 

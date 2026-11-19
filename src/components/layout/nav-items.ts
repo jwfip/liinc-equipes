@@ -1,13 +1,18 @@
-import { LayoutDashboard, NotebookPen, MessagesSquare, KeyRound, CalendarDays, Users, FileText, type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, NotebookPen, MessagesSquare, KeyRound, CalendarDays, Users, FileText, Radar, type LucideIcon } from 'lucide-react'
 
 export type NavItem = { href: string; label: string; short: string; Icon: LucideIcon }
 
-export function mainNav(eventRole: string | null): NavItem[] {
+export const ACOMPANHAMENTO_NAV: NavItem = { href: '/acompanhamento', label: 'Acompanhamento', short: 'Acompanhar', Icon: Radar }
+
+export function mainNav(eventRole: string | null, isAdmin = false): NavItem[] {
+  const painel: NavItem = { href: '/painel', label: 'Painel Geral', short: 'Painel', Icon: LayoutDashboard }
+  if (eventRole === 'facilitator') return [painel, ACOMPANHAMENTO_NAV]
   return [
-    { href: '/painel', label: 'Painel Geral', short: 'Painel', Icon: LayoutDashboard },
+    painel,
     eventRole === 'specialist'
       ? { href: '/mentoria', label: 'Novo Atendimento', short: 'Atendimento', Icon: MessagesSquare }
       : { href: '/mentoria', label: 'Nova Mentoria', short: 'Mentoria', Icon: NotebookPen },
+    ...(isAdmin ? [ACOMPANHAMENTO_NAV] : []),
   ]
 }
 

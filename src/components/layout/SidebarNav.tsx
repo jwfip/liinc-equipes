@@ -24,7 +24,7 @@ export default function SidebarNav({ role, eventRole = null }: { role: string; e
     <nav aria-label="Navegação principal" className="px-4 flex flex-col gap-8 w-full">
       <div className="flex flex-col gap-1.5">
         <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Acesso rápido</p>
-        {[...mainNav(eventRole), ACCOUNT_NAV].map(item => <Item key={item.href} {...item} />)}
+        {[...mainNav(eventRole, role === 'admin'), ACCOUNT_NAV].map(item => <Item key={item.href} {...item} />)}
       </div>
       {role === 'admin' && (
         <div className="flex flex-col gap-1.5">

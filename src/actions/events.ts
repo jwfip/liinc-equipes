@@ -25,7 +25,7 @@ export async function setCurrentEvent(eventId: number): Promise<void> {
 // ── Admin: eventos, etapas e participantes ───────────────────
 
 const str = (fd: FormData, k: string) => String(fd.get(k) ?? '').trim()
-const ROLES: EventRole[] = ['mentor', 'specialist']
+const ROLES: EventRole[] = ['mentor', 'specialist', 'facilitator']
 
 function revalidateEvents() {
   revalidatePath('/admin/eventos', 'layout')

@@ -15,7 +15,22 @@ export function registrationError(who: Who, kind: RecordKind = 'mentoring'): str
   if (!who.event.active) return 'Este evento está encerrado.'
   if (!who.mentorId || !who.role) return 'Você não participa deste evento.'
   if (!who.mentorActive) return 'Seu acesso de mentor está desativado.'
+  if (who.role === 'facilitator') return 'Facilitadores acompanham o evento e não registram mentorias nem atendimentos.'
   if (kind === 'mentoring' && who.role === 'specialist') return 'Especialistas registram atendimentos, não mentorias.'
   if (kind === 'specialist' && who.role === 'mentor') return 'Mentores registram mentorias, não atendimentos.'
   return null
+}
+
+type Viewer = { isAdmin: boolean; role: EventRole | null }
+
+/** Observações para facilitadores: só facilitador do evento e admin veem as de todos. */
+export function canSeePrivateNotes(v: Viewer): boolean {
+  return v.isAdmin || v.role === 'facilitator'
+}
+
+/** Corrigir o texto do projeto atual: admin sempre; facilitador só com o evento ativo. */
+export function canCorrectProject(v: Viewer & { event: { active: boolean } | null }): boolean {
+  if (!v.event) return false
+  if (v.isAdmin) return true
+  return v.role === 'facilitator' && v.event.active
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { registrationError } from './participation'
+import { registrationError, canSeePrivateNotes, canCorrectProject } from './participation'
 
 const base = { event: { id: 1, active: true }, role: 'mentor' as const, mentorId: 'm1', mentorActive: true }
 
@@ -33,5 +33,42 @@ describe('registrationError by record kind', () => {
   })
   it('defaults to mentoring', () => {
     expect(registrationError({ ...base, role: 'specialist' })).toBe('Especialistas registram atendimentos, não mentorias.')
+  })
+})
+
+describe('facilitator role', () => {
+  const msg = 'Facilitadores acompanham o evento e não registram mentorias nem atendimentos.'
+  it('blocks a facilitator from registering mentorias', () => {
+    expect(registrationError({ ...base, role: 'facilitator' }, 'mentoring')).toBe(msg)
+  })
+  it('blocks a facilitator from registering atendimentos', () => {
+    expect(registrationError({ ...base, role: 'facilitator' }, 'specialist')).toBe(msg)
+  })
+})
+
+describe('canSeePrivateNotes', () => {
+  it('lets admin and facilitator see private notes', () => {
+    expect(canSeePrivateNotes({ isAdmin: true, role: null })).toBe(true)
+    expect(canSeePrivateNotes({ isAdmin: false, role: 'facilitator' })).toBe(true)
+  })
+  it('hides private notes from mentors, specialists and non-members', () => {
+    expect(canSeePrivateNotes({ isAdmin: false, role: 'mentor' })).toBe(false)
+    expect(canSeePrivateNotes({ isAdmin: false, role: 'specialist' })).toBe(false)
+    expect(canSeePrivateNotes({ isAdmin: false, role: null })).toBe(false)
+  })
+})
+
+describe('canCorrectProject', () => {
+  const active = { id: 1, active: true }, closed = { id: 1, active: false }
+  it('lets a facilitator correct only in an active event', () => {
+    expect(canCorrectProject({ isAdmin: false, role: 'facilitator', event: active })).toBe(true)
+    expect(canCorrectProject({ isAdmin: false, role: 'facilitator', event: closed })).toBe(false)
+  })
+  it('lets admin correct even in a closed event', () => {
+    expect(canCorrectProject({ isAdmin: true, role: null, event: closed })).toBe(true)
+  })
+  it('refuses mentors and missing events', () => {
+    expect(canCorrectProject({ isAdmin: false, role: 'mentor', event: active })).toBe(false)
+    expect(canCorrectProject({ isAdmin: true, role: null, event: null })).toBe(false)
   })
 })

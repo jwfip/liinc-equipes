@@ -1,6 +1,6 @@
 export const EVENT_COOKIE = 'liinc_event'
 
-export type EventRole = 'mentor' | 'specialist'
+export type EventRole = 'mentor' | 'specialist' | 'facilitator'
 
 export type EventOption = { id: number; name: string; active: boolean; role: EventRole | null }
 

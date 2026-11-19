@@ -37,7 +37,7 @@ export function countByTeam(records: { teamId: string }[]): Record<string, numbe
   return out
 }
 
-export function defaultHistoryTab(role: 'mentor' | 'specialist' | null): 'mentoring' | 'specialist' {
+export function defaultHistoryTab(role: 'mentor' | 'specialist' | 'facilitator' | null): 'mentoring' | 'specialist' {
   return role === 'specialist' ? 'specialist' : 'mentoring'
 }
 

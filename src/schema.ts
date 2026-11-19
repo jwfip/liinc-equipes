@@ -52,7 +52,7 @@ export const mentors = pgTable('mentors', {
 export const eventMembers = pgTable('event_members', {
   eventId:   integer('event_id').notNull().references(() => events.id, { onDelete: 'cascade' }),
   mentorId:  uuid('mentor_id').notNull().references(() => mentors.id, { onDelete: 'cascade' }),
-  role:      text('role').notNull().default('mentor'), // 'mentor' | 'specialist'
+  role:      text('role').notNull().default('mentor'), // 'mentor' | 'specialist' | 'facilitator'
   createdAt: timestamp('created_at').defaultNow(),
 }, (t) => ({
   pk: primaryKey({ columns: [t.eventId, t.mentorId] }),

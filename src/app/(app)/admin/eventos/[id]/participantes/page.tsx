@@ -7,7 +7,13 @@ import ActionButton from '@/components/admin/ActionButton'
 
 export const dynamic = 'force-dynamic'
 
-const ROLE_LABEL = { mentor: 'Mentor', specialist: 'Especialista' } as const
+const ROLE_LABEL = { mentor: 'Mentor', specialist: 'Especialista', facilitator: 'Facilitador' } as const
+const ROLES = Object.keys(ROLE_LABEL) as (keyof typeof ROLE_LABEL)[]
+const ROLE_BADGE: Record<string, string> = {
+  mentor:      'bg-orange-pale text-orange-dark border-orange/30',
+  specialist:  'bg-blue-50 text-blue-700 border-blue-200',
+  facilitator: 'bg-navy/5 text-navy border-navy/20',
+}
 
 export default async function ParticipantesPage({ params }: { params: { id: string } }) {
   const eventId = Number(params.id)
@@ -26,7 +32,7 @@ export default async function ParticipantesPage({ params }: { params: { id: stri
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="card">
           <h2 className="font-display font-semibold text-sm mb-1 text-slate-600">Adicionar participante</h2>
-          <p className="text-xs text-slate-500 mb-4">Mentores acompanham a evolução das equipes. Especialistas registram atendimentos e tiram dúvidas.</p>
+          <p className="text-xs text-slate-500 mb-4">Mentores acompanham a evolução das equipes. Especialistas registram atendimentos e tiram dúvidas. Facilitadores conduzem o evento e acompanham as equipes, sem registrar.</p>
           <AdminForm action={addMember.bind(null, eventId)}>
             <div className="flex-1">
               <label className="label" htmlFor="mentorId">Pessoa</label>
@@ -40,6 +46,7 @@ export default async function ParticipantesPage({ params }: { params: { id: stri
               <select id="role" name="role" className="input" defaultValue="mentor">
                 <option value="mentor">Mentor</option>
                 <option value="specialist">Especialista</option>
+                <option value="facilitator">Facilitador</option>
               </select>
             </div>
           </AdminForm>
@@ -67,21 +74,22 @@ export default async function ParticipantesPage({ params }: { params: { id: stri
         {members.length === 0 && <p className="px-4 py-8 text-center text-slate-500 text-sm">Ninguém escalado ainda.</p>}
         <ul>
           {members.map(m => {
-            const other = m.role === 'mentor' ? 'specialist' : 'mentor'
+            const others = ROLES.filter(r => r !== m.role)
             return (
               <li key={m.mentorId} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3 border-b border-slate-200/60 last:border-0">
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">{m.name}{!m.active && <span className="text-xs text-slate-400"> (inativo)</span>}</p>
                   <p className="text-xs text-slate-500 truncate">{m.username}</p>
                 </div>
-                <span className={`self-start sm:self-center text-xs font-bold px-2 py-0.5 rounded-full border ${
-                  m.role === 'specialist' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-orange-pale text-orange-dark border-orange/30'}`}>
+                <span className={`self-start sm:self-center text-xs font-bold px-2 py-0.5 rounded-full border ${ROLE_BADGE[m.role] ?? ROLE_BADGE.mentor}`}>
                   {ROLE_LABEL[m.role as keyof typeof ROLE_LABEL] ?? m.role}
                 </span>
-                <div className="flex gap-2 self-end sm:self-center">
-                  <ActionButton action={setMemberRole.bind(null, eventId, m.mentorId, other)}>
-                    Tornar {ROLE_LABEL[other]}
-                  </ActionButton>
+                <div className="flex flex-wrap gap-2 self-end sm:self-center">
+                  {others.map(r => (
+                    <ActionButton key={r} action={setMemberRole.bind(null, eventId, m.mentorId, r)}>
+                      Tornar {ROLE_LABEL[r]}
+                    </ActionButton>
+                  ))}
                   <ActionButton action={removeMember.bind(null, eventId, m.mentorId)} className="btn-danger" confirm={`Remover ${m.name} deste evento?`}>
                     Remover
                   </ActionButton>

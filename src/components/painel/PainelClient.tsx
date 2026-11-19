@@ -11,6 +11,7 @@ import TeamCard     from './TeamCard'
 import HistoryModal from './HistoryModal'
 import type { TeamSummary } from './SummaryBox'
 import { isSummaryStale } from '@/lib/ai/summary-prompt'
+import type { EventRole } from '@/lib/event-pick'
 
 type Team = { id: string; number: number; name: string; active: boolean }
 
@@ -22,7 +23,7 @@ interface Props {
   steps:              Step[]
   activeBlock:        { label: string } | null
   currentUser:        string
-  viewerRole:         'mentor' | 'specialist' | null
+  viewerRole:         EventRole | null
   isAdmin:            boolean
 }
 
