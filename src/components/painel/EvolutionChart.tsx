@@ -4,7 +4,7 @@ const STATUS_COLOR: Record<string, string> = {
   ok: '#16A34A', attention: '#CA8A04', emergency: '#DC2626', flying: '#2563EB',
 }
 const NAVY = '#000222'
-const ORANGE = '#F47B20'
+const ORANGE = '#FF7F00'
 
 
 function truncate(t: string, max: number) {

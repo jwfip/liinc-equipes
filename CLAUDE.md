@@ -113,7 +113,7 @@ Acesso ao banco via Server Actions (`src/actions/`). Única API route de dados: 
 theme: {
   extend: {
     colors: {
-      orange: { DEFAULT: '#F47B20', dark: '#D4660F', pale: '#FFF3E8' },
+      orange: { DEFAULT: '#FF7F00', dark: '#C25E00', pale: '#FFF2E5' }, // laranja da logo Liinc
       navy:   { DEFAULT: '#000222', light: '#0B1036', muted: '#3A3F66' }, // azul da logo Liinc
     },
     fontFamily: {

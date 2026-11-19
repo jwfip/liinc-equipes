@@ -10,9 +10,9 @@ const config: Config = {
     extend: {
       colors: {
         orange: {
-          DEFAULT: '#F47B20',
-          dark: '#D4660F',
-          pale: '#FFF3E8',
+          DEFAULT: '#FF7F00', // laranja da logo Liinc
+          dark: '#C25E00',
+          pale: '#FFF2E5',
         },
         navy: {
           DEFAULT: '#000222', // azul da marca (letras da logo Liinc)
