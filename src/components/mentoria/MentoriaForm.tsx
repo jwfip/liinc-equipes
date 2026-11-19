@@ -3,6 +3,7 @@
 import { CirclePause, Clock, CircleCheck } from 'lucide-react'
 
 import { useRef, useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
 import { submitMentoria, updateMentoria } from '@/actions/mentoria'
 import { STATUS_OPTIONS, type Step } from '@/lib/constants'
 import TeamPicker from './TeamPicker'
@@ -25,6 +26,7 @@ interface Props {
 
 export default function MentoriaForm({ teams, steps, activeBlock, projects, recordToEdit }: Props) {
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
   const [selectedTeam, setSelectedTeam] = useState(recordToEdit?.teamId || '')
   const [selectedStatus, setSelectedStatus] = useState(recordToEdit?.status || '')
   const [selectedStep, setSelectedStep] = useState<number | null>(recordToEdit?.stepId ?? null)
@@ -82,6 +84,8 @@ export default function MentoriaForm({ teams, steps, activeBlock, projects, reco
     const formData = new FormData(form)
     formData.set('teamId', selectedTeam)
     formData.set('status', selectedStatus)
+    // O que o formulário mostrou: o servidor usa para não perder o texto se a lista de projetos estiver velha.
+    if (!recordToEdit) formData.set('projectMode', !project ? 'initial' : pivoted ? 'pivot' : 'none')
     setError(null)
     startTransition(async () => {
       try {
@@ -93,6 +97,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, projects, reco
           return
         }
         setSuccess(true)
+        router.refresh() // projetos atualizados: a próxima mentoria da mesma equipe já vê o projeto salvo
         if (!recordToEdit) {
           setSelectedTeam('')
           setSelectedStatus('')

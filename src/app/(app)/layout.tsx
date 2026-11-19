@@ -4,19 +4,18 @@ import SidebarNav from '@/components/layout/SidebarNav'
 import MobileNav from '@/components/layout/MobileNav'
 import EventSwitcher from '@/components/layout/EventSwitcher'
 import { getEventContext } from '@/lib/event-context'
+import { roleLabel as labelForRole } from '@/lib/participation'
 
 async function doSignOut() {
   'use server'
   await signOut({ redirectTo: '/login' })
 }
 
-const ROLE_LABEL: Record<string, string> = { mentor: 'Mentor', specialist: 'Especialista' }
-
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   if (!session) redirect('/login')
   const ctx = await getEventContext()
-  const roleLabel = ctx.isAdmin ? 'Administrador' : (ctx.role ? ROLE_LABEL[ctx.role] : 'Sem evento')
+  const roleLabel = ctx.isAdmin ? 'Administrador' : (labelForRole(ctx.role) ?? 'Sem evento')
   const switcher = <EventSwitcher options={ctx.options} current={ctx.event} isAdmin={ctx.isAdmin} />
 
   return (

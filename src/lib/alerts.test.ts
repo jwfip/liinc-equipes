@@ -89,12 +89,16 @@ describe('absent', () => {
   it('does not flag anything during the first block', () => {
     expect(codes(base({ blocks: [B(1, '2026-01-01', true)], today: '2026-01-01' }))).not.toContain('absent')
   })
-  it('uses the last started block when none is active', () => {
-    const input = base({ blocks: [B(1, '2026-01-01'), B(2, '2026-01-02')], today: '2026-01-05' })
+  it('uses the last held block when none is active', () => {
+    const teams = [{ id: 't1' }, { id: 't2' }]
+    const records = [rec('t2', 1, 'ok', null, '2026-01-01T10:00'), rec('t2', 2, 'ok', null, '2026-01-02T10:00')]
+    const input = base({ teams, records, blocks: [B(1, '2026-01-01'), B(2, '2026-01-02')], today: '2026-01-05' })
     expect(texts(input)).toEqual(['Sem mentoria no B2'])
   })
   it('ignores a future block when none is active', () => {
-    const input = base({ blocks: [B(1, '2026-01-01'), B(2, '2026-02-01')], today: '2026-01-05' })
+    const teams = [{ id: 't1' }, { id: 't2' }]
+    const records = [rec('t2', 1, 'ok', null, '2026-01-01T10:00')]
+    const input = base({ teams, records, blocks: [B(1, '2026-01-01'), B(2, '2026-02-01')], today: '2026-01-05' })
     expect(texts(input)).toEqual(['Sem mentoria no B1'])
   })
 })
@@ -118,5 +122,19 @@ describe('step numbers', () => {
     const records = [rec('t1', 1, 'ok', 7, '2026-01-01T10:00'), rec('t1', 2, 'ok', 7, '2026-01-02T10:00')]
     const steps = [{ id: S(3).id }, { id: S(7).id }]
     expect(texts(base({ records, steps }))).toContain('Parada na etapa 2 há 2 blocos')
+  })
+})
+
+describe('absent with no active block and blocks sharing a date', () => {
+  it('uses the last block that actually had mentorias, not a later block dated today', () => {
+    const blocks = [B(1, '2026-01-03'), B(2, '2026-01-03'), B(3, '2026-01-03'), B(4, '2026-01-03')]
+    const teams = [{ id: 't1' }, { id: 't2' }]
+    const records = [rec('t1', 1, 'ok', 1, '2026-01-03T09:00'), rec('t1', 2, 'ok', 1, '2026-01-03T10:00')]
+    const input = base({ teams, records, blocks, today: '2026-01-03' })
+    expect(codes(input, 't1')).not.toContain('absent')
+    expect(texts(input, 't2')).toContain('Sem mentoria no B2')
+  })
+  it('flags nothing before any block ran', () => {
+    expect(codes(base({ blocks: [B(1, '2026-01-03'), B(2, '2026-01-03')], today: '2026-01-03' }))).toEqual([])
   })
 })

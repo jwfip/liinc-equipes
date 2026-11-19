@@ -22,3 +22,12 @@ describe('readProjectInput — team with project', () => {
     expect(readProjectInput({ pivoted: true, description: 'App Y' }, true)).toEqual({ kind: 'pivot', description: 'App Y' })
   })
 })
+
+describe('readProjectInput — form out of date', () => {
+  it('saves a newer initial when the form still showed "no project" (another mentor created it meanwhile)', () => {
+    expect(readProjectInput({ mode: 'initial', pivoted: false, description: 'App Z' }, true)).toEqual({ kind: 'initial', description: 'App Z' })
+  })
+  it('asks for the project when the form did not show the field but the team has none', () => {
+    expect(() => readProjectInput({ mode: 'none', pivoted: false, description: null }, false)).toThrow('Descreva o projeto da equipe.')
+  })
+})

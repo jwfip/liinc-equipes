@@ -29,12 +29,15 @@ export type AlertInput = {
   steps?:      { id: number }[]
 }
 
-/** Bloco em que se espera que toda equipe já tenha tido mentoria: o anterior ao ativo, ou o último já iniciado. */
-function checkpointBlock(blocks: AlertInput['blocks'], today: string) {
+/**
+ * Bloco em que se espera que toda equipe já tenha tido mentoria: o anterior ao ativo; sem bloco ativo,
+ * o último que de fato aconteceu (teve alguma mentoria) — blocos do mesmo dia ainda não realizados não contam.
+ */
+function checkpointBlock(blocks: AlertInput['blocks'], today: string, heldBlockIds: Set<number>) {
   const activeIdx = blocks.findIndex(b => b.active)
   if (activeIdx >= 0) return activeIdx > 0 ? blocks[activeIdx - 1] : null
-  const started = blocks.filter(b => b.date <= today)
-  return started[started.length - 1] ?? null
+  const held = blocks.filter(b => b.date <= today && heldBlockIds.has(b.id))
+  return held[held.length - 1] ?? null
 }
 
 function median(xs: number[]): number | null {
@@ -58,7 +61,7 @@ export function eventAlerts(input: AlertInput): Record<string, TeamAlert[]> {
   const latestByTeam = getLatestByTeam(records)
   const current = new Map(teams.map(t => [t.id, currentStepFor(latestByTeam[t.id], stepChanges.filter(c => c.teamId === t.id)).step]))
   const groupMedian = median(teams.map(t => current.get(t.id)).filter((s): s is StepRef => !!s).map(num))
-  const checkpoint = checkpointBlock(blocks, today)
+  const checkpoint = checkpointBlock(blocks, today, new Set(records.map(r => r.blockId).filter((id): id is number => id !== null)))
 
   const out: Record<string, TeamAlert[]> = {}
   for (const t of teams) {

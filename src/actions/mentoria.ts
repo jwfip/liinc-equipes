@@ -89,7 +89,11 @@ export async function submitMentoria(formData: FormData): Promise<ActionResult> 
 
     const fields = await readFields(formData, eventId)
     const hasProject = !!(await db.query.teamProjects.findFirst({ where: eq(teamProjects.teamId, teamId), columns: { id: true } }))
-    const project = readProjectInput({ pivoted: formData.get('pivoted') === 'on', description: opt(formData, 'project') }, hasProject)
+    const mode = String(formData.get('projectMode') ?? '')
+    const project = readProjectInput({
+      pivoted: formData.get('pivoted') === 'on', description: opt(formData, 'project'),
+      mode: mode === 'initial' || mode === 'pivot' || mode === 'none' ? mode : undefined,
+    }, hasProject)
 
     // O id vem daqui para a linha do projeto apontar para a mentoria no mesmo batch (neon-http não tem transação).
     const id = crypto.randomUUID()

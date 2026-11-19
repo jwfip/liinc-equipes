@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { registrationError, canSeePrivateNotes, canCorrectProject } from './participation'
+import { registrationError, canSeePrivateNotes, canCorrectProject, roleLabel } from './participation'
 
 const base = { event: { id: 1, active: true }, role: 'mentor' as const, mentorId: 'm1', mentorActive: true }
 
@@ -70,5 +70,21 @@ describe('canCorrectProject', () => {
   it('refuses mentors and missing events', () => {
     expect(canCorrectProject({ isAdmin: false, role: 'mentor', event: active })).toBe(false)
     expect(canCorrectProject({ isAdmin: true, role: null, event: null })).toBe(false)
+  })
+})
+
+describe('deactivated facilitator', () => {
+  it('loses access to private notes and project correction', () => {
+    expect(canSeePrivateNotes({ isAdmin: false, role: 'facilitator', mentorActive: false })).toBe(false)
+    expect(canCorrectProject({ isAdmin: false, role: 'facilitator', mentorActive: false, event: { active: true } })).toBe(false)
+  })
+})
+
+describe('roleLabel', () => {
+  it('names every role', () => {
+    expect(roleLabel('mentor')).toBe('Mentor')
+    expect(roleLabel('specialist')).toBe('Especialista')
+    expect(roleLabel('facilitator')).toBe('Facilitador')
+    expect(roleLabel(null)).toBeNull()
   })
 })

@@ -21,16 +21,19 @@ export function registrationError(who: Who, kind: RecordKind = 'mentoring'): str
   return null
 }
 
-type Viewer = { isAdmin: boolean; role: EventRole | null }
+type Viewer = { isAdmin: boolean; role: EventRole | null; mentorActive?: boolean }
 
-/** Observações para facilitadores: só facilitador do evento e admin veem as de todos. */
+/** Observações para facilitadores: só facilitador do evento (com acesso ativo) e admin veem as de todos. */
 export function canSeePrivateNotes(v: Viewer): boolean {
-  return v.isAdmin || v.role === 'facilitator'
+  return v.isAdmin || (v.role === 'facilitator' && v.mentorActive !== false)
 }
+
+const ROLE_LABEL: Record<EventRole, string> = { mentor: 'Mentor', specialist: 'Especialista', facilitator: 'Facilitador' }
+export const roleLabel = (role: EventRole | null): string | null => (role ? ROLE_LABEL[role] ?? null : null)
 
 /** Corrigir o texto do projeto atual: admin sempre; facilitador só com o evento ativo. */
 export function canCorrectProject(v: Viewer & { event: { active: boolean } | null }): boolean {
   if (!v.event) return false
   if (v.isAdmin) return true
-  return v.role === 'facilitator' && v.event.active
+  return canSeePrivateNotes(v) && v.role === 'facilitator' && v.event.active
 }
