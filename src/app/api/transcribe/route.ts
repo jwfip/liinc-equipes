@@ -5,7 +5,7 @@ import { getEventContext } from '@/lib/event-context'
 import { getEventSteps } from '@/lib/event-data'
 import { registrationError } from '@/lib/participation'
 import { chat, transcribe, groqConfigured } from '@/lib/groq'
-import { buildExtractionMessages, parseExtraction } from '@/lib/ai/extraction'
+import { buildExtractionMessages, parseExtraction, isUnclearTranscript, isEmptyExtraction } from '@/lib/ai/extraction'
 
 // Exceção às Server Actions prevista no design: upload binário de áudio.
 export const runtime = 'nodejs'
@@ -34,11 +34,14 @@ export async function POST(req: Request) {
     const type = audio.type || 'audio/webm'
     const ext = type.includes('mp4') ? 'mp4' : type.includes('ogg') ? 'ogg' : type.includes('wav') ? 'wav' : 'webm'
     const transcript = await transcribe(audio, `relato.${ext}`)
-    if (transcript.replace(/[\s.,!?…-]/g, '').length < 10) return NextResponse.json({ error: UNCLEAR }, { status: 422 })
+    if (isUnclearTranscript(transcript)) return NextResponse.json({ error: UNCLEAR }, { status: 422 })
 
     const steps = await getEventSteps(ctx.event!.id)
     const raw = await chat({ messages: buildExtractionMessages(kind, transcript, steps), json: true, maxTokens: 800 })
-    return NextResponse.json({ transcript, ...parseExtraction(raw, kind, steps) })
+    const extracted = parseExtraction(raw, kind, steps)
+    // Nada aproveitável (ruído, fala sem relação): melhor avisar do que preencher nada em silêncio.
+    if (isEmptyExtraction(extracted)) return NextResponse.json({ error: UNCLEAR }, { status: 422 })
+    return NextResponse.json({ transcript, ...extracted })
   } catch {
     return NextResponse.json({ error: 'A IA não respondeu agora. Tente de novo ou digite.' }, { status: 502 })
   }

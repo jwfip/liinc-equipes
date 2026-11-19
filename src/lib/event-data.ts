@@ -21,6 +21,8 @@ export async function getActiveBlock(eventId: number) {
 export async function getEventRecords(eventId: number) {
   return db.query.mentoringRecords.findMany({
     where: (r, { eq }) => eq(r.eventId, eventId),
+    // A transcrição do áudio não vai para o polling: pode ter falas sensíveis e pesa a cada 5 s.
+    columns: { audioTranscript: false },
     with: { team: true, mentor: { columns: { id: true, name: true, email: true } }, block: true, step: true },
     orderBy: (r, { asc }) => [asc(r.createdAt)],
   })

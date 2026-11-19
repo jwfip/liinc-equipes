@@ -39,3 +39,25 @@ describe('parseExtraction', () => {
     expect(r.status).toBeNull()
   })
 })
+
+import { isUnclearTranscript, isEmptyExtraction } from './extraction'
+
+describe('isUnclearTranscript', () => {
+  it('flags too-short text and known Whisper hallucinations on silence', () => {
+    expect(isUnclearTranscript(' E aí')).toBe(true)
+    expect(isUnclearTranscript('Legendas pela comunidade Amara.org')).toBe(true)
+    expect(isUnclearTranscript('Obrigado por assistir.')).toBe(true)
+    expect(isUnclearTranscript('Inscreva-se no canal!')).toBe(true)
+  })
+  it('accepts a real report', () => {
+    expect(isUnclearTranscript('A equipe está no protótipo e orientei a testar com usuários.')).toBe(false)
+  })
+})
+
+describe('isEmptyExtraction', () => {
+  it('is empty when nothing usable came back', () => {
+    expect(isEmptyExtraction({ status: null, stepId: null, fields: {} })).toBe(true)
+    expect(isEmptyExtraction({ status: 'ok', stepId: null, fields: {} })).toBe(false)
+    expect(isEmptyExtraction({ status: null, stepId: null, fields: { advice: 'x' } })).toBe(false)
+  })
+})

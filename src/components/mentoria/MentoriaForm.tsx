@@ -4,7 +4,6 @@ import { CirclePause, Clock, CircleCheck } from 'lucide-react'
 
 import { useRef, useState, useTransition } from 'react'
 import { submitMentoria, updateMentoria } from '@/actions/mentoria'
-import { refreshTeamSummary } from '@/actions/summaries'
 import { STATUS_OPTIONS, type Step } from '@/lib/constants'
 import TeamPicker from './TeamPicker'
 import AudioRecorder, { type AudioResult } from './AudioRecorder'
@@ -73,8 +72,6 @@ export default function MentoriaForm({ teams, steps, activeBlock, recordToEdit }
           setError(result.error)
           return
         }
-        // Resumo por IA em segundo plano: não bloqueia o mentor e uma falha não afeta o registro.
-        refreshTeamSummary(recordToEdit?.teamId ?? selectedTeam, 'mentoring').catch(() => {})
         setSuccess(true)
         if (!recordToEdit) {
           setSelectedTeam('')

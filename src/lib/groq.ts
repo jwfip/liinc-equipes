@@ -1,3 +1,5 @@
+import 'server-only'
+
 
 const BASE = 'https://api.groq.com/openai/v1'
 const TIMEOUT_MS = 20_000

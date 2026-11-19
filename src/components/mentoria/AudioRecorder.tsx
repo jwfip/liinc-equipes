@@ -23,10 +23,17 @@ export default function AudioRecorder({ kind, onResult }: { kind: 'mentoring' | 
   const chunks = useRef<Blob[]>([])
   const cancelled = useRef(false)
   const timer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const startedAt = useRef(0)
 
   useEffect(() => {
     setSupported(typeof window !== 'undefined' && typeof MediaRecorder !== 'undefined' && !!navigator.mediaDevices?.getUserMedia)
-    return () => { if (timer.current) clearInterval(timer.current); recorder.current?.stream.getTracks().forEach(t => t.stop()) }
+    // Saindo da página no meio da gravação: descarta (não envia para transcrição) e libera o microfone.
+    return () => {
+      cancelled.current = true
+      if (timer.current) clearInterval(timer.current)
+      if (recorder.current?.state === 'recording') recorder.current.stop()
+      recorder.current?.stream.getTracks().forEach(t => t.stop())
+    }
   }, [])
 
   if (!supported) return null
@@ -41,7 +48,14 @@ export default function AudioRecorder({ kind, onResult }: { kind: 'mentoring' | 
       return
     }
     const mimeType = pickMimeType()
-    const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
+    let rec: MediaRecorder
+    try {
+      rec = new MediaRecorder(stream, { ...(mimeType ? { mimeType } : {}), audioBitsPerSecond: 64_000 })
+    } catch {
+      stream.getTracks().forEach(t => t.stop())
+      setError('Este navegador não conseguiu gravar áudio. Digite o relato.')
+      return
+    }
     chunks.current = []
     cancelled.current = false
     rec.ondataavailable = e => { if (e.data.size) chunks.current.push(e.data) }
@@ -49,9 +63,11 @@ export default function AudioRecorder({ kind, onResult }: { kind: 'mentoring' | 
       stream.getTracks().forEach(t => t.stop())
       if (timer.current) clearInterval(timer.current)
       if (cancelled.current) { setState('idle'); return }
+      if (Date.now() - startedAt.current < 2000) { setState('idle'); setError('Gravação muito curta. Fale por alguns segundos.'); return }
       send(new Blob(chunks.current, { type: rec.mimeType || mimeType || 'audio/webm' }))
     }
     recorder.current = rec
+    startedAt.current = Date.now()
     rec.start(1000)
     setSeconds(0)
     setState('recording')

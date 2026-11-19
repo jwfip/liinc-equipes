@@ -47,3 +47,19 @@ export function parseExtraction(raw: string, kind: Kind, steps: { id: number }[]
   const stepId = Number.isInteger(n) && n >= 1 && n <= steps.length ? steps[n - 1].id : null
   return { status, stepId, fields }
 }
+
+/** Frases que o Whisper costuma "ouvir" em silêncio ou ruído (legendas de vídeo do treino). */
+const HALLUCINATIONS = [
+  'legendas pela comunidade', 'amara.org', 'obrigado por assistir', 'obrigada por assistir',
+  'inscreva-se', 'se inscreva', 'deixe seu like', 'até o próximo vídeo', 'tchau, tchau',
+]
+
+export function isUnclearTranscript(text: string): boolean {
+  const t = text.toLowerCase().trim()
+  if (t.replace(/[\s.,!?…-]/g, '').length < 10) return true
+  return HALLUCINATIONS.some(h => t.includes(h)) && t.length < 120
+}
+
+export function isEmptyExtraction(r: { status: string | null; stepId: number | null; fields: Record<string, string> }): boolean {
+  return !r.status && !r.stepId && Object.keys(r.fields).length === 0
+}

@@ -10,6 +10,7 @@ import { assertTeamInEvent, assertSameKind } from '@/lib/records'
 import { registrationError, type RecordKind } from '@/lib/participation'
 import { requireActiveSession } from '@/lib/guards'
 import { toActionError, type ActionResult } from '@/lib/action-result'
+import { generateTeamSummaryInBackground } from '@/lib/ai/team-summary'
 
 const STATUSES = ['ok', 'attention', 'emergency', 'flying']
 const opt = (fd: FormData, k: string) => (String(fd.get(k) ?? '').trim() || null)
@@ -89,6 +90,7 @@ export async function submitMentoria(formData: FormData): Promise<ActionResult> 
     await db.insert(mentoringRecords).values({
       ...fields, eventId, teamId, mentorId, blockId: block.id, kind: 'mentoring',
     })
+    generateTeamSummaryInBackground(teamId, 'mentoring')
 
     revalidatePath('/painel')
     return { ok: true }
@@ -104,6 +106,7 @@ export async function updateMentoria(recordId: string, formData: FormData): Prom
     // Edição vale no evento do próprio registro, mesmo que o usuário esteja vendo outro evento.
     const fields = await readFields(formData, record.eventId)
     await db.update(mentoringRecords).set(fields).where(eq(mentoringRecords.id, recordId))
+    generateTeamSummaryInBackground(record.teamId, 'mentoring')
 
     revalidatePath('/painel')
     return { ok: true }
@@ -124,6 +127,7 @@ export async function submitAtendimento(formData: FormData): Promise<ActionResul
       ...fields, eventId, teamId, mentorId, blockId: block?.id ?? null,
       kind: 'specialist', status: null, stepId: null,
     })
+    generateTeamSummaryInBackground(teamId, 'specialist')
     revalidatePath('/painel')
     return { ok: true }
   } catch (err) {
@@ -133,8 +137,9 @@ export async function submitAtendimento(formData: FormData): Promise<ActionResul
 
 export async function updateAtendimento(recordId: string, formData: FormData): Promise<ActionResult> {
   try {
-    await requireAuthorOf(recordId, 'specialist')
+    const record = await requireAuthorOf(recordId, 'specialist')
     await db.update(mentoringRecords).set(readAtendimento(formData)).where(eq(mentoringRecords.id, recordId))
+    generateTeamSummaryInBackground(record.teamId, 'specialist')
     revalidatePath('/painel')
     return { ok: true }
   } catch (err) {
