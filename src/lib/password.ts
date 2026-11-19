@@ -17,7 +17,8 @@ export function generateTempPassword(): string {
   let out = ''
   while (out.length < TEMP_PASSWORD_LENGTH) {
     const bytes = crypto.getRandomValues(new Uint8Array(32))
-    for (const b of bytes) {
+    for (let i = 0; i < bytes.length; i++) {
+      const b = bytes[i]
       if (b < limit && out.length < TEMP_PASSWORD_LENGTH) out += TEMP_PASSWORD_ALPHABET[b % n]
     }
   }
