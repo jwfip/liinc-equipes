@@ -13,6 +13,7 @@ interface Props {
   teamId:       string
   kind:         'mentoring' | 'specialist'
   compact?:     boolean          // card: texto curto, sem botão
+  latestAt?:    number           // data (ms) do registro mais recente: recém-criado → resumo ainda sendo gerado
   onRefreshed?: () => void
 }
 
@@ -21,12 +22,16 @@ function fmt(d: string | Date | null) {
 }
 
 /** Resumo gerado por IA da equipe (evolução ou atendimentos). */
-export default function SummaryBox({ summary, stale, hasRecords, teamId, kind, compact = false, onRefreshed }: Props) {
+const GENERATING_WINDOW_MS = 90_000
+
+export default function SummaryBox({ summary, stale, hasRecords, teamId, kind, compact = false, latestAt, onRefreshed }: Props) {
   const [expanded, setExpanded] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   if (!hasRecords) return null
 
+  // O formulário dispara a geração ao salvar; por alguns segundos o resumo ainda não chegou.
+  const generating = isPending || (stale && !!latestAt && Date.now() - latestAt < GENERATING_WINDOW_MS)
   const title = kind === 'mentoring' ? 'Resumo da IA' : 'Resumo dos atendimentos (IA)'
   const refresh = () => startTransition(async () => {
     setError(null)
@@ -56,11 +61,12 @@ export default function SummaryBox({ summary, stale, hasRecords, teamId, kind, c
             </button>
           )}
           <p className="text-[10px] text-slate-400 mt-1">
-            {stale ? `Resumo de ${fmt(summary.createdAt)} · pode estar desatualizado` : `Atualizado em ${fmt(summary.createdAt)}`}
+            {generating ? 'Atualizando com o registro mais recente…'
+              : stale ? `Resumo de ${fmt(summary.createdAt)} · pode estar desatualizado` : `Atualizado em ${fmt(summary.createdAt)}`}
           </p>
         </>
       ) : (
-        <p className="text-[12px] text-slate-500 italic">{isPending ? 'Gerando resumo…' : 'Resumo indisponível.'}</p>
+        <p className="text-[12px] text-slate-500 italic">{generating ? 'Gerando resumo…' : 'Resumo indisponível.'}</p>
       )}
       {error && <p role="alert" className="text-[11px] font-semibold text-red-600 mt-1">{error}</p>}
     </div>

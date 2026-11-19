@@ -22,6 +22,7 @@ Crie `.env.local`:
 DATABASE_URL=postgresql://...
 AUTH_SECRET=...              # openssl rand -hex 32
 AUTH_URL=http://localhost:3000
+GROQ_API_KEY=gsk_...         # opcional: resumos por IA e relato por áudio (console.groq.com)
 ```
 
 ### 2. Banco
@@ -37,6 +38,8 @@ Banco existente (anterior à v2) — aplicar a migração de dados antes:
 ```bash
 psql "$DATABASE_URL" -f drizzle/0001_v2_fase1_eventos.sql   # idempotente
 psql "$DATABASE_URL" -f drizzle/0002_v2_fase2_senha.sql      # idempotente
+psql "$DATABASE_URL" -f drizzle/0003_v2_fase3_atendimentos.sql
+psql "$DATABASE_URL" -f drizzle/0004_v2_fase5_ia.sql
 npx drizzle-kit push                                         # deve reportar nada pendente
 ```
 

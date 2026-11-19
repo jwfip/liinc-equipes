@@ -66,13 +66,16 @@ export default function PainelClient({
   const changesFor = (teamId: string) => stepChanges.filter(c => c.teamId === teamId)
   const summaryOf = (teamId: string, kind: string) => summaries.find(x => x.teamId === teamId && x.kind === kind)
   /** Registro mais recente (por data) da equipe naquele tipo — base do resumo. */
-  const newestId = (rs: RecordWithRelations[], teamId: string) =>
-    rs.filter(r => r.teamId === teamId).reduce<RecordWithRelations | undefined>((a, r) => (!a || time(r.createdAt) > time(a.createdAt) ? r : a), undefined)?.id ?? null
+  const newest = (rs: RecordWithRelations[], teamId: string) =>
+    rs.filter(r => r.teamId === teamId).reduce<RecordWithRelations | undefined>((a, r) => (!a || time(r.createdAt) > time(a.createdAt) ? r : a), undefined)
   const summaryProps = (teamId: string, kind: 'mentoring' | 'specialist') => {
     const rs = kind === 'mentoring' ? mentoring : specialist
-    const latest = newestId(rs, teamId)
+    const latest = newest(rs, teamId)
     const summary = summaryOf(teamId, kind)
-    return { summary, stale: isSummaryStale(summary, latest), hasRecords: latest !== null, teamId, kind, onRefreshed: reload }
+    return {
+      summary, stale: isSummaryStale(summary, latest?.id ?? null), hasRecords: !!latest,
+      latestAt: latest ? time(latest.createdAt) : undefined, teamId, kind, onRefreshed: reload,
+    }
   }
 
   const filtered = teams.filter(t => {
