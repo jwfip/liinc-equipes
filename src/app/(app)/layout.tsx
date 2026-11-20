@@ -5,6 +5,8 @@ import MobileNav from '@/components/layout/MobileNav'
 import EventSwitcher from '@/components/layout/EventSwitcher'
 import { getEventContext } from '@/lib/event-context'
 import { roleLabel as labelForRole } from '@/lib/participation'
+import Link from 'next/link'
+import { Settings, LogOut } from 'lucide-react'
 
 async function doSignOut() {
   'use server'
@@ -58,11 +60,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
             {session.user.email}
           </div>
-          <form action={doSignOut}>
-            <button type="submit" className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-2.5 rounded-xl font-display font-bold text-xs transition-colors">
-              Sair da Plataforma
-            </button>
-          </form>
+          <div className="flex gap-2">
+            <Link href="/conta" className="flex-1 min-h-[44px] flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-display font-bold text-xs transition-colors">
+              <Settings aria-hidden="true" size={15} />Configurações
+            </Link>
+            <form action={doSignOut} className="flex-1">
+              <button type="submit" className="w-full min-h-[44px] flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white rounded-xl font-display font-bold text-xs transition-colors">
+                <LogOut aria-hidden="true" size={15} />Sair
+              </button>
+            </form>
+          </div>
         </div>
       </aside>
 

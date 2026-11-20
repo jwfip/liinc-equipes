@@ -1,4 +1,4 @@
-import { LayoutDashboard, NotebookPen, MessagesSquare, KeyRound, CalendarDays, Users, FileText, Radar, type LucideIcon } from 'lucide-react'
+import { LayoutDashboard, NotebookPen, MessagesSquare, Settings, CalendarDays, Users, FileText, Radar, type LucideIcon } from 'lucide-react'
 
 export type NavItem = { href: string; label: string; short: string; Icon: LucideIcon }
 
@@ -16,7 +16,7 @@ export function mainNav(eventRole: string | null, isAdmin = false): NavItem[] {
   ]
 }
 
-export const ACCOUNT_NAV: NavItem = { href: '/conta/senha', label: 'Alterar senha', short: 'Senha', Icon: KeyRound }
+export const ACCOUNT_NAV: NavItem = { href: '/conta', label: 'Configurações', short: 'Configurações', Icon: Settings }
 
 export const ADMIN_NAV: NavItem[] = [
   { href: '/admin/eventos',   label: 'Eventos',         short: 'Eventos',   Icon: CalendarDays },
