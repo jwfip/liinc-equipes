@@ -46,6 +46,8 @@ export const mentors = pgTable('mentors', {
   name:      text('name').notNull(),
   email:     text('email').notNull().unique(),
   active:    boolean('active').notNull().default(true),
+  area:       text('area'),       // área de atuação (perfil; só facilitador e admin veem)
+  experience: text('experience'), // experiência (perfil; só facilitador e admin veem)
   createdAt: timestamp('created_at').defaultNow(),
 })
 

@@ -20,7 +20,8 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
 
   const record = await db.query.mentoringRecords.findFirst({
     where: eq(mentoringRecords.id, recordId),
-    with: { mentor: true, block: true }
+    // Só o necessário do mentor: o registro vai para o formulário no navegador e o perfil é restrito.
+    with: { mentor: { columns: { id: true, name: true, email: true } }, block: true }
   })
 
   if (!record) {

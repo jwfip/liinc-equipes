@@ -1,7 +1,8 @@
 import { asc, eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { mentors, users } from '@/schema'
-import { createMentor, toggleMentor } from '@/actions/admin'
+import { createMentor, toggleMentor, updateMentor } from '@/actions/admin'
+import { MAX_AREA, MAX_EXPERIENCE } from '@/lib/mentor-profile'
 import AdminForm from '@/components/admin/AdminForm'
 import ActionButton from '@/components/admin/ActionButton'
 import ResetPasswordButton from '@/components/admin/ResetPasswordButton'
@@ -16,7 +17,7 @@ function PasswordBadge({ hasPassword, mustChange }: { hasPassword: boolean; must
 
 export default async function MentoresPage() {
   const list = await db.select({
-    id: mentors.id, name: mentors.name, username: mentors.email, active: mentors.active,
+    id: mentors.id, name: mentors.name, username: mentors.email, active: mentors.active, area: mentors.area, experience: mentors.experience,
     passwordHash: users.passwordHash, mustChange: users.mustChangePassword,
   }).from(mentors).leftJoin(users, eq(users.email, mentors.email)).orderBy(asc(mentors.name))
 
@@ -55,12 +56,35 @@ export default async function MentoresPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{m.name}</p>
                 <p className="text-xs text-slate-500 truncate">{m.username}</p>
+                <p className={`text-xs mt-0.5 truncate ${m.area ? 'text-navy font-semibold' : 'text-slate-400 italic'}`}>{m.area ?? 'Perfil não preenchido'}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
                   {m.active
                     ? <span className="badge-ok">Ativo</span>
                     : <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">Inativo</span>}
                   <PasswordBadge hasPassword={!!m.passwordHash} mustChange={!!m.mustChange} />
                 </div>
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-xs font-bold text-orange hover:text-orange-dark">Editar perfil</summary>
+                  <div className="mt-2">
+                    <AdminForm action={updateMentor.bind(null, m.id)} submitLabel="Salvar" resetOnSuccess={false} className="flex flex-col gap-3">
+                      <div>
+                        <label className="label" htmlFor={`n-${m.id}`}>Nome</label>
+                        <input id={`n-${m.id}`} name="name" type="text" required defaultValue={m.name} className="input" />
+                      </div>
+                      <div>
+                        <label className="label" htmlFor={`a-${m.id}`}>Área de atuação</label>
+                        <input id={`a-${m.id}`} name="area" type="text" maxLength={MAX_AREA} defaultValue={m.area ?? ''}
+                          placeholder="Ex: Marketing digital, vendas B2B" className="input" />
+                      </div>
+                      <div>
+                        <label className="label" htmlFor={`e-${m.id}`}>Experiência</label>
+                        <textarea id={`e-${m.id}`} name="experience" rows={4} maxLength={MAX_EXPERIENCE} defaultValue={m.experience ?? ''}
+                          placeholder="Trajetória e em que costuma ajudar as equipes" className="input resize-y" />
+                        <p className="text-xs text-slate-500 mt-1">Visível só para facilitadores e organização.</p>
+                      </div>
+                    </AdminForm>
+                  </div>
+                </details>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
                 <ResetPasswordButton mentorId={m.id} name={m.name} />

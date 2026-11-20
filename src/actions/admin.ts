@@ -7,6 +7,7 @@ import { requireAdmin } from '@/lib/guards'
 import { revalidatePath } from 'next/cache'
 import { toActionError, type ActionResult } from '@/lib/action-result'
 import { generateTempPassword, hashPassword } from '@/lib/password'
+import { readMentorProfile } from '@/lib/mentor-profile'
 
 // ── Teams ────────────────────────────────────────────────────
 
@@ -64,6 +65,24 @@ export async function createMentor(fd: FormData): Promise<ActionResult> {
       .onConflictDoUpdate({ target: users.email, set: { passwordHash, mustChangePassword: true } })
     revalidatePath('/admin/mentores')
     return { ok: true, message: `Mentor ${name} cadastrado.`, secret: temp, subject: username }
+  } catch (err) {
+    return toActionError(err)
+  }
+}
+
+/** Nome e perfil (área de atuação, experiência) da pessoa. O perfil só é mostrado a facilitadores e admin. */
+export async function updateMentor(id: string, fd: FormData): Promise<ActionResult> {
+  try {
+    await requireAdmin()
+    const profile = readMentorProfile(fd)
+    const mentor = await db.query.mentors.findFirst({ where: eq(mentors.id, id) })
+    if (!mentor) return { ok: false, error: 'Mentor não encontrado.' }
+    await db.batch([
+      db.update(mentors).set(profile).where(eq(mentors.id, id)),
+      db.update(users).set({ name: profile.name }).where(eq(users.email, mentor.email)),
+    ])
+    revalidatePath('/admin/mentores')
+    return { ok: true, message: `Perfil de ${profile.name} atualizado.` }
   } catch (err) {
     return toActionError(err)
   }
