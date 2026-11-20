@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Mic, Square, X, Loader2 } from 'lucide-react'
+import { AUDIO_GUIDE } from '@/lib/ai/audio-guide'
+
+const GUIDE_KEY = 'liinc_audio_guide'
 
 export type AudioResult = {
   transcript: string; status: string | null; stepId: number | null; fields: Record<string, string>
@@ -38,6 +41,16 @@ export default function AudioRecorder({ kind, onResult }: { kind: 'mentoring' | 
       recorder.current?.stream.getTracks().forEach(t => t.stop())
     }
   }, [])
+
+  // Roteiro aberto por padrão; se a pessoa recolher, o navegador lembra (preferência só deste aparelho).
+  const [guideOpen, setGuideOpen] = useState(true)
+  useEffect(() => {
+    try { if (localStorage.getItem(GUIDE_KEY) === 'closed') setGuideOpen(false) } catch { /* sem armazenamento: fica aberto */ }
+  }, [])
+  function rememberGuide(open: boolean) {
+    setGuideOpen(open)
+    try { localStorage.setItem(GUIDE_KEY, open ? 'open' : 'closed') } catch { /* ignora */ }
+  }
 
   if (!supported) return null
 
@@ -99,35 +112,56 @@ export default function AudioRecorder({ kind, onResult }: { kind: 'mentoring' | 
     }
   }
 
+  const guide = (
+    <details open={state !== 'idle' || guideOpen}
+      onToggle={e => { if (state === 'idle') rememberGuide((e.currentTarget as HTMLDetailsElement).open) }}
+      className="group rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
+      <summary className="cursor-pointer text-xs font-bold text-slate-600 list-none flex items-center justify-between gap-2">
+        O que falar
+        <span className="text-[11px] font-semibold text-slate-500 group-open:hidden">mostrar</span>
+      </summary>
+      <ul className="mt-2 space-y-1">
+        {AUDIO_GUIDE[kind].map(item => (
+          <li key={item.key} className="text-[12px] text-slate-600 leading-snug flex gap-1.5">
+            <span aria-hidden="true" className="text-orange">•</span>{item.label}
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+
   return (
-    <div className="card p-4 flex flex-col gap-2">
+    <div className="card p-4 flex flex-col gap-3">
       {state === 'idle' && (
-        <button type="button" onClick={start} className="btn-secondary min-h-[48px] w-full justify-center">
+        <button type="button" onClick={start} className="btn-secondary w-full">
           <Mic aria-hidden="true" size={18} /> Gravar relato
         </button>
       )}
       {state === 'recording' && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-2">
           <span className="inline-flex items-center gap-2 text-sm font-bold text-red-600" role="status" aria-live="polite">
             <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" aria-hidden="true" />
             Gravando {mmss(seconds)} / {mmss(MAX_SECONDS)}
           </span>
-          <button type="button" onClick={() => recorder.current?.stop()} className="btn-primary ml-auto min-h-[44px]">
-            <Square aria-hidden="true" size={14} /> Parar e preencher
-          </button>
-          <button type="button" aria-label="Cancelar gravação" className="btn-secondary min-h-[44px] px-3"
-            onClick={() => { cancelled.current = true; recorder.current?.stop() }}>
-            <X aria-hidden="true" size={16} />
-          </button>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => recorder.current?.stop()} className="btn-primary flex-1">
+              <Square aria-hidden="true" size={14} /> Parar e preencher
+            </button>
+            <button type="button" aria-label="Cancelar gravação" className="btn-secondary px-3"
+              onClick={() => { cancelled.current = true; recorder.current?.stop() }}>
+              <X aria-hidden="true" size={16} />
+            </button>
+          </div>
         </div>
       )}
       {state === 'sending' && (
-        <p className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600" role="status" aria-live="polite">
+        <p className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600 min-h-[44px]" role="status" aria-live="polite">
           <Loader2 aria-hidden="true" size={16} className="animate-spin" /> Transcrevendo e preenchendo…
         </p>
       )}
+      {state !== 'sending' && guide}
       <p className="text-[11px] text-slate-500">
-        Fale como foi a sessão (até 3 min). A IA preenche os campos vazios para você revisar antes de enviar. O áudio não é guardado.
+        Até 3 min. A IA preenche só os campos vazios para você revisar antes de enviar. O áudio não é guardado.
       </p>
       {error && <p role="alert" className="text-sm font-semibold text-red-600">{error}</p>}
     </div>
