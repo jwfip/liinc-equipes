@@ -1,7 +1,9 @@
 export const MAX_AREA = 120
 export const MAX_EXPERIENCE = 2000
 
-const field = (fd: FormData, k: string, max: number) => String(fd.get(k) ?? '').trim().slice(0, max) || null
+// O navegador envia quebras como \r\n mas conta 1 caractere no maxLength: normaliza antes de cortar.
+const field = (fd: FormData, k: string, max: number) =>
+  String(fd.get(k) ?? '').replace(/\r\n?/g, '\n').trim().slice(0, max).trim() || null
 
 /** Nome e perfil (área de atuação, experiência) de uma pessoa, editados pelo admin. Vazio vira null. */
 export function readMentorProfile(fd: FormData): { name: string; area: string | null; experience: string | null } {

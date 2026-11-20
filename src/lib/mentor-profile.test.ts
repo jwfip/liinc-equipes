@@ -20,3 +20,11 @@ describe('readMentorProfile', () => {
     expect(r.experience).toHaveLength(2000)
   })
 })
+
+describe('readMentorProfile — line breaks', () => {
+  it('counts a browser line break (\\r\\n) as one character, like the textarea limit', () => {
+    const text = ('a'.repeat(99) + '\r\n').repeat(20) // 2000 caracteres no navegador, 2020 no envio
+    const r = readMentorProfile(fd({ name: 'Ana', experience: text }))
+    expect(r.experience).toBe(('a'.repeat(99) + '\n').repeat(20).trim())
+  })
+})
