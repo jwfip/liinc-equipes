@@ -21,9 +21,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const switcher = <EventSwitcher options={ctx.options} current={ctx.event} isAdmin={ctx.isAdmin} />
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row text-navy font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row text-navy font-sans print:block print:bg-white print:min-h-0">
       {/* Celular: cabeçalho com logo e evento; navegação na barra inferior */}
-      <header className="md:hidden bg-navy text-white sticky top-0 z-40 shadow-md px-4 pt-3 pb-3 flex flex-col gap-2.5">
+      <header className="md:hidden print:hidden bg-navy text-white sticky top-0 z-40 shadow-md px-4 pt-3 pb-3 flex flex-col gap-2.5">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/brand/liinc-logo-dark-bg.svg" alt="Liinc" width={72} height={17} className="h-[17px] w-auto" />
@@ -36,7 +36,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <MobileNav role={session.user.role as string} eventRole={ctx.role} userLabel={session.user.email ?? ''} signOut={doSignOut} />
 
       {/* Desktop Sidebar */}
-      <aside className="w-[260px] shrink-0 bg-navy text-white flex-col hidden md:flex h-screen sticky top-0 shadow-[4px_0_24px_rgba(0,2,34,0.12)] z-10">
+      <aside className="w-[260px] shrink-0 bg-navy text-white flex-col hidden md:flex print:hidden h-screen sticky top-0 shadow-[4px_0_24px_rgba(0,2,34,0.12)] z-10">
         <div className="p-7 border-b border-white/10">
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -74,8 +74,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 flex flex-col md:h-screen overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0">
-        <div className="flex-1 md:overflow-y-auto relative">
+      <main className="flex-1 min-w-0 flex flex-col md:h-screen overflow-x-hidden pb-[calc(env(safe-area-inset-bottom)+64px)] md:pb-0 print:block print:h-auto print:overflow-visible print:pb-0">
+        <div className="flex-1 md:overflow-y-auto relative print:overflow-visible">
           {children}
         </div>
       </main>

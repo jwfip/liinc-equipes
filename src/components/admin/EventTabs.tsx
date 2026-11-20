@@ -17,13 +17,18 @@ export default function EventTabs({ eventId }: { eventId: number }) {
   const pathname = usePathname()
   const base = `/admin/eventos/${eventId}`
   const activeRef = useRef<HTMLAnchorElement>(null)
+  const navRef = useRef<HTMLElement>(null)
 
-  // No celular a faixa rola para o lado: a aba atual fica sempre visível.
-  useEffect(() => { activeRef.current?.scrollIntoView({ block: 'nearest', inline: 'center' }) }, [pathname])
+  // No celular a faixa rola para o lado: a aba atual fica visível. Rola só a faixa — scrollIntoView
+  // rolaria também a área da página (overflow-x-hidden) e deslocava a tela inteira.
+  useEffect(() => {
+    const nav = navRef.current, tab = activeRef.current
+    if (nav && tab) nav.scrollLeft = tab.offsetLeft - (nav.clientWidth - tab.offsetWidth) / 2
+  }, [pathname])
 
   return (
     <div className="relative -mx-4 mb-6 print:hidden">
-      <nav aria-label="Seções do evento" className="px-4 overflow-x-auto border-b border-slate-200 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <nav ref={navRef} aria-label="Seções do evento" className="relative px-4 overflow-x-auto border-b border-slate-200 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex gap-1 min-w-max pr-8">
           {TABS.map(t => {
             const href = t.slug ? `${base}/${t.slug}` : base

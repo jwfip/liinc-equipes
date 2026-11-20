@@ -94,7 +94,7 @@ export default async function FinalReportPage({ params, searchParams }: {
   const specialistCount = members.filter(m => m.role === 'specialist').length
 
   return (
-    <div className="min-h-screen bg-slate-100 print:bg-white text-navy">
+    <div className="text-navy">
       <style>{`
         @page { size: A4; margin: 14mm 12mm; }
         @media print {
@@ -112,7 +112,7 @@ export default async function FinalReportPage({ params, searchParams }: {
         finals={finals.map(f => ({ teamId: f.teamId, editedByAdmin: f.editedByAdmin }))}
       />
 
-      <div className="max-w-4xl mx-auto bg-white p-6 md:p-10 my-6 shadow-sm rounded-2xl print:my-0 print:p-0 print:shadow-none print:rounded-none print:max-w-none">
+      <div className="max-w-4xl mx-auto bg-white p-6 md:p-10 border border-slate-200 shadow-sm rounded-2xl print:border-0 print:p-0 print:shadow-none print:rounded-none print:max-w-none">
         {/* Capa */}
         <section aria-label="Capa">
           {/* eslint-disable-next-line @next/next/no-img-element */}

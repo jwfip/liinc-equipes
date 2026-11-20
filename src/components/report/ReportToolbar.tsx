@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import Link from 'next/link'
-import { ChevronLeft, FileDown, Sparkles, Loader2 } from 'lucide-react'
+import { FileDown, Sparkles, Loader2 } from 'lucide-react'
 import { generateFinal } from '@/actions/report'
 import { REPORT_SECTIONS, SECTION_LABEL, hiddenToQuery, teamsToGenerate, type ReportSection } from '@/lib/report/options'
 
@@ -58,14 +57,12 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
   }
 
   return (
-    <div className="print:hidden sticky top-0 z-10 bg-navy text-white shadow-md">
-      <div className="max-w-4xl mx-auto px-4 py-3 flex flex-col gap-3">
+    <div className="print:hidden card p-4 md:p-5 mb-6">
+      <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Link href={`/admin/eventos/${eventId}`} className="inline-flex items-center gap-1 text-sm text-slate-300 hover:text-white">
-            <ChevronLeft aria-hidden="true" size={16} />Voltar
-          </Link>
+          <h2 className="font-display font-semibold text-sm text-slate-600">Relatório final</h2>
           <div className="ml-auto flex flex-wrap items-center gap-2">
-            <label className="inline-flex items-center gap-1.5 text-xs text-slate-300">
+            <label className="inline-flex items-center gap-1.5 text-xs text-slate-600 min-h-[36px]">
               <input type="checkbox" checked={overwrite} onChange={e => setOverwrite(e.target.checked)} className="accent-orange" />
               Substituir textos editados
             </label>
@@ -73,14 +70,14 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
               {progress ? <Loader2 aria-hidden="true" size={14} className="animate-spin" /> : <Sparkles aria-hidden="true" size={14} />}
               {progress ? `Gerando ${progress.done}/${progress.total}…` : 'Gerar resumos finais'}
             </button>
-            <button type="button" onClick={() => window.print()} className="btn-primary bg-orange hover:bg-orange-dark text-xs py-2">
+            <button type="button" onClick={() => window.print()} className="btn-primary btn-sm bg-orange hover:bg-orange-dark">
               <FileDown aria-hidden="true" size={14} /> Baixar PDF
             </button>
           </div>
         </div>
-        <fieldset className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-300">
+        <fieldset className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-600">
           <legend className="sr-only">Seções do relatório</legend>
-          <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] self-center">Mostrar:</span>
+          <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] self-center">Mostrar:</span>
           {REPORT_SECTIONS.map(s => (
             <label key={s} className="inline-flex items-center gap-1.5">
               <input type="checkbox" checked={!hiddenSet.has(s)} onChange={() => toggle(s)} className="accent-orange" />
@@ -89,12 +86,12 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
           ))}
         </fieldset>
         {progress && (
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden" role="progressbar" aria-label="Gerando resumos finais" aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}>
+          <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-label="Gerando resumos finais" aria-valuemin={0} aria-valuemax={progress.total} aria-valuenow={progress.done}>
             <div className="h-full bg-orange transition-all" style={{ width: `${(progress.done / Math.max(1, progress.total)) * 100}%` }} />
           </div>
         )}
         {failed.length > 0 && (
-          <div role="alert" className="text-xs bg-red-500/15 border border-red-400/30 rounded-lg p-2.5">
+          <div role="alert" className="text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5">
             <p className="font-bold mb-1">Não foi possível gerar para:</p>
             <ul className="list-disc pl-5">{failed.map(f => <li key={f.id}>{f.name}: {f.error}</li>)}</ul>
             <button type="button" className="mt-2 underline font-bold" onClick={() => {
@@ -103,7 +100,7 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
             }}>Tentar de novo</button>
           </div>
         )}
-        <p className="text-[11px] text-slate-400">Na janela de impressão, escolha “Salvar como PDF”. O que está visível aqui é o que sai no PDF.</p>
+        <p className="text-[11px] text-slate-500">Na janela de impressão, escolha “Salvar como PDF”. O que está visível aqui é o que sai no PDF.</p>
       </div>
     </div>
   )
