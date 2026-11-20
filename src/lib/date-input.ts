@@ -10,12 +10,13 @@ export function maskDate(raw: string): string {
   return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
 }
 
-/** dd/mm/aaaa válido → aaaa-mm-dd; incompleta ou impossível (31/02) → null. */
+/** dd/mm/aaaa válido (anos 2000–2100) → aaaa-mm-dd; incompleta, impossível (31/02) ou fora do intervalo → null. */
 export function parseBrDate(s: string): string | null {
   const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(s.trim())
   if (!m) return null
   const [, dd, mm, yyyy] = m
   const day = Number(dd), month = Number(mm), year = Number(yyyy)
+  if (year < 2000 || year > 2100) return null // erro de digitação (2206, 0201)
   const date = new Date(Date.UTC(year, month - 1, day))
   if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null
   return `${yyyy}-${mm}-${dd}`

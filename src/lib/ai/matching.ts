@@ -120,7 +120,8 @@ export function parseMatching(raw: string, aliases: Map<string, EventPerson>): M
 /** Mensagem para a falha da chamada à IA: pedido grande demais (HTTP 413) ganha texto próprio. */
 export function matchingErrorMessage(err: unknown): string {
   if (err instanceof Error && 'status' in err && (err as { status: unknown }).status === 413) {
-    return 'A sugestão ficou grande demais para a IA. Tente de novo mais tarde.'
+    // Tentar de novo não resolve: o pedido seria do mesmo tamanho.
+    return 'Há informação demais desta equipe para a IA analisar de uma vez. Avise a organização.'
   }
   return 'A IA não respondeu agora. Tente de novo.'
 }

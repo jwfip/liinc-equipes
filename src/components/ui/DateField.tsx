@@ -47,7 +47,7 @@ export default function DateField({ id, name, required, defaultValue }: Props) {
       <div className="relative">
         <input
           id={id} type="text" inputMode="numeric" autoComplete="off" placeholder="dd/mm/aaaa" maxLength={10}
-          required={required} value={text} aria-invalid={showError || undefined} aria-describedby={showError ? `${id}-err` : undefined}
+          required={required} value={text} aria-invalid={showError || undefined} aria-describedby={showError ? `${id}-err` : `${id}-hint`}
           onChange={e => setText(maskDate(e.target.value))}
           onBlur={() => setTouched(true)}
           onInvalid={() => setTouched(true)}
@@ -64,7 +64,9 @@ export default function DateField({ id, name, required, defaultValue }: Props) {
           className="absolute right-0 bottom-0 w-px h-px opacity-0 pointer-events-none" />
       </div>
       <input type="hidden" name={name} value={iso ?? ''} />
-      {showError && <p id={`${id}-err`} className="text-xs text-red-600 mt-1">Data inválida</p>}
+      {showError
+        ? <p id={`${id}-err`} className="text-xs text-red-600 mt-1">Data inválida</p>
+        : <p id={`${id}-hint`} className="text-xs text-slate-500 mt-1">dd/mm/aaaa</p>}
     </div>
   )
 }

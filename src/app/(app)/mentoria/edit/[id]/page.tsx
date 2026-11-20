@@ -60,7 +60,7 @@ export default async function EditMentoriaPage({ params }: { params: { id: strin
           <h2 className="font-display font-bold text-2xl text-navy">{isAtendimento ? 'Editar atendimento' : 'Editar mentoria'}</h2>
           <p className="text-slate-500 text-sm mt-1">Atualize as informações do seu registro.</p>
         </div>
-        <Link href="/painel" className="inline-flex items-center gap-1 text-slate-400 hover:text-navy text-sm font-bold transition-colors"><X aria-hidden="true" size={16} />Cancelar</Link>
+        <Link href="/painel" className="inline-flex items-center gap-1 text-slate-500 hover:text-navy text-sm font-bold transition-colors"><X aria-hidden="true" size={16} />Cancelar</Link>
       </div>
       {isAtendimento
         ? <AtendimentoForm teams={activeTeams} activeBlock={block} projects={projects} recordToEdit={record} />

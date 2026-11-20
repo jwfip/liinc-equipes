@@ -42,3 +42,12 @@ describe('maskDate — typed slashes', () => {
     expect(maskDate('5/')).toBe('05')
   })
 })
+
+describe('parseBrDate — year range', () => {
+  it('rejects years outside 2000–2100 (typing mistakes like 2206)', () => {
+    expect(parseBrDate('01/01/2206')).toBeNull()
+    expect(parseBrDate('01/01/0201')).toBeNull()
+    expect(parseBrDate('31/12/2100')).toBe('2100-12-31')
+    expect(parseBrDate('01/01/2000')).toBe('2000-01-01')
+  })
+})

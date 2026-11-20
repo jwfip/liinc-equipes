@@ -23,9 +23,9 @@ describe('recentMentors', () => {
   it('lists who mentored the team in the last 3 blocks, newest first, without repeats', () => {
     const records = [r('Ana', 1), r('Bia', 2), r('Caio', 4), r('Caio', 4), r('Ana', 3)]
     expect(recentMentors(records, blocks, 't')).toEqual([
-      { mentorId: 'caio', name: 'Caio', block: 'B4' },
-      { mentorId: 'ana', name: 'Ana', block: 'B3' },
-      { mentorId: 'bia', name: 'Bia', block: 'B2' },
+      { mentorId: 'caio', name: 'Caio', block: 'B4', blockId: 4 },
+      { mentorId: 'ana', name: 'Ana', block: 'B3', blockId: 3 },
+      { mentorId: 'bia', name: 'Bia', block: 'B2', blockId: 2 },
     ])
   })
   it('keeps one item per person and block', () => {
@@ -53,5 +53,15 @@ describe('servedBlocks', () => {
   it('lists the blocks where the person served the team, without repeats', () => {
     const recs = [r('ana', 't', 2, 'B2'), r('ana', 't', 2, 'B2'), r('ana', 't', null), r('bia', 't', 3, 'B3'), r('ana', 'u', 4, 'B4')]
     expect(servedBlocks(recs, 't', 'ana')).toEqual(['B2', 'fora de bloco'])
+  })
+})
+
+describe('recentMentors — blocks with the same name', () => {
+  it('keeps one item per person and block id, even if two blocks share a label', () => {
+    const blocks = [{ id: 1, label: 'Bloco' }, { id: 2, label: 'Bloco' }]
+    const r = (blockId: number) => ({ teamId: 't', kind: 'mentoring', blockId, mentorId: 'ana', mentor: { name: 'Ana' } })
+    const out = recentMentors([r(1), r(2)], blocks, 't')
+    expect(out).toHaveLength(2)
+    expect(new Set(out.map(m => m.blockId)).size).toBe(2)
   })
 })

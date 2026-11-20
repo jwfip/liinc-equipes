@@ -108,7 +108,7 @@ const groqError = (status: number) => Object.assign(new Error('x'), { status })
 
 describe('matchingErrorMessage', () => {
   it('explains a request too large for the AI', () => {
-    expect(matchingErrorMessage(groqError(413))).toBe('A sugestão ficou grande demais para a IA. Tente de novo mais tarde.')
+    expect(matchingErrorMessage(groqError(413))).toBe('Há informação demais desta equipe para a IA analisar de uma vez. Avise a organização.')
   })
   it('keeps the generic message for other failures', () => {
     expect(matchingErrorMessage(groqError(500))).toBe('A IA não respondeu agora. Tente de novo.')

@@ -224,7 +224,7 @@ function Field({ label, value, dark = false, icon: Icon }: { label: string; valu
   if (!value) return null
   return (
     <div>
-      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center gap-1">{Icon && <Icon aria-hidden="true" size={11} />}{label}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5 flex items-center gap-1">{Icon && <Icon aria-hidden="true" size={11} />}{label}</div>
       <div className={`text-[13px] leading-relaxed whitespace-pre-line ${dark ? 'text-navy font-medium' : 'text-slate-600'}`}>{value}</div>
     </div>
   )

@@ -9,6 +9,7 @@ import { toActionError, type ActionResult } from '@/lib/action-result'
 import { generateTempPassword, hashPassword } from '@/lib/password'
 import { readMentorProfile } from '@/lib/mentor-profile'
 import { setActiveBlock } from '@/lib/block-writes'
+import { blockInEventError } from '@/lib/blocks'
 
 // ── Teams ────────────────────────────────────────────────────
 
@@ -16,6 +17,7 @@ function revalidateEventPages(eventId: number) {
   revalidatePath(`/admin/eventos/${eventId}`, 'layout')
   revalidatePath('/painel')
   revalidatePath('/mentoria')
+  revalidatePath('/acompanhamento')
 }
 
 export async function createTeam(eventId: number, fd: FormData): Promise<ActionResult> {
@@ -143,6 +145,9 @@ export async function createBlock(eventId: number, fd: FormData): Promise<Action
 export async function activateBlock(eventId: number, id: number): Promise<ActionResult> {
   try {
     await requireAdmin()
+    const block = await db.query.blocks.findFirst({ where: eq(blocks.id, id) })
+    const error = blockInEventError(block, eventId)
+    if (error) return { ok: false, error }
     await setActiveBlock(eventId, id)
     revalidateEventPages(eventId)
     return { ok: true }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { blockSwitchMessage, closeBlockError } from './blocks'
+import { blockSwitchMessage, closeBlockError, blockInEventError } from './blocks'
 
 describe('blockSwitchMessage', () => {
   it('asks to switch from the active block', () => {
@@ -24,5 +24,13 @@ describe('closeBlockError', () => {
   })
   it('refuses a block that is no longer active', () => {
     expect(closeBlockError({ eventId: 1, active: false }, 1)).toBe('Este bloco já foi encerrado.')
+  })
+})
+
+describe('blockInEventError', () => {
+  it('accepts a block of the event and refuses others', () => {
+    expect(blockInEventError({ eventId: 1 }, 1)).toBeNull()
+    expect(blockInEventError({ eventId: 2 }, 1)).toBe('Bloco inválido para este evento.')
+    expect(blockInEventError(undefined, 1)).toBe('Bloco inválido para este evento.')
   })
 })

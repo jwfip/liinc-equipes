@@ -12,7 +12,7 @@ export function sortForFollowUp<T extends { id: string; number: number }>(
   return { flagged: sorted.filter(t => n(t.id) > 0), clear: sorted.filter(t => n(t.id) === 0) }
 }
 
-export type RecentMentor = { mentorId: string; name: string; block: string }
+export type RecentMentor = { mentorId: string; name: string; block: string; blockId: number }
 
 /** Quem mentorou a equipe nos últimos `n` blocos, do mais novo ao mais antigo; um item por pessoa e bloco. */
 export function recentMentors(
@@ -25,7 +25,7 @@ export function recentMentors(
   for (const b of blocks.slice(-n).reverse()) {
     for (const r of records) {
       if (r.teamId !== teamId || r.kind !== 'mentoring' || r.blockId !== b.id || !r.mentor) continue
-      if (!out.some(m => m.mentorId === r.mentorId && m.block === b.label)) out.push({ mentorId: r.mentorId, name: r.mentor.name, block: b.label })
+      if (!out.some(m => m.mentorId === r.mentorId && m.blockId === b.id)) out.push({ mentorId: r.mentorId, name: r.mentor.name, block: b.label, blockId: b.id })
     }
   }
   return out

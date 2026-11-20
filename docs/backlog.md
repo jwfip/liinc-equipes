@@ -37,10 +37,9 @@ Pendências menores já anotadas nas revisões, que podem entrar aqui:
 - Ativar/encerrar bloco pelo admin não revalida `/acompanhamento` (o polling cobre em 5 s).
 - `activateBlock` do admin com id de bloco de outro evento encerra o atual e não ativa nenhum (só chamando a ação fora da tela).
 
-## Pendências que não são de interface
+## ~~Pendências que não são de interface~~ (feitas em 20/11/2026)
 
-- Nomes "Fulano (Bloco)" deduplicados pelo nome do bloco (dois blocos com o mesmo nome).
-- Lista de pessoas do Acompanhamento só atualiza ao recarregar.
-- Nome no cabeçalho só muda no próximo login depois que o admin renomeia a pessoa.
-- Ativar/encerrar bloco pelo admin não revalida `/acompanhamento` (o polling cobre em 5 s).
-- `activateBlock` do admin com id de bloco de outro evento encerra o atual e não ativa nenhum (só chamando a ação fora da tela).
+- Nomes "Fulano (Bloco)" agora deduplicados pelo id do bloco.
+- Lista de pessoas do Acompanhamento se atualiza a cada 60 s (`loadEventPeople`, com a mesma checagem de acesso).
+- Ativar/encerrar bloco pelo admin revalida `/acompanhamento`; `activateBlock` recusa bloco de outro evento.
+- "Nome no cabeçalho" não era problema: o cabeçalho mostra o usuário, e Configurações lê o nome do banco.

@@ -81,8 +81,8 @@ export default function TeamCard({ team, record, steps, current, specialistCount
                   <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Orientação principal</div>
                   <div className="text-[13px] text-slate-600 leading-relaxed">{record.advice}</div>
                 </div>
-                {record.pros && <div><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center gap-1"><ThumbsUp aria-hidden="true" size={11} />Pontos positivos</div><div className="text-[13px] text-slate-600 leading-relaxed">{record.pros}</div></div>}
-                {record.cons && <div><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center gap-1"><Wrench aria-hidden="true" size={11} />A melhorar</div><div className="text-[13px] text-slate-600 leading-relaxed">{record.cons}</div></div>}
+                {record.pros && <div><div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5 flex items-center gap-1"><ThumbsUp aria-hidden="true" size={11} />Pontos positivos</div><div className="text-[13px] text-slate-600 leading-relaxed">{record.pros}</div></div>}
+                {record.cons && <div><div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5 flex items-center gap-1"><Wrench aria-hidden="true" size={11} />A melhorar</div><div className="text-[13px] text-slate-600 leading-relaxed">{record.cons}</div></div>}
                 {record.obs && <div><span className="inline-block bg-orange/10 text-orange-dark text-[11px] font-bold px-2 py-0.5 rounded mr-2 mb-1">Para facilitadores</span><div className="text-[13px] text-slate-600 leading-relaxed">{record.obs}</div></div>}
               </div>
             )}

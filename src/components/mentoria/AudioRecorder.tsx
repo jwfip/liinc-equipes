@@ -112,22 +112,31 @@ export default function AudioRecorder({ kind, onResult }: { kind: 'mentoring' | 
     }
   }
 
-  const guide = (
-    <details open={state !== 'idle' || guideOpen}
-      onToggle={e => { if (state === 'idle') rememberGuide((e.currentTarget as HTMLDetailsElement).open) }}
+  const guideList = (
+    <ul className="mt-2 space-y-1">
+      {AUDIO_GUIDE[kind].map(item => (
+        <li key={item.key} className="text-[12px] text-slate-600 leading-snug flex gap-1.5">
+          <span aria-hidden="true" className="text-orange">•</span>{item.label}
+        </li>
+      ))}
+    </ul>
+  )
+  // Parado: recolhível (a escolha fica lembrada). Gravando: sempre visível, sem como recolher.
+  const guide = state === 'idle' ? (
+    <details open={guideOpen}
+      onToggle={e => rememberGuide((e.currentTarget as HTMLDetailsElement).open)}
       className="group rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
       <summary className="cursor-pointer text-xs font-bold text-slate-600 list-none flex items-center justify-between gap-2">
         O que falar
         <span className="text-[11px] font-semibold text-slate-500 group-open:hidden">mostrar</span>
       </summary>
-      <ul className="mt-2 space-y-1">
-        {AUDIO_GUIDE[kind].map(item => (
-          <li key={item.key} className="text-[12px] text-slate-600 leading-snug flex gap-1.5">
-            <span aria-hidden="true" className="text-orange">•</span>{item.label}
-          </li>
-        ))}
-      </ul>
+      {guideList}
     </details>
+  ) : (
+    <div className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-2">
+      <p className="text-xs font-bold text-slate-600">O que falar</p>
+      {guideList}
+    </div>
   )
 
   return (

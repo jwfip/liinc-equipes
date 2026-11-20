@@ -14,3 +14,8 @@ export function closeBlockError(block: { eventId: number; active: boolean } | un
   if (!block.active) return 'Este bloco já foi encerrado.'
   return null
 }
+
+/** O bloco precisa ser do evento (ativar pelo admin com id de outro evento encerrava o atual e não ativava nada). */
+export function blockInEventError(block: { eventId: number } | undefined, eventId: number): string | null {
+  return !block || block.eventId !== eventId ? 'Bloco inválido para este evento.' : null
+}

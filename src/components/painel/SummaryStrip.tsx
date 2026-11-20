@@ -20,15 +20,15 @@ export default function SummaryStrip({ teams, records, latestByTeam, atendimento
 
   // Celular: faixa compacta que rola para o lado (os 7 cartões ocupavam mais de uma tela antes da 1ª equipe).
   const chips: { key: string; label: React.ReactNode; value: number; color: string }[] = [
-    { key: 'total', label: 'equipes', value: total, color: 'text-orange' },
+    { key: 'total', label: 'Equipes', value: total, color: 'text-orange' },
     ...(showStatus ? [
       { key: 'emg', label: <StatusLabel status="emergency" size={12} />, value: emg, color: 'text-red-600' },
       { key: 'att', label: <StatusLabel status="attention" size={12} />, value: att, color: 'text-yellow-700' },
       { key: 'ok',  label: <StatusLabel status="ok" size={12} />,        value: ok,  color: 'text-green-700' },
       { key: 'fly', label: <StatusLabel status="flying" size={12} />,    value: fly, color: 'text-blue-600' },
     ] : []),
-    { key: 'mentors', label: 'mentores', value: mentors, color: 'text-navy' },
-    ...(atendimentos > 0 ? [{ key: 'aten', label: 'atendimentos', value: atendimentos, color: 'text-blue-700' }] : []),
+    { key: 'mentors', label: 'Mentores', value: mentors, color: 'text-navy' },
+    ...(atendimentos > 0 ? [{ key: 'aten', label: 'Atendimentos', value: atendimentos, color: 'text-blue-700' }] : []),
   ]
 
   return (

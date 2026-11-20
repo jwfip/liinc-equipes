@@ -5,6 +5,7 @@ import { History, CircleCheck, TriangleAlert, Users } from 'lucide-react'
 import PersonProfile from './PersonProfile'
 import MatchingPanel from './MatchingPanel'
 import BlockControl from './BlockControl'
+import { loadEventPeople } from '@/actions/people'
 import ClampedText from './ClampedText'
 import type { MatchingRow } from '@/lib/event-data'
 import HistoryModal from '@/components/painel/HistoryModal'
@@ -41,8 +42,9 @@ const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 /** Tela do facilitador: equipes com sinais de que podem estar ficando para trás, com o motivo e as evidências. */
 export default function AcompanhamentoClient({
-  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser, people, initialMatchings, canManageBlocks,
+  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser, people: initialPeople, initialMatchings, canManageBlocks,
 }: Props) {
+  const [people, setPeople] = useState(initialPeople)
   const [matchings, setMatchings] = useState(initialMatchings)
   const missingProfiles = people.filter(p => p.active && !p.area && !p.experience).length
   const [profile, setProfile] = useState<EventPerson | null>(null)
@@ -71,6 +73,14 @@ export default function AcompanhamentoClient({
     const id = setInterval(reload, 5000)
     return () => clearInterval(id)
   }, [reload])
+
+  // Perfis mudam raramente: a cada 60 s (pessoa desativada ou removida some da tela e das sugestões).
+  useEffect(() => {
+    const id = setInterval(async () => {
+      try { const p = await loadEventPeople(); if (p) setPeople(p) } catch { /* tenta de novo depois */ }
+    }, 60_000)
+    return () => clearInterval(id)
+  }, [])
 
   const today = todayISO()
   const { mentoring, specialist } = splitByKind(records)
@@ -116,7 +126,7 @@ export default function AcompanhamentoClient({
               {mentors.length ? mentors.map((m, i) => {
                 const person = personById.get(m.mentorId)
                 return (
-                  <span key={`${m.mentorId}-${m.block}`}>
+                  <span key={`${m.mentorId}-${m.blockId}`}>
                     {i > 0 && ', '}
                     {person
                       ? <button type="button" onClick={() => setProfile(person)} className="font-semibold text-navy underline decoration-dotted underline-offset-2 hover:text-orange-dark">{m.name}</button>
