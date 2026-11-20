@@ -20,7 +20,7 @@ export default function FilterBar({ search, onSearch, statusFilter, onStatusFilt
 
   return (
     <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 mb-7">
-      <span className="hidden md:inline text-xs font-bold uppercase tracking-wide text-slate-400 ml-2">Filtrar:</span>
+      <span className="hidden md:inline text-xs font-bold uppercase tracking-wide text-slate-500 ml-2">Filtrar:</span>
       <div className="flex flex-wrap gap-2">
         {btn('all', 'Todas', 'bg-navy text-white border-navy')}
         {btn('emergency', <StatusLabel status="emergency" />, 'bg-red-600 text-white border-red-600')}

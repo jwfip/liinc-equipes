@@ -32,7 +32,7 @@ export default function ProjectHistory({ teamId, rows, blockOf, canCorrect, onCh
   const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
 
-  if (!current) return <div className="text-center py-10 text-slate-400 text-sm">O projeto ainda não foi registrado. O próximo mentor da equipe vai preenchê-lo.</div>
+  if (!current) return <div className="text-center py-10 text-slate-500 text-sm">O projeto ainda não foi registrado. O próximo mentor da equipe vai preenchê-lo.</div>
 
   function save() {
     setError(null)
@@ -48,7 +48,7 @@ export default function ProjectHistory({ teamId, rows, blockOf, canCorrect, onCh
     <div className="space-y-4">
       <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
         <div className="flex items-start gap-2">
-          <h3 className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">Projeto atual</h3>
+          <h3 className="flex-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">Projeto atual</h3>
           {canCorrect && !editing && (
             <button type="button" onClick={() => { setText(current.description); setEditing(true) }}
               className="inline-flex items-center gap-1 text-xs font-bold text-orange hover:text-orange-dark">
@@ -84,7 +84,7 @@ export default function ProjectHistory({ teamId, rows, blockOf, canCorrect, onCh
                 </span>
                 {block && <span>· {block}</span>}
                 {r.author && <span>· {r.author.name}</span>}
-                <span className="text-slate-400">· {fmt(r.createdAt)}</span>
+                <span className="text-slate-500">· {fmt(r.createdAt)}</span>
               </div>
               <p className="text-slate-700 mt-1 whitespace-pre-line">{r.description}</p>
             </li>

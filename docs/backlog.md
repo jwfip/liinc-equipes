@@ -20,7 +20,7 @@ Permitir que o **facilitador** ative (e encerre) o bloco de mentoria do seu even
 
 Pontos a decidir no design: o facilitador só ativa/encerra blocos já cadastrados ou também cria/edita blocos? Onde fica o controle (na tela Acompanhamento, que já mostra o bloco ativo, ou numa tela própria)? Vale só para evento ativo, como a correção de projeto.
 
-## Refinamento completo da UI
+## ~~Refinamento completo da UI~~ (feito: `docs/superpowers/specs/2026-11-20-refinamento-ui-design.md`)
 
 Uma passada de acabamento em toda a interface (painel, formulários, Acompanhamento, histórico, admin, relatório), no celular e no computador: consistência visual entre as telas, estados vazios, de carregamento e de erro, textos, acessibilidade (foco, leitores de tela, contraste) e ajustes que foram ficando para depois nas entregas anteriores.
 
@@ -34,5 +34,13 @@ Pendências menores já anotadas nas revisões, que podem entrar aqui:
 - Pedido grande demais para a IA aparece como "A IA não respondeu agora".
 - Nome no cabeçalho só muda no próximo login depois que o admin renomeia a pessoa.
 - Controle de bloco (Acompanhamento): a mensagem de sucesso não aparece; "Encerrar bloco" não muda o texto enquanto salva.
+- Ativar/encerrar bloco pelo admin não revalida `/acompanhamento` (o polling cobre em 5 s).
+- `activateBlock` do admin com id de bloco de outro evento encerra o atual e não ativa nenhum (só chamando a ação fora da tela).
+
+## Pendências que não são de interface
+
+- Nomes "Fulano (Bloco)" deduplicados pelo nome do bloco (dois blocos com o mesmo nome).
+- Lista de pessoas do Acompanhamento só atualiza ao recarregar.
+- Nome no cabeçalho só muda no próximo login depois que o admin renomeia a pessoa.
 - Ativar/encerrar bloco pelo admin não revalida `/acompanhamento` (o polling cobre em 5 s).
 - `activateBlock` do admin com id de bloco de outro evento encerra o atual e não ativa nenhum (só chamando a ação fora da tela).

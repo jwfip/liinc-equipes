@@ -113,13 +113,13 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
             <ProjectHistory teamId={team.id} rows={projects} blockOf={blockOf} canCorrect={canCorrectProject} onChanged={onProjectChanged} />
           ) : tab === 'mentoring' ? (
             timeline.length === 0 ? (
-              <div className="text-center py-10 text-slate-400 text-sm">Nenhuma mentoria registrada ainda.</div>
+              <div className="text-center py-10 text-slate-500 text-sm">Nenhuma mentoria registrada ainda.</div>
             ) : (
               <>
               {mentoringSummary && <div className="mb-4"><SummaryBox {...mentoringSummary} /></div>}
               {points.length > 0 && (
                 <section className="bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm" aria-label="Evolução da equipe">
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">Evolução</h3>
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">Evolução</h3>
                   <EvolutionChart steps={steps} points={points} />
                 </section>
               )}
@@ -130,7 +130,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                     <div className="text-[12px] text-slate-500">
                       <span className="font-bold text-navy">Etapa ajustada pela organização</span>
                       {item.c.step && <> → <span className="font-bold text-orange">{steps.findIndex(s => s.id === item.c.stepId) + 1} — {item.c.step.label}</span></>}
-                      <span className="ml-2 text-slate-400">{fmtDateTime(item.c.createdAt)}</span>
+                      <span className="ml-2 text-slate-500">{fmtDateTime(item.c.createdAt)}</span>
                     </div>
                   </div>
                 ) : (
@@ -140,7 +140,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
               </>
             )
           ) : atendimentos.length === 0 ? (
-            <div className="text-center py-10 text-slate-400 text-sm">Nenhum atendimento de especialista ainda.</div>
+            <div className="text-center py-10 text-slate-500 text-sm">Nenhum atendimento de especialista ainda.</div>
           ) : (
             <>
             {specialistSummary && <div className="mb-6"><SummaryBox {...specialistSummary} /></div>}
@@ -150,7 +150,7 @@ export default function HistoryModal({ team, mentoring, specialist, stepChanges,
                   <div className="absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-2 bg-blue-500 ring-blue-500" />
                   <div className="flex flex-wrap items-center gap-2 mb-2.5">
                     <div className="font-display font-bold text-[13px] text-navy">{r.block?.label ?? 'Fora de bloco'}</div>
-                    <div className="text-[12px] text-slate-400">{fmtDateTime(r.createdAt)}</div>
+                    <div className="text-[12px] text-slate-500">{fmtDateTime(r.createdAt)}</div>
                     <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full md:ml-auto"><MessagesSquare aria-hidden="true" size={12} />{r.mentor?.name}</div>
                   </div>
                   <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col gap-3">
@@ -186,7 +186,7 @@ function MentoringItem({ r, steps, canEdit, pivoted = false }: { r: RecordWithRe
       <div className={`absolute -left-[27px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-white ring-2 ${meta.dot}`} />
       <div className="flex flex-wrap items-center gap-2 mb-2.5">
         <div className="font-display font-bold text-[13px] text-navy">{r.block?.label}</div>
-        <div className="text-[12px] text-slate-400">{fmtDateTime(r.createdAt)}</div>
+        <div className="text-[12px] text-slate-500">{fmtDateTime(r.createdAt)}</div>
         <div className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full ${meta.pill}`}><StatusIcon status={r.status} size={12} />{meta.label}</div>
         {pivoted && <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-orange-pale text-orange-dark px-2.5 py-0.5 rounded-full"><Shuffle aria-hidden="true" size={12} />Pivotou</div>}
         <div className="inline-flex items-center gap-1 text-[11px] font-bold bg-slate-200 text-slate-600 px-2.5 py-0.5 rounded-full md:ml-auto"><User aria-hidden="true" size={12} />{r.mentor?.name}</div>

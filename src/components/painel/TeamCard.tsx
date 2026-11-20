@@ -13,7 +13,7 @@ export default function TeamCard({ team, record, steps, current, specialistCount
   const stepBlock = step ? (
     <div className="mb-3.5">
       <StepProgress steps={steps} current={step} />
-      {adjusted && <p className="text-[10px] text-slate-400 mt-1 text-right">ajustada pela organização</p>}
+      {adjusted && <p className="text-[10px] text-slate-500 mt-1 text-right">ajustada pela organização</p>}
     </div>
   ) : null
   const [expanded, setExpanded] = useState(false)
@@ -48,7 +48,7 @@ export default function TeamCard({ team, record, steps, current, specialistCount
                 <span className="font-semibold text-slate-600">{record.mentor?.name}</span>
               </p>
             ) : (
-              <div className="text-[11px] text-slate-400 mt-1">Nenhuma mentoria</div>
+              <div className="text-[11px] text-slate-500 mt-1">Nenhuma mentoria</div>
             )}
           </div>
           <div className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full shrink-0 whitespace-nowrap ${meta.pill}`}>
@@ -59,7 +59,7 @@ export default function TeamCard({ team, record, steps, current, specialistCount
         {project && (
           <div className="mb-3">
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Projeto</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Projeto</span>
               {pivoted && <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-orange-pale text-orange-dark px-2 py-0.5 rounded-full"><Shuffle aria-hidden="true" size={11} />Pivotou</span>}
             </div>
             <div className="text-[13px] text-slate-700 leading-relaxed line-clamp-2">{project}</div>
@@ -71,14 +71,14 @@ export default function TeamCard({ team, record, steps, current, specialistCount
             {stepBlock}
 
             <div className="mb-2">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Trabalhando em</div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Trabalhando em</div>
               <div className="text-[13px] text-navy font-medium leading-relaxed">{record.working || '(sem registro)'}</div>
             </div>
 
             {expanded && (
               <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Orientação principal</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Orientação principal</div>
                   <div className="text-[13px] text-slate-600 leading-relaxed">{record.advice}</div>
                 </div>
                 {record.pros && <div><div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5 flex items-center gap-1"><ThumbsUp aria-hidden="true" size={11} />Pontos positivos</div><div className="text-[13px] text-slate-600 leading-relaxed">{record.pros}</div></div>}
@@ -90,7 +90,7 @@ export default function TeamCard({ team, record, steps, current, specialistCount
         ) : (
           <>
             {stepBlock}
-            <div className="text-[13px] text-slate-400 italic py-2">Nenhum relatório de mentoria recebido ainda.</div>
+            <div className="text-[13px] text-slate-500 italic py-2">Nenhum relatório de mentoria recebido ainda.</div>
           </>
         )}
 

@@ -43,7 +43,7 @@ function Field({ label, value }: { label: string; value: string | null | undefin
   if (!value) return null
   return (
     <div>
-      <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+      <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
       <div className="text-[12px] leading-snug whitespace-pre-line text-slate-700">{value}</div>
     </div>
   )
@@ -130,7 +130,7 @@ export default async function FinalReportPage({ params, searchParams }: {
               ['Mentorias', mentoring.length], ['Atendimentos', atendimentos.length],
             ].map(([label, value]) => (
               <div key={label as string} className="border border-slate-200 rounded-xl p-3">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
                 <div className="font-display font-bold text-2xl">{value}</div>
               </div>
             ))}
@@ -176,7 +176,7 @@ export default async function FinalReportPage({ params, searchParams }: {
           return (
             <article key={t.id} className="page-break pt-10 print:pt-0 border-t-4 border-orange mt-10 print:mt-0 print:border-t-0">
               <header className="avoid-break mb-4">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Equipe #{t.number}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Equipe #{t.number}</p>
                 <h2 className="font-display font-bold text-2xl leading-tight">{t.name}</h2>
                 <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-slate-600">
                   <StatusPill status={latest?.status ?? null} />
@@ -188,7 +188,7 @@ export default async function FinalReportPage({ params, searchParams }: {
 
               {proj.current && (
                 <div className="avoid-break border border-slate-200 rounded-xl p-3.5 mb-4">
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Projeto atual</div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">Projeto atual</div>
                   <p className="text-[13px] leading-relaxed whitespace-pre-line">{proj.current}</p>
                   {proj.pivots.length > 0 && (
                     <ul className="mt-2 text-[11px] text-slate-600 space-y-0.5">
@@ -204,7 +204,7 @@ export default async function FinalReportPage({ params, searchParams }: {
 
               {show('chart') && pts.length > 0 && (
                 <div className="avoid-break border border-slate-200 rounded-xl p-3.5 mb-4">
-                  <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mb-1">Evolução</div>
+                  <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500 mb-1">Evolução</div>
                   <EvolutionChart steps={steps} points={pts} fit />
                 </div>
               )}
@@ -261,7 +261,7 @@ export default async function FinalReportPage({ params, searchParams }: {
                 </section>
               )}
 
-              {tm.length === 0 && ta.length === 0 && <p className="text-sm text-slate-400 italic">Nenhum registro para esta equipe.</p>}
+              {tm.length === 0 && ta.length === 0 && <p className="text-sm text-slate-500 italic">Nenhum registro para esta equipe.</p>}
             </article>
           )
         })}

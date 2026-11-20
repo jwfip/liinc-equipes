@@ -59,9 +59,9 @@ export default function SummaryStrip({ teams, records, latestByTeam, atendimento
 function StatCard({ label, value, sub, color }: any) {
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col gap-1 transition-shadow hover:shadow-md">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
       <div className={`font-display font-bold text-4xl leading-none ${color}`}>{value}</div>
-      <div className="text-xs text-slate-400 mt-0.5">{sub}</div>
+      <div className="text-xs text-slate-500 mt-0.5">{sub}</div>
     </div>
   )
 }

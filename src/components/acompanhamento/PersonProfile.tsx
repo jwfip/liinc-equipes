@@ -41,18 +41,18 @@ export default function PersonProfile({ person, onClose }: { person: EventPerson
         </div>
         <div className="p-5 overflow-y-auto space-y-4">
           {empty ? (
-            <p className="text-sm text-slate-400 italic">Perfil não preenchido. A organização preenche em Mentores.</p>
+            <p className="text-sm text-slate-500 italic">Perfil não preenchido. A organização preenche em Mentores.</p>
           ) : (
             <>
               {person.area && (
                 <section>
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Área de atuação</h3>
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Área de atuação</h3>
                   <p className="text-sm text-navy font-semibold mt-0.5">{person.area}</p>
                 </section>
               )}
               {person.experience && (
                 <section>
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Experiência</h3>
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Experiência</h3>
                   <p className="text-sm text-slate-700 mt-0.5 whitespace-pre-line leading-relaxed">{person.experience}</p>
                 </section>
               )}

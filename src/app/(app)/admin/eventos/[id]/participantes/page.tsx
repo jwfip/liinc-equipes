@@ -78,7 +78,7 @@ export default async function ParticipantesPage({ params }: { params: { id: stri
             return (
               <li key={m.mentorId} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 px-4 py-3 border-b border-slate-200/60 last:border-0">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{m.name}{!m.active && <span className="text-xs text-slate-400"> (inativo)</span>}</p>
+                  <p className="font-medium truncate">{m.name}{!m.active && <span className="text-xs text-slate-500"> (inativo)</span>}</p>
                   <p className="text-xs text-slate-500 truncate">{m.username}</p>
                 </div>
                 <span className={`self-start sm:self-center text-xs font-bold px-2 py-0.5 rounded-full border ${ROLE_BADGE[m.role] ?? ROLE_BADGE.mentor}`}>

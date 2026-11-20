@@ -118,9 +118,9 @@ export default function PainelClient({
         <SummaryStrip teams={teams} records={mentoring} latestByTeam={latestByTeam} atendimentos={specialist.length} />
 
         <div className="bg-white border border-slate-200 rounded-xl p-5 mb-7 shadow-sm">
-          <div className="font-display font-bold text-xs text-slate-400 uppercase tracking-wide mb-3">Etapas do processo de inovação</div>
+          <div className="font-display font-bold text-xs text-slate-500 uppercase tracking-wide mb-3">Etapas do processo de inovação</div>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
-            {steps.length === 0 && <span className="text-xs text-slate-400">Nenhuma etapa configurada para este evento.</span>}
+            {steps.length === 0 && <span className="text-xs text-slate-500">Nenhuma etapa configurada para este evento.</span>}
             {steps.map((s, i) => (
               <div key={s.id} className="flex items-center gap-2 text-xs text-slate-600">
                 <div className="w-5 h-5 rounded-full bg-navy text-white font-display font-bold text-[10px] flex items-center justify-center shrink-0">{i + 1}</div>
@@ -162,7 +162,7 @@ export default function PainelClient({
         {sortedMentors.length > 0 && (
           <div className="mt-14 pt-8 border-t-2 border-slate-200">
             <h2 className="font-display font-bold text-2xl text-navy mb-1">Distribuição por Mentor</h2>
-            <p className="text-sm text-slate-400 mb-6">Equipes atendidas por cada mentor, organizadas por bloco de mentoria</p>
+            <p className="text-sm text-slate-500 mb-6">Equipes atendidas por cada mentor, organizadas por bloco de mentoria</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {sortedMentors.map(([mentor, byBlock]) => {
                 const all = Object.values(byBlock).flat()
@@ -171,7 +171,7 @@ export default function PainelClient({
                   <PersonCard key={mentor} name={mentor} sub={`${teamCount} equipe${teamCount > 1 ? 's' : ''} · ${all.length} mentoria${all.length > 1 ? 's' : ''}`}>
                     {Object.entries(byBlock).sort().map(([bLabel, recs]) => (
                       <div key={bLabel}>
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{bLabel}</div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">{bLabel}</div>
                         {latestPerTeam(recs).map(({ r, count }) => (
                           <TeamLine key={r.teamId} dot={DOT[r.status ?? ''] ?? 'bg-slate-400'} team={r.team} suffix={count > 1 ? `×${count}` : undefined} />
                         ))}
@@ -187,7 +187,7 @@ export default function PainelClient({
         {sortedSpecialists.length > 0 && (
           <div className="mt-14 pt-8 border-t-2 border-slate-200">
             <h2 className="font-display font-bold text-2xl text-navy mb-1">Atendimentos de especialistas</h2>
-            <p className="text-sm text-slate-400 mb-6">Dúvidas atendidas por cada especialista</p>
+            <p className="text-sm text-slate-500 mb-6">Dúvidas atendidas por cada especialista</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {sortedSpecialists.map(([name, recs]) => {
                 const byTeam = countByTeam(recs)
@@ -262,7 +262,7 @@ function TeamLine({ dot, team, suffix }: { dot: string; team: { number: number; 
     <div className="flex items-center gap-2 py-1 text-[13px] text-slate-600 border-b border-slate-100 last:border-0">
       <div className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
       <span className="truncate">{team?.number} - {team?.name}</span>
-      {suffix && <span className="ml-auto text-[11px] text-slate-400">{suffix}</span>}
+      {suffix && <span className="ml-auto text-[11px] text-slate-500">{suffix}</span>}
     </div>
   )
 }

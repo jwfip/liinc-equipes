@@ -37,7 +37,8 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 ```
 /                                   → redireciona para /painel
 /login                              → login (usuário + senha)
-/conta/senha                        → trocar a própria senha (obrigatório enquanto a senha for temporária)
+/conta                              → Configurações (dados da conta e troca de senha)
+/conta/senha                        → troca obrigatória da senha temporária (middleware)
 /painel                             → dashboard do evento selecionado (requer login)
 /mentoria                           → Nova mentoria (Mentor) ou Novo atendimento (Especialista)
 /mentoria/edit/[id]                 → edição do próprio registro
@@ -114,7 +115,7 @@ Mudanças com dados vão em SQL idempotente em `drizzle/NNNN_*.sql`, aplicado co
 
 ## Relatório final
 
-- Página `src/app/(print)/admin/eventos/[id]/relatorio/page.tsx` (só admin). Seções ocultáveis pela URL `?ocultar=` (`src/lib/report/options.ts`); padrão oculta `obs` e `suggestion` (notas internas).
+- Página `src/app/(app)/admin/eventos/[id]/relatorio/page.tsx` (só admin), dentro do layout do app (abas do evento); na impressão o app some (`print:hidden`) e o A4 fica limpo. Seções ocultáveis pela URL `?ocultar=` (`src/lib/report/options.ts`); padrão oculta `obs` e `suggestion` (notas internas).
 - Parecer final por equipe: `generateFinalSummary` (`src/lib/ai/team-summary.ts`, prompt em `src/lib/ai/final-summary.ts`, sem notas internas), ações `generateFinal`/`saveFinalSummary` em `src/actions/report.ts`. "Gerar resumos finais" roda no navegador, uma equipe por vez; textos editados pelo admin não são substituídos sem confirmação.
 
 ---
@@ -155,9 +156,12 @@ theme: {
 | flying — Voando | `#2563EB` | `Rocket` |
 
 - **Logo**: `public/brand/liinc-logo.svg` (fundo claro) e `public/brand/liinc-logo-dark-bg.svg` (fundo escuro); favicon `src/app/icon.svg` (anéis). Origem: `liinc-logo.svg` no Google Drive do dono.
+- **Tamanhos padrão** (`globals.css`): campos e botões com 44px (`.input`, `.btn-primary/.btn-secondary/.btn-danger`); ações dentro de listas com `.btn-sm` (36px). Campos com 16px no celular (abaixo disso o iPhone dá zoom) e 14px a partir de `sm`. Não usar alturas avulsas (`h-[38px]`).
+- **Datas**: `DateField` (`src/components/ui/DateField.tsx`) mostra dd/mm/aaaa e envia aaaa-mm-dd no mesmo `name`; regras em `src/lib/date-input.ts`. Não usar `<input type="date">` visível (segue o idioma do aparelho).
+- **Relato por áudio**: roteiro do que falar em `src/lib/ai/audio-guide.ts` (um item por campo que a extração pede; teste garante).
 - **Ícones**: `lucide-react` (não usar emoji na interface). Status via `StatusIcon`/`StatusLabel` em `src/components/ui/StatusIcon.tsx`.
 - **Navegação**: itens em `src/components/layout/nav-items.ts`; desktop = sidebar (`SidebarNav`), celular = barra inferior fixa (`MobileNav`) com menu "Mais".
-- **Gráfico de evolução**: `src/lib/evolution.ts` (`evolutionPoints`, pura) + `src/components/painel/EvolutionChart.tsx` (SVG sem hooks; `fit` no relatório impresso). Aparece no histórico (aba Mentorias) e no relatório.
+- **Gráfico de evolução**: `src/lib/evolution.ts` (`evolutionPoints` e `smoothPath`, curva monotônica que não ultrapassa a etapa; puras) + `src/components/painel/EvolutionChart.tsx` (SVG sem hooks; `fit` no relatório impresso). Aparece no histórico (aba Mentorias) e no relatório.
 
 ---
 

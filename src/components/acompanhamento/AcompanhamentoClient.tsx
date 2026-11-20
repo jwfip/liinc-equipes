@@ -108,11 +108,11 @@ export default function AcompanhamentoClient({
               </ul>
             )}
             <p className="text-[12px] text-slate-600 mt-2 line-clamp-2">
-              <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] mr-1">Projeto</span>
+              <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] mr-1">Projeto</span>
               {project?.description ?? 'ainda não registrado'}
             </p>
             <p className="text-[12px] text-slate-600 mt-0.5">
-              <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] mr-1">Mentores</span>
+              <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] mr-1">Mentores</span>
               {mentors.length ? mentors.map((m, i) => {
                 const person = personById.get(m.mentorId)
                 return (
@@ -175,12 +175,12 @@ export default function AcompanhamentoClient({
           </summary>
           {([['mentor', 'Mentores'], ['specialist', 'Especialistas']] as const).map(([role, title]) => groups[role].length > 0 && (
             <section key={role} className="mt-4">
-              <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">{title}</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">{title}</h3>
               <ul className="space-y-2">
                 {groups[role].map(p => (
                   <li key={p.id} className="bg-white border border-slate-200 rounded-xl p-3">
                     <p className="font-display font-bold text-[14px] text-navy">{p.name}</p>
-                    <p className={`text-[12px] mt-0.5 ${p.area ? 'text-navy font-semibold' : 'text-slate-400 italic'}`}>{p.area ?? 'Perfil não preenchido'}</p>
+                    <p className={`text-[12px] mt-0.5 ${p.area ? 'text-navy font-semibold' : 'text-slate-500 italic'}`}>{p.area ?? 'Perfil não preenchido'}</p>
                     {p.experience && <ClampedText text={p.experience} onMore={() => setProfile(p)} />}
                   </li>
                 ))}

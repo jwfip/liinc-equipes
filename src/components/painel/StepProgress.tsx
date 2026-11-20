@@ -12,7 +12,7 @@ export default function StepProgress({ steps, current, size = 'md' }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0">Etapa do processo</span>
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider shrink-0">Etapa do processo</span>
         <span className="text-[11px] font-bold text-orange text-right truncate">
           {idx >= 0 ? `${idx + 1} — ${steps[idx].label}` : current ? current.label : 'Não informada'}
         </span>

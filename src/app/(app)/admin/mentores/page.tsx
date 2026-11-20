@@ -56,7 +56,7 @@ export default async function MentoresPage() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium truncate">{m.name}</p>
                 <p className="text-xs text-slate-500 truncate">{m.username}</p>
-                <p className={`text-xs mt-0.5 truncate ${m.area ? 'text-navy font-semibold' : 'text-slate-400 italic'}`}>{m.area ?? 'Perfil não preenchido'}</p>
+                <p className={`text-xs mt-0.5 truncate ${m.area ? 'text-navy font-semibold' : 'text-slate-500 italic'}`}>{m.area ?? 'Perfil não preenchido'}</p>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
                   {m.active
                     ? <span className="badge-ok">Ativo</span>

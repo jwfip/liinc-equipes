@@ -49,7 +49,7 @@ export default function MatchingPanel({ teamId, matching, records, personById, m
     if (shown.length === 0) return null
     return (
       <section>
-        <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">{title}</h4>
+        <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{title}</h4>
         <ul className="space-y-1.5">
           {shown.map(i => {
             const person = personById.get(i.id)!
@@ -93,7 +93,7 @@ export default function MatchingPanel({ teamId, matching, records, personById, m
         <div className="mt-2 rounded-xl border border-orange/30 bg-orange-pale/40 p-3.5 space-y-3">
           {matching.content.need && (
             <section>
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">Do que a equipe precisa agora</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Do que a equipe precisa agora</h4>
               <p className="text-[13px] text-navy leading-snug">{matching.content.need}</p>
             </section>
           )}

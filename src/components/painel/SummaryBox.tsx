@@ -60,7 +60,7 @@ export default function SummaryBox({ summary, stale, hasRecords, teamId, kind, c
               {expanded ? 'ver menos' : 'ver mais'}
             </button>
           )}
-          <p className="text-[10px] text-slate-400 mt-1">
+          <p className="text-[10px] text-slate-500 mt-1">
             {generating ? 'Atualizando com o registro mais recente…'
               : stale ? `Resumo de ${fmt(summary.createdAt)} · pode estar desatualizado` : `Atualizado em ${fmt(summary.createdAt)}`}
           </p>

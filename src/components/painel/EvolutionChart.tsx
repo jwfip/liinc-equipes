@@ -27,7 +27,7 @@ function pointTitle(p: EvolutionPoint) {
 /** `fit`: sem rolagem (gráfico encolhe para caber) — usado no relatório impresso. */
 export default function EvolutionChart({ steps, points, fit = false }: { steps: { id: number; label: string }[]; points: EvolutionPoint[]; fit?: boolean }) {
   if (points.length === 0 || steps.length === 0) {
-    return <p className="text-xs text-slate-400 italic">Sem dados de evolução ainda.</p>
+    return <p className="text-xs text-slate-500 italic">Sem dados de evolução ainda.</p>
   }
 
   const n = points.length
