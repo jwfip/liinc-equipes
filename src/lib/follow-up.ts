@@ -12,20 +12,29 @@ export function sortForFollowUp<T extends { id: string; number: number }>(
   return { flagged: sorted.filter(t => n(t.id) > 0), clear: sorted.filter(t => n(t.id) === 0) }
 }
 
-/** "Nome (Bloco)" de quem mentorou a equipe nos últimos `n` blocos, do mais novo ao mais antigo. */
+export type RecentMentor = { mentorId: string; name: string; block: string }
+
+/** Quem mentorou a equipe nos últimos `n` blocos, do mais novo ao mais antigo; um item por pessoa e bloco. */
 export function recentMentors(
-  records: { teamId: string; kind: string; blockId: number | null; mentor: { name: string } | null }[],
+  records: { teamId: string; kind: string; blockId: number | null; mentorId: string; mentor: { name: string } | null }[],
   blocks: { id: number; label: string }[],
   teamId: string,
   n = 3,
-): string[] {
-  const out: string[] = []
+): RecentMentor[] {
+  const out: RecentMentor[] = []
   for (const b of blocks.slice(-n).reverse()) {
     for (const r of records) {
       if (r.teamId !== teamId || r.kind !== 'mentoring' || r.blockId !== b.id || !r.mentor) continue
-      const label = `${r.mentor.name} (${b.label})`
-      if (!out.includes(label)) out.push(label)
+      if (!out.some(m => m.mentorId === r.mentorId && m.block === b.label)) out.push({ mentorId: r.mentorId, name: r.mentor.name, block: b.label })
     }
   }
   return out
+}
+
+export type EventPerson = { id: string; name: string; role: 'mentor' | 'specialist'; area: string | null; experience: string | null }
+
+/** Participantes do evento por papel (Mentores, Especialistas), em ordem alfabética. */
+export function groupPeople(people: EventPerson[]): { mentor: EventPerson[]; specialist: EventPerson[] } {
+  const sorted = [...people].sort((a, b) => a.name.localeCompare(b.name, 'pt'))
+  return { mentor: sorted.filter(p => p.role === 'mentor'), specialist: sorted.filter(p => p.role === 'specialist') }
 }

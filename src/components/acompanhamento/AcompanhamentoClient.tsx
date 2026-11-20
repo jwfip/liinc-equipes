@@ -1,13 +1,14 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { History, CircleCheck, TriangleAlert } from 'lucide-react'
+import { History, CircleCheck, TriangleAlert, Users } from 'lucide-react'
+import PersonProfile from './PersonProfile'
 import HistoryModal from '@/components/painel/HistoryModal'
 import { summaryBoxProps } from '@/components/painel/summary-props'
 import type { TeamSummary } from '@/components/painel/SummaryBox'
 import { StatusIcon } from '@/components/ui/StatusIcon'
 import { eventAlerts } from '@/lib/alerts'
-import { sortForFollowUp, recentMentors } from '@/lib/follow-up'
+import { sortForFollowUp, recentMentors, groupPeople, type EventPerson } from '@/lib/follow-up'
 import { currentProject, heldBlockIds, type ProjectRow } from '@/lib/project'
 import { blockRankOf, getLatestByTeam, splitByKind, type StepChange } from '@/lib/records'
 import { todayISO } from '@/lib/format'
@@ -27,14 +28,18 @@ interface Props {
   blocks:             Block[]
   canCorrectProject:  boolean
   currentUser:        string
+  people:             EventPerson[]
 }
 
 const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 /** Tela do facilitador: equipes com sinais de que podem estar ficando para trás, com o motivo e as evidências. */
 export default function AcompanhamentoClient({
-  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser,
+  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser, people,
 }: Props) {
+  const [profile, setProfile] = useState<EventPerson | null>(null)
+  const personById = new Map(people.map(p => [p.id, p]))
+  const groups = groupPeople(people)
   const [records, setRecords]         = useState(initialRecords)
   const [stepChanges, setStepChanges] = useState(initialStepChanges)
   const [summaries, setSummaries]     = useState(initialSummaries)
@@ -100,7 +105,18 @@ export default function AcompanhamentoClient({
             </p>
             <p className="text-[12px] text-slate-600 mt-0.5">
               <span className="font-bold text-slate-400 uppercase tracking-wider text-[10px] mr-1">Mentores</span>
-              {mentors.length ? mentors.join(', ') : 'nenhuma mentoria nos últimos blocos'}
+              {mentors.length ? mentors.map((m, i) => {
+                const person = personById.get(m.mentorId)
+                return (
+                  <span key={`${m.mentorId}-${m.block}`}>
+                    {i > 0 && ', '}
+                    {person
+                      ? <button type="button" onClick={() => setProfile(person)} className="font-semibold text-navy underline decoration-dotted underline-offset-2 hover:text-orange-dark">{m.name}</button>
+                      : m.name}
+                    {` (${m.block})`}
+                  </span>
+                )
+              }) : 'nenhuma mentoria nos últimos blocos'}
             </p>
           </div>
           <button type="button" onClick={() => setHistoryTeam(team)}
@@ -137,6 +153,33 @@ export default function AcompanhamentoClient({
           <ul className="space-y-3 mt-3">{clear.map(row)}</ul>
         </details>
       )}
+
+      {people.length > 0 && (
+        <details className="mt-8">
+          <summary className="cursor-pointer text-sm font-bold text-slate-500 inline-flex items-center gap-1.5">
+            <Users aria-hidden="true" size={15} />Mentores e especialistas do evento ({people.length})
+          </summary>
+          {([['mentor', 'Mentores'], ['specialist', 'Especialistas']] as const).map(([role, title]) => groups[role].length > 0 && (
+            <section key={role} className="mt-4">
+              <h3 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">{title}</h3>
+              <ul className="space-y-2">
+                {groups[role].map(p => (
+                  <li key={p.id} className="bg-white border border-slate-200 rounded-xl p-3">
+                    <p className="font-display font-bold text-[14px] text-navy">{p.name}</p>
+                    <p className={`text-[12px] mt-0.5 ${p.area ? 'text-navy font-semibold' : 'text-slate-400 italic'}`}>{p.area ?? 'Perfil não preenchido'}</p>
+                    {p.experience && <p className="text-[12px] text-slate-600 mt-1 line-clamp-3 whitespace-pre-line">{p.experience}</p>}
+                    {p.experience && (
+                      <button type="button" onClick={() => setProfile(p)} className="text-xs font-bold text-orange hover:text-orange-dark mt-1">ver mais</button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
+        </details>
+      )}
+
+      {profile && <PersonProfile person={profile} onClose={() => setProfile(null)} />}
 
       {historyTeam && (
         <HistoryModal

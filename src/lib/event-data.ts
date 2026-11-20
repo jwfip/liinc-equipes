@@ -1,6 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm'
 import { db } from '@/db'
-import { blocks, eventSteps, teams, teamProjects, teamStepChanges, teamSummaries } from '@/schema'
+import { blocks, eventMembers, eventSteps, mentors, teams, teamProjects, teamStepChanges, teamSummaries } from '@/schema'
+import type { EventPerson } from './follow-up'
 import type { ProjectRow } from './project'
 
 export async function getEventSteps(eventId: number) {
@@ -60,4 +61,16 @@ export async function getEventProjects(eventId: number): Promise<ProjectRow[]> {
 export async function getEventBlocks(eventId: number) {
   return db.select({ id: blocks.id, label: blocks.label, date: blocks.date, active: blocks.active })
     .from(blocks).where(eq(blocks.eventId, eventId)).orderBy(asc(blocks.date), asc(blocks.id))
+}
+
+/**
+ * Mentores e especialistas do evento com o perfil (área, experiência). O perfil é restrito:
+ * chamar só para facilitador do evento ou admin. Facilitadores ficam fora da lista.
+ */
+export async function getEventPeople(eventId: number): Promise<EventPerson[]> {
+  const rows = await db.select({
+    id: mentors.id, name: mentors.name, role: eventMembers.role, area: mentors.area, experience: mentors.experience,
+  }).from(eventMembers).innerJoin(mentors, eq(mentors.id, eventMembers.mentorId))
+    .where(eq(eventMembers.eventId, eventId)).orderBy(asc(mentors.name))
+  return rows.filter((r): r is EventPerson => r.role === 'mentor' || r.role === 'specialist')
 }
