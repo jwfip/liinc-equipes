@@ -5,6 +5,7 @@ import { events } from '@/schema'
 import { createEvent } from '@/actions/events'
 import AdminForm from '@/components/admin/AdminForm'
 import { fmtDate } from '@/lib/format'
+import DateField from '@/components/ui/DateField'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,11 +37,11 @@ export default async function EventosPage() {
           </div>
           <div>
             <label className="label" htmlFor="ev-start">Início</label>
-            <input id="ev-start" name="startDate" type="date" required className="input" />
+            <DateField id="ev-start" name="startDate" required />
           </div>
           <div>
             <label className="label" htmlFor="ev-end">Fim</label>
-            <input id="ev-end" name="endDate" type="date" className="input" />
+            <DateField id="ev-end" name="endDate" />
           </div>
           <div>
             <label className="label" htmlFor="ev-copy">Copiar etapas de</label>

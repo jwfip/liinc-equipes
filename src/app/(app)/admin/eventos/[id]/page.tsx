@@ -4,6 +4,7 @@ import { events } from '@/schema'
 import { updateEvent, setEventActive } from '@/actions/events'
 import AdminForm from '@/components/admin/AdminForm'
 import ActionButton from '@/components/admin/ActionButton'
+import DateField from '@/components/ui/DateField'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,11 +27,11 @@ export default async function EventDadosPage({ params }: { params: { id: string 
           </div>
           <div>
             <label className="label" htmlFor="startDate">Início</label>
-            <input id="startDate" name="startDate" type="date" required defaultValue={ev.startDate} className="input" />
+            <DateField id="startDate" name="startDate" required defaultValue={ev.startDate} />
           </div>
           <div>
             <label className="label" htmlFor="endDate">Fim</label>
-            <input id="endDate" name="endDate" type="date" defaultValue={ev.endDate ?? ''} className="input" />
+            <DateField id="endDate" name="endDate" defaultValue={ev.endDate} />
           </div>
         </AdminForm>
       </div>

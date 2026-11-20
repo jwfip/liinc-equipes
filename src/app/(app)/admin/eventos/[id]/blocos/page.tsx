@@ -5,6 +5,7 @@ import { createBlock, activateBlock, deactivateBlock } from '@/actions/admin'
 import AdminForm from '@/components/admin/AdminForm'
 import ActionButton from '@/components/admin/ActionButton'
 import { fmtDate } from '@/lib/format'
+import DateField from '@/components/ui/DateField'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export default async function BlocosPage({ params }: { params: { id: string } })
           </div>
           <div>
             <label className="label" htmlFor="block-date">Data</label>
-            <input id="block-date" name="date" type="date" required className="input" />
+            <DateField id="block-date" name="date" required />
           </div>
         </AdminForm>
       </div>
