@@ -37,3 +37,10 @@ export function canCorrectProject(v: Viewer & { event: { active: boolean } | nul
   if (v.isAdmin) return true
   return canSeePrivateNotes(v) && v.role === 'facilitator' && v.event.active
 }
+
+/** Ativar e encerrar blocos do evento: admin sempre; facilitador com acesso ativo e só em evento ativo. */
+export function canManageBlocks(v: Viewer & { event: { active: boolean } | null }): boolean {
+  if (!v.event) return false
+  if (v.isAdmin) return true
+  return canSeePrivateNotes(v) && v.role === 'facilitator' && v.event.active
+}

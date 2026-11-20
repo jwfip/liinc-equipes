@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { registrationError, canSeePrivateNotes, canCorrectProject, roleLabel } from './participation'
+import { registrationError, canSeePrivateNotes, canCorrectProject, roleLabel, canManageBlocks } from './participation'
 
 const base = { event: { id: 1, active: true }, role: 'mentor' as const, mentorId: 'm1', mentorActive: true }
 
@@ -86,5 +86,22 @@ describe('roleLabel', () => {
     expect(roleLabel('specialist')).toBe('Especialista')
     expect(roleLabel('facilitator')).toBe('Facilitador')
     expect(roleLabel(null)).toBeNull()
+  })
+})
+
+describe('canManageBlocks', () => {
+  const active = { active: true }, closed = { active: false }
+  it('lets admin manage blocks of any selected event', () => {
+    expect(canManageBlocks({ isAdmin: true, role: null, event: closed })).toBe(true)
+    expect(canManageBlocks({ isAdmin: true, role: null, event: null })).toBe(false)
+  })
+  it('lets an active facilitator manage blocks only in an active event', () => {
+    expect(canManageBlocks({ isAdmin: false, role: 'facilitator', mentorActive: true, event: active })).toBe(true)
+    expect(canManageBlocks({ isAdmin: false, role: 'facilitator', mentorActive: true, event: closed })).toBe(false)
+    expect(canManageBlocks({ isAdmin: false, role: 'facilitator', mentorActive: false, event: active })).toBe(false)
+  })
+  it('refuses mentors and specialists', () => {
+    expect(canManageBlocks({ isAdmin: false, role: 'mentor', mentorActive: true, event: active })).toBe(false)
+    expect(canManageBlocks({ isAdmin: false, role: 'specialist', mentorActive: true, event: active })).toBe(false)
   })
 })
