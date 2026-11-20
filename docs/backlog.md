@@ -19,3 +19,17 @@ Decidido na parte 1: facilitador não registra; observações para facilitadores
 Permitir que o **facilitador** ative (e encerre) o bloco de mentoria do seu evento, sem depender do admin. Hoje só o admin faz isso em `/admin/eventos/[id]/blocos` (`activateBlock`).
 
 Pontos a decidir no design: o facilitador só ativa/encerra blocos já cadastrados ou também cria/edita blocos? Onde fica o controle (na tela Acompanhamento, que já mostra o bloco ativo, ou numa tela própria)? Vale só para evento ativo, como a correção de projeto.
+
+## Refinamento completo da UI
+
+Uma passada de acabamento em toda a interface (painel, formulários, Acompanhamento, histórico, admin, relatório), no celular e no computador: consistência visual entre as telas, estados vazios, de carregamento e de erro, textos, acessibilidade (foco, leitores de tela, contraste) e ajustes que foram ficando para depois nas entregas anteriores.
+
+Pontos a decidir no design: o que mais incomoda hoje no uso real (por onde começar)? Há referências visuais que a Liinc quer seguir? Inclui revisar o fluxo de alguma tela ou é só acabamento?
+
+Pendências menores já anotadas nas revisões, que podem entrar aqui:
+- Ao fechar o perfil de um mentor, o foco não volta ao nome clicado; "ver mais" aparece mesmo com experiência curta.
+- Erro do painel de sugestão não é anunciado como alerta para leitores de tela.
+- Nomes "Fulano (Bloco)" deduplicados pelo nome do bloco (dois blocos com o mesmo nome).
+- Lista de pessoas do Acompanhamento só atualiza ao recarregar.
+- Pedido grande demais para a IA aparece como "A IA não respondeu agora".
+- Nome no cabeçalho só muda no próximo login depois que o admin renomeia a pessoa.
