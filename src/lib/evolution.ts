@@ -82,3 +82,36 @@ export function chartLayout(n: number, stepCount: number, fit: boolean) {
   }
   return { W, H, col: spacing, labeled }
 }
+
+const r2 = (n: number) => Math.round(n * 100) / 100
+
+/**
+ * Curva suave pelos pontos (interpolação monotônica de Fritsch–Carlson): passa por todos e
+ * nunca ultrapassa a etapa entre duas mentorias. `points` em ordem crescente de x.
+ */
+export function smoothPath(points: { x: number; y: number }[]): string {
+  const n = points.length
+  if (n === 0) return ''
+  let d = `M ${r2(points[0].x)} ${r2(points[0].y)}`
+  if (n === 1) return d
+
+  const dx: number[] = [], slope: number[] = []
+  for (let i = 0; i < n - 1; i++) {
+    dx.push(points[i + 1].x - points[i].x)
+    slope.push(dx[i] === 0 ? 0 : (points[i + 1].y - points[i].y) / dx[i])
+  }
+  // Tangentes: média dos lados; zero em pico, vale ou trecho plano (é o que garante não ultrapassar).
+  const m: number[] = [slope[0]]
+  for (let i = 1; i < n - 1; i++) m.push(slope[i - 1] * slope[i] <= 0 ? 0 : (slope[i - 1] + slope[i]) / 2)
+  m.push(slope[n - 2])
+  for (let i = 0; i < n - 1; i++) {
+    if (slope[i] === 0) { m[i] = 0; m[i + 1] = 0; continue }
+    const a = m[i] / slope[i], b = m[i + 1] / slope[i], h = a * a + b * b
+    if (h > 9) { const t = 3 / Math.sqrt(h); m[i] = t * a * slope[i]; m[i + 1] = t * b * slope[i] }
+  }
+  for (let i = 0; i < n - 1; i++) {
+    const p = points[i], q = points[i + 1], k = dx[i] / 3
+    d += ` C ${r2(p.x + k)} ${r2(p.y + m[i] * k)} ${r2(q.x - k)} ${r2(q.y - m[i + 1] * k)} ${r2(q.x)} ${r2(q.y)}`
+  }
+  return d
+}

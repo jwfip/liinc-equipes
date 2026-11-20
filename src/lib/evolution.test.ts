@@ -58,3 +58,34 @@ describe('chartLayout', () => {
     }
   })
 })
+
+import { smoothPath } from './evolution'
+
+/** Números de um caminho SVG "M x y C c1x c1y c2x c2y x y …" agrupados por segmento. */
+const segments = (d: string) => {
+  const [, ...cs] = d.split('C')
+  return cs.map(c => c.trim().split(/[\s,]+/).map(Number))
+}
+
+describe('smoothPath', () => {
+  it('draws only the start point for a single point', () => {
+    expect(smoothPath([{ x: 10, y: 20 }])).toBe('M 10 20')
+  })
+  it('starts at the first point and ends at the last', () => {
+    const d = smoothPath([{ x: 0, y: 100 }, { x: 50, y: 40 }])
+    expect(d.startsWith('M 0 100')).toBe(true)
+    const last = segments(d).at(-1)!
+    expect(last.slice(4)).toEqual([50, 40])
+  })
+  it('stays flat between points on the same step', () => {
+    const s = segments(smoothPath([{ x: 0, y: 60 }, { x: 40, y: 60 }, { x: 80, y: 30 }]))[0]
+    expect([s[1], s[3], s[5]]).toEqual([60, 60, 60])
+  })
+  it('never overshoots a step between two mentorias (monotone)', () => {
+    const pts = [{ x: 0, y: 150 }, { x: 40, y: 120 }, { x: 80, y: 30 }, { x: 120, y: 30 }, { x: 160, y: 90 }]
+    segments(smoothPath(pts)).forEach((s, i) => {
+      const lo = Math.min(pts[i].y, pts[i + 1].y), hi = Math.max(pts[i].y, pts[i + 1].y)
+      for (const y of [s[1], s[3]]) { expect(y).toBeGreaterThanOrEqual(lo - 1e-9); expect(y).toBeLessThanOrEqual(hi + 1e-9) }
+    })
+  })
+})

@@ -1,4 +1,4 @@
-import { describeEvolution, chartLayout, CHART_PAD as PAD, CHART_ROW as ROW, STATUS_LABEL, type EvolutionPoint } from '@/lib/evolution'
+import { describeEvolution, chartLayout, CHART_PAD as PAD, CHART_ROW as ROW, STATUS_LABEL, type EvolutionPoint, smoothPath } from '@/lib/evolution'
 
 const STATUS_COLOR: Record<string, string> = {
   ok: '#16A34A', attention: '#CA8A04', emergency: '#DC2626', flying: '#2563EB',
@@ -39,8 +39,7 @@ export default function EvolutionChart({ steps, points, fit = false }: { steps: 
   const r = col < 18 ? 4.5 : 7 // pontos menores quando estão muito próximos (impressão de séries longas)
   const y = (stepIndex: number) => PAD.t + 4 + (S - 1 - stepIndex) * ROW
 
-  let d = `M ${x(0)} ${y(points[0].stepIndex)}`
-  points.slice(1).forEach((p, i) => { d += ` H ${x(i + 1)} V ${y(p.stepIndex)}` })
+  const d = smoothPath(points.map((p, i) => ({ x: x(i), y: y(p.stepIndex) })))
 
   const description = describeEvolution(points)
 
