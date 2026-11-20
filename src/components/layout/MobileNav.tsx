@@ -76,7 +76,8 @@ export default function MobileNav({ role, eventRole, userLabel, signOut }: Props
 
       <nav aria-label="Navegação principal"
         className="md:hidden fixed bottom-0 inset-x-0 z-[70] bg-navy border-t border-white/10 pb-[env(safe-area-inset-bottom)]">
-        <ul className="grid grid-cols-3">
+        {/* Uma coluna por item + "Mais": com 3 itens (admin) a grade fixa de 3 jogava o "Mais" para outra linha. */}
+        <ul className="grid" style={{ gridTemplateColumns: `repeat(${main.length + 1}, minmax(0, 1fr))` }}>
           {main.map(({ href, short, Icon }) => {
             const active = isActive(pathname, href)
             return (

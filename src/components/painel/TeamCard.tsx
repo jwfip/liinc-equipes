@@ -42,10 +42,11 @@ export default function TeamCard({ team, record, steps, current, specialistCount
           <div className="flex-1 min-w-0">
             <div className="font-display font-bold text-[15px] text-navy leading-tight">{team.name}</div>
             {record ? (
-              <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-                <span className="font-bold uppercase tracking-wider text-[10px]">Última mentoria ·</span>
-                <span className="font-semibold text-slate-600 inline-flex items-center gap-1"><User aria-hidden="true" size={12} />{record.mentor?.name}</span>
-              </div>
+              <p className="text-[11px] text-slate-500 mt-1 truncate" title={`Última mentoria: ${record.mentor?.name ?? ''}`}>
+                <span className="font-bold uppercase tracking-wider text-[10px]">Última mentoria · </span>
+                <User aria-hidden="true" size={12} className="inline -mt-0.5 mr-0.5" />
+                <span className="font-semibold text-slate-600">{record.mentor?.name}</span>
+              </p>
             ) : (
               <div className="text-[11px] text-slate-400 mt-1">Nenhuma mentoria</div>
             )}
