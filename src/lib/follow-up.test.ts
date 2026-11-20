@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { sortForFollowUp, recentMentors, groupPeople } from './follow-up'
+import { sortForFollowUp, recentMentors, groupPeople, servedBlocks } from './follow-up'
 
 describe('sortForFollowUp', () => {
   const teams = [{ id: 'a', number: 1 }, { id: 'b', number: 2 }, { id: 'c', number: 3 }, { id: 'd', number: 4 }]
@@ -39,10 +39,19 @@ describe('recentMentors', () => {
 })
 
 describe('groupPeople', () => {
-  const p = (name: string, role: 'mentor' | 'specialist') => ({ id: name, name, role, area: null, experience: null })
+  const p = (name: string, role: 'mentor' | 'specialist') => ({ id: name, name, role, area: null, experience: null, active: true })
   it('splits mentors and specialists, sorted by name', () => {
     const g = groupPeople([p('Érica', 'mentor'), p('Bruno', 'specialist'), p('Ana', 'mentor')])
     expect(g.mentor.map(x => x.name)).toEqual(['Ana', 'Érica'])
     expect(g.specialist.map(x => x.name)).toEqual(['Bruno'])
+  })
+})
+
+describe('servedBlocks', () => {
+  const r = (mentorId: string, teamId: string, blockId: number | null, label?: string) =>
+    ({ mentorId, teamId, blockId, block: label ? { label } : null })
+  it('lists the blocks where the person served the team, without repeats', () => {
+    const recs = [r('ana', 't', 2, 'B2'), r('ana', 't', 2, 'B2'), r('ana', 't', null), r('bia', 't', 3, 'B3'), r('ana', 'u', 4, 'B4')]
+    expect(servedBlocks(recs, 't', 'ana')).toEqual(['B2', 'fora de bloco'])
   })
 })
