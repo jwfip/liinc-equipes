@@ -48,7 +48,7 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /admin/eventos/[id]/equipes         → equipes do evento
 /admin/eventos/[id]/blocos          → blocos do evento (1 ativo por evento)
 /admin/eventos/[id]/participantes   → escalar mentores (papel Mentor/Especialista), copiar de outro evento
-/admin/mentores                     → cadastro global de pessoas
+/admin/mentores                     → cadastro global de pessoas (nome e perfil editáveis)
 /admin/eventos/[id]/relatorio       → relatório final para a empresa (capa + página por equipe, PDF pela impressão)
 /admin/relatorio                    → redireciona para o relatório final do evento selecionado
 /api/records                        → endpoint do polling (registros, ajustes de etapa, resumos, projetos e blocos do evento selecionado)
@@ -70,7 +70,7 @@ Fonte da verdade: `src/schema.ts`.
 | `mentoring_records` | `event_id`, `kind` (`'mentoring' \| 'specialist'`), `team_id`, `mentor_id`, `block_id` (nulo em atendimento fora de bloco), `status` (nulo em atendimento), `step_id`, `topic` (atendimento), textos |
 | `team_step_changes` | ajustes de etapa feitos pela organização (admin) |
 | `team_projects` | versões do projeto da equipe: `kind` `'initial' \| 'pivot' \| 'correction'`, `record_id` (mentoria que registrou), `created_by`; o projeto atual é a mais recente (`src/lib/project.ts`) |
-| `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma |
+| `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma; `area`/`experience` = perfil (texto livre, preenchido pelo admin, restrito) |
 | `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; `password_hash`, `must_change_password`; liga-se a `mentors` por `email` |
 | `login_attempts` | falhas de login por usuário (bloqueio) |
 | `team_summaries` | resumo atual de cada equipe por `kind`: `mentoring`, `specialist` (painel) e `final` (parecer do relatório, editável; `edited_by_admin` protege o texto) |
@@ -192,6 +192,7 @@ Configurar também na Vercel em **Settings → Environment Variables**.
 - Para registrar, a pessoa precisa ser participante do evento (inclusive admins). Facilitador não registra (`registrationError`).
 - **Observações para facilitadores** (`obs`, de mentoria e atendimento) são privadas: só facilitador do evento, admin e o autor veem. O filtro é no servidor (`redactPrivateNotes` em `src/lib/privacy.ts`, aplicado no painel e no `/api/records`); `obs` não entra nos prompts dos resumos do painel.
 - **Projeto atual**: o primeiro mentor da equipe descreve o projeto; os seguintes o veem só leitura e marcam **"A equipe pivotou"** para trocar (`readProjectInput`). Editar mentoria não mexe no projeto. Corrigir o texto (sem ser pivô): facilitador (evento ativo) ou admin, na aba Projeto do histórico (`correctProject`). O campo `working` é "No que a equipe trabalhou nesta mentoria".
+- **Perfil dos mentores** (`area`, `experience`): o admin preenche em `/admin/mentores` (`updateMentor`, validação em `src/lib/mentor-profile.ts`). Só facilitador e admin veem: lido no servidor apenas no Acompanhamento (`getEventPeople`, depois do guard) e no admin; consultas que vão ao navegador para outros papéis selecionam só id/nome/usuário do mentor.
 - **Alertas do Acompanhamento** (`eventAlerts` em `src/lib/alerts.ts`, regras puras, sem IA): status Emergência/Atenção, status piorou, parada na mesma etapa por 2 blocos, etapa voltou (ou "pivotou e voltou", ou ajustada para trás pela organização), 2+ etapas abaixo da mediana do grupo, sem mentoria no bloco anterior ao ativo (sem bloco ativo: no último bloco que teve mentoria). A plataforma só aponta; a intervenção é do facilitador.
 
 ---
