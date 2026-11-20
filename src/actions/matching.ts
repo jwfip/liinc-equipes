@@ -63,7 +63,8 @@ export async function suggestMatching(teamId: string): Promise<Result> {
 
     let raw: string
     try {
-      raw = await chat({ messages, json: true, maxTokens: 900 })
+      // O modelo raciocina antes de responder e isso conta no limite: folga para o JSON não sair cortado.
+      raw = await chat({ messages, json: true, maxTokens: 2000 })
     } catch {
       return { ok: false, error: 'A IA não respondeu agora. Tente de novo.' }
     }

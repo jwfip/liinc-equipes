@@ -10,6 +10,8 @@ const MAX_MENTORS = 3
 const MAX_SPECIALISTS = 2
 const MAX_NEED = 400
 const MAX_REASON = 200
+/** Registros mais recentes que vão sempre, mesmo acima do teto (muitos perfis completos não podem apagar o histórico). */
+const MIN_RECORDS = 3
 
 type Stamp = string | Date | null | undefined
 const ts = (d: Stamp) => (d ? new Date(d).getTime() : 0)
@@ -28,9 +30,14 @@ export type MatchingTeam = {
 }
 export type MatchingContent = { need: string; mentors: { id: string; reason: string }[]; specialists: { id: string; reason: string }[] }
 
-/** Texto do usuário vai inteiro (sem corte de tamanho), mas sem delimitadores falsos nem quebras. */
-const neutralize = (v: string | null | undefined) =>
-  (v ?? '').replace(/\s+/g, ' ').replace(/<\/?\s*(equipe|pessoas|registros)\s*>/gi, '').trim()
+const FAKE_TAG = /<\/?\s*(equipe|pessoas|registros)\s*>/gi
+/** Texto do usuário vai inteiro (sem corte de tamanho), mas sem delimitadores falsos nem quebras.
+ *  Remove em laço: "</equi</equipe>pe>" remontaria a tag numa passada só. */
+const neutralize = (v: string | null | undefined) => {
+  let t = (v ?? '').replace(/\s+/g, ' ')
+  for (let prev = ''; prev !== t;) { prev = t; t = t.replace(FAKE_TAG, '') }
+  return t.trim()
+}
 const part = (label: string, v: string | null | undefined) => (neutralize(v) ? `${label}: ${neutralize(v)}` : '')
 
 const SYSTEM =
@@ -76,7 +83,7 @@ export function buildMatchingMessages(team: MatchingTeam, people: EventPerson[])
 
   let lines = records.map(r => r.line)
   let user = render(lines)
-  while (lines.length > 0 && SYSTEM.length + user.length > MAX_MATCHING_CHARS) {
+  while (lines.length > MIN_RECORDS && SYSTEM.length + user.length > MAX_MATCHING_CHARS) {
     lines = lines.slice(1)
     user = render(lines)
   }
