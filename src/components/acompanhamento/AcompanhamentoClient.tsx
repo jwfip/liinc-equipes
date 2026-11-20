@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { History, CircleCheck, TriangleAlert, Users } from 'lucide-react'
 import PersonProfile from './PersonProfile'
+import MatchingPanel from './MatchingPanel'
+import type { MatchingRow } from '@/lib/event-data'
 import HistoryModal from '@/components/painel/HistoryModal'
 import { summaryBoxProps } from '@/components/painel/summary-props'
 import type { TeamSummary } from '@/components/painel/SummaryBox'
@@ -29,14 +31,17 @@ interface Props {
   canCorrectProject:  boolean
   currentUser:        string
   people:             EventPerson[]
+  initialMatchings:   MatchingRow[]
 }
 
 const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 /** Tela do facilitador: equipes com sinais de que podem estar ficando para trás, com o motivo e as evidências. */
 export default function AcompanhamentoClient({
-  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser, people,
+  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser, people, initialMatchings,
 }: Props) {
+  const [matchings, setMatchings] = useState(initialMatchings)
+  const missingProfiles = people.filter(p => p.active && !p.area && !p.experience).length
   const [profile, setProfile] = useState<EventPerson | null>(null)
   const personById = new Map(people.map(p => [p.id, p]))
   const groups = groupPeople(people)
@@ -124,6 +129,10 @@ export default function AcompanhamentoClient({
             <History aria-hidden="true" size={14} />Histórico
           </button>
         </div>
+        <MatchingPanel teamId={team.id} matching={matchings.find(m => m.teamId === team.id)}
+          records={records.filter(r => r.teamId === team.id)} personById={personById} missingProfiles={missingProfiles}
+          onProfile={setProfile}
+          onGenerated={row => setMatchings(ms => [...ms.filter(m => m.teamId !== row.teamId), row])} />
       </li>
     )
   }

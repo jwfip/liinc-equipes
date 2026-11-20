@@ -5,7 +5,7 @@ import AcompanhamentoClient from '@/components/acompanhamento/AcompanhamentoClie
 import { getEventContext } from '@/lib/event-context'
 import { canCorrectProject, canSeePrivateNotes } from '@/lib/participation'
 import {
-  getActiveTeams, getEventBlocks, getEventPeople, getEventProjects, getEventRecords, getEventStepChanges, getEventSteps, getEventSummaries,
+  getActiveTeams, getEventBlocks, getEventMatchings, getEventPeople, getEventProjects, getEventRecords, getEventStepChanges, getEventSteps, getEventSummaries,
 } from '@/lib/event-data'
 import type { RecordWithRelations } from '@/lib/constants'
 
@@ -21,9 +21,10 @@ export default async function AcompanhamentoPage() {
 
   // Leitor é facilitador ou admin: vê as observações de todos (sem redação).
   // Depois do guard: o perfil das pessoas é restrito a facilitador e admin.
-  const [records, teams, steps, stepChanges, summaries, projects, blocks, people] = await Promise.all([
+  const [records, teams, steps, stepChanges, summaries, projects, blocks, people, matchings] = await Promise.all([
     getEventRecords(eventId), getActiveTeams(eventId), getEventSteps(eventId), getEventStepChanges(eventId),
     getEventSummaries(eventId), getEventProjects(eventId), getEventBlocks(eventId), getEventPeople(eventId),
+    getEventMatchings(eventId),
   ])
 
   return (
@@ -38,6 +39,7 @@ export default async function AcompanhamentoPage() {
       blocks={blocks}
       canCorrectProject={canCorrectProject(ctx)}
       people={people}
+      initialMatchings={matchings}
       currentUser={session?.user?.email || ''}
     />
   )
