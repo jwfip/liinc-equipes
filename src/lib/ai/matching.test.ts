@@ -101,3 +101,17 @@ describe('buildMatchingMessages — review fixes', () => {
     expect(text).not.toContain('trabalho 3')
   })
 })
+
+import { matchingErrorMessage } from './matching'
+// groq.ts é server-only: o teste usa um erro com o mesmo campo `status`.
+const groqError = (status: number) => Object.assign(new Error('x'), { status })
+
+describe('matchingErrorMessage', () => {
+  it('explains a request too large for the AI', () => {
+    expect(matchingErrorMessage(groqError(413))).toBe('A sugestão ficou grande demais para a IA. Tente de novo mais tarde.')
+  })
+  it('keeps the generic message for other failures', () => {
+    expect(matchingErrorMessage(groqError(500))).toBe('A IA não respondeu agora. Tente de novo.')
+    expect(matchingErrorMessage(new Error('timeout'))).toBe('A IA não respondeu agora. Tente de novo.')
+  })
+})

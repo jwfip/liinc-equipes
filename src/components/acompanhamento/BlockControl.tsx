@@ -17,16 +17,21 @@ export default function BlockControl({ blocks, onChanged }: { blocks: Block[]; o
   const others = blocks.filter(b => !b.active)
   const [choice, setChoice] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
+  const [done, setDone] = useState<string | null>(null)
+  const [closing, setClosing] = useState(false)
   const [pending, start] = useTransition()
 
-  function run(message: string, action: () => Promise<ActionResult>) {
+  function run(message: string, action: () => Promise<ActionResult>, isClose = false) {
     if (!window.confirm(message)) return
     setError(null)
+    setDone(null)
+    setClosing(isClose)
     start(async () => {
       try {
         const r = await action()
         if (!r.ok) { setError(r.error); return }
         setChoice('')
+        if (r.message) { setDone(r.message); setTimeout(() => setDone(null), 3000) }
         onChanged()
       } catch {
         setError('Erro inesperado. Tente novamente.')
@@ -48,8 +53,8 @@ export default function BlockControl({ blocks, onChanged }: { blocks: Block[]; o
               <span className="text-slate-500"> ({dayMonth(active.date)})</span>
             </p>
             <button type="button" disabled={pending} className="btn-danger"
-              onClick={() => run(blockSwitchMessage(active.label, null), () => closeActiveBlock(active.id))}>
-              Encerrar bloco
+              onClick={() => run(blockSwitchMessage(active.label, null), () => closeActiveBlock(active.id), true)}>
+              {pending && closing ? 'Encerrando…' : 'Encerrar bloco'}
             </button>
           </>
         ) : (
@@ -71,12 +76,13 @@ export default function BlockControl({ blocks, onChanged }: { blocks: Block[]; o
           </div>
           <button type="button" disabled={pending || !next} className="btn-primary"
             onClick={() => next && run(blockSwitchMessage(active?.label ?? null, next.label), () => activateEventBlock(next.id))}>
-            {pending ? 'Salvando…' : 'Ativar'}
+            {pending && !closing ? 'Ativando…' : 'Ativar'}
           </button>
         </div>
       )}
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
+      {done && <p role="status" className="text-sm font-semibold text-green-700">{done}</p>}
     </section>
   )
 }

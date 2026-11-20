@@ -15,7 +15,7 @@ import {
 import { eventAlerts } from '@/lib/alerts'
 import { projectContext } from '@/lib/project'
 import { todayISO } from '@/lib/format'
-import { buildMatchingMessages, parseMatching } from '@/lib/ai/matching'
+import { buildMatchingMessages, matchingErrorMessage, parseMatching } from '@/lib/ai/matching'
 import { chat, groqConfigured, SUMMARY_MODEL } from '@/lib/groq'
 
 type Result = { ok: true; matching: MatchingRow } | { ok: false; error: string }
@@ -65,8 +65,8 @@ export async function suggestMatching(teamId: string): Promise<Result> {
     try {
       // O modelo raciocina antes de responder e isso conta no limite: folga para o JSON não sair cortado.
       raw = await chat({ messages, json: true, maxTokens: 2000 })
-    } catch {
-      return { ok: false, error: 'A IA não respondeu agora. Tente de novo.' }
+    } catch (err) {
+      return { ok: false, error: matchingErrorMessage(err) }
     }
     const content = parseMatching(raw, aliases)
     if (!content) return { ok: false, error: 'A IA não devolveu sugestões. Tente de novo.' }

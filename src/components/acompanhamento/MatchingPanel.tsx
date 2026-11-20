@@ -87,7 +87,7 @@ export default function MatchingPanel({ teamId, matching, records, personById, m
         </button>
       )}
 
-      {error && <p role="status" className="text-xs text-red-600 mt-1.5">{error}</p>}
+      {error && <p role="alert" className="text-xs text-red-600 mt-1.5">{error}</p>}
 
       {matching && open && (
         <div className="mt-2 rounded-xl border border-orange/30 bg-orange-pale/40 p-3.5 space-y-3">

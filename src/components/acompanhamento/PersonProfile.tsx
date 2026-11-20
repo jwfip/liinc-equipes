@@ -14,10 +14,12 @@ export default function PersonProfile({ person, onClose }: { person: EventPerson
   onCloseRef.current = onClose
 
   useEffect(() => {
+    // Ao fechar, o foco volta ao nome que abriu o perfil.
+    const trigger = document.activeElement as HTMLElement | null
     closeRef.current?.focus()
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCloseRef.current() }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => { window.removeEventListener('keydown', onKey); trigger?.focus?.() }
   }, [])
 
   const empty = !person.area && !person.experience

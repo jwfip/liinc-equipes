@@ -5,6 +5,7 @@ import { History, CircleCheck, TriangleAlert, Users } from 'lucide-react'
 import PersonProfile from './PersonProfile'
 import MatchingPanel from './MatchingPanel'
 import BlockControl from './BlockControl'
+import ClampedText from './ClampedText'
 import type { MatchingRow } from '@/lib/event-data'
 import HistoryModal from '@/components/painel/HistoryModal'
 import { summaryBoxProps } from '@/components/painel/summary-props'
@@ -180,10 +181,7 @@ export default function AcompanhamentoClient({
                   <li key={p.id} className="bg-white border border-slate-200 rounded-xl p-3">
                     <p className="font-display font-bold text-[14px] text-navy">{p.name}</p>
                     <p className={`text-[12px] mt-0.5 ${p.area ? 'text-navy font-semibold' : 'text-slate-400 italic'}`}>{p.area ?? 'Perfil não preenchido'}</p>
-                    {p.experience && <p className="text-[12px] text-slate-600 mt-1 line-clamp-3 whitespace-pre-line">{p.experience}</p>}
-                    {p.experience && (
-                      <button type="button" onClick={() => setProfile(p)} className="text-xs font-bold text-orange hover:text-orange-dark mt-1">ver mais</button>
-                    )}
+                    {p.experience && <ClampedText text={p.experience} onMore={() => setProfile(p)} />}
                   </li>
                 ))}
               </ul>

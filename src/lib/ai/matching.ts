@@ -116,3 +116,11 @@ export function parseMatching(raw: string, aliases: Map<string, EventPerson>): M
   if (!need && mentors.length === 0 && specialists.length === 0) return null
   return { need, mentors, specialists }
 }
+
+/** Mensagem para a falha da chamada à IA: pedido grande demais (HTTP 413) ganha texto próprio. */
+export function matchingErrorMessage(err: unknown): string {
+  if (err instanceof Error && 'status' in err && (err as { status: unknown }).status === 413) {
+    return 'A sugestão ficou grande demais para a IA. Tente de novo mais tarde.'
+  }
+  return 'A IA não respondeu agora. Tente de novo.'
+}
