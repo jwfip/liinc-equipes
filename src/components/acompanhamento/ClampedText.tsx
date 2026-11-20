@@ -1,14 +1,23 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-/** Texto cortado em 3 linhas; "ver mais" só aparece quando de fato há texto escondido. */
+/**
+ * Texto cortado em 3 linhas; "ver mais" só aparece quando de fato há texto escondido.
+ * Mede de novo quando o tamanho muda: dentro de um <details> fechado o texto tem altura 0,
+ * e só ao abrir dá para saber se ele foi cortado.
+ */
 export default function ClampedText({ text, onMore }: { text: string; onMore: () => void }) {
   const ref = useRef<HTMLParagraphElement>(null)
   const [cut, setCut] = useState(false)
-  useLayoutEffect(() => {
+  useEffect(() => {
     const el = ref.current
-    if (el) setCut(el.scrollHeight > el.clientHeight + 1)
+    if (!el) return
+    const measure = () => setCut(el.scrollHeight > el.clientHeight + 1)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
   }, [text])
   return (
     <>

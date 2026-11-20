@@ -34,3 +34,11 @@ describe('formatBrDate', () => {
     expect(formatBrDate(null)).toBe('')
   })
 })
+
+describe('maskDate — typed slashes', () => {
+  it('pads day and month when the person types the slashes', () => {
+    expect(maskDate('1/1/2026')).toBe('01/01/2026')
+    expect(maskDate('21/3/2026')).toBe('21/03/2026')
+    expect(maskDate('5/')).toBe('05')
+  })
+})

@@ -2,7 +2,9 @@
 
 /** Barras automáticas enquanto a pessoa digita: só dígitos, até 8. */
 export function maskDate(raw: string): string {
-  const d = raw.replace(/\D/g, '').slice(0, 8)
+  // Quem digita as barras ("1/1/2026") completa dia e mês com zero; senão "1/1/2026" viraria "11/20/26".
+  const parts = raw.replace(/[^\d/]/g, '').split('/')
+  const d = parts.map((p, i) => (i < 2 && i < parts.length - 1 && p.length === 1 ? `0${p}` : p)).join('').slice(0, 8)
   if (d.length <= 2) return d
   if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`
   return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`
