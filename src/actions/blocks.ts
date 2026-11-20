@@ -9,6 +9,7 @@ import { requireActiveSession } from '@/lib/guards'
 import { canManageBlocks } from '@/lib/participation'
 import { setActiveBlock } from '@/lib/block-writes'
 import { toActionError, type ActionResult } from '@/lib/action-result'
+import { closeBlockError } from '@/lib/blocks'
 
 /** Evento do contexto, se a pessoa pode mudar o bloco dele (facilitador do evento ativo ou admin). */
 async function eventForBlocks(): Promise<number> {
@@ -40,10 +41,13 @@ export async function activateEventBlock(blockId: number): Promise<ActionResult>
   }
 }
 
-/** Encerra o bloco ativo do evento selecionado (nenhum bloco fica ativo). */
-export async function closeActiveBlock(): Promise<ActionResult> {
+/** Encerra o bloco que a tela mostra como ativo (nenhum bloco fica ativo). */
+export async function closeActiveBlock(blockId: number): Promise<ActionResult> {
   try {
     const eventId = await eventForBlocks()
+    const block = Number.isInteger(blockId) ? await db.query.blocks.findFirst({ where: eq(blocks.id, blockId) }) : undefined
+    const error = closeBlockError(block, eventId)
+    if (error) return { ok: false, error }
     await setActiveBlock(eventId, null)
     revalidate()
     return { ok: true, message: 'Bloco encerrado.' }

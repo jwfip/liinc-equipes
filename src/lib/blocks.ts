@@ -4,3 +4,13 @@ export function blockSwitchMessage(current: string | null, next: string | null):
   if (current === null) return `Ativar ${next}? As novas mentorias passam a ser registradas nele.`
   return `Ativar ${next}? O ${current} será encerrado e as novas mentorias passam a ser registradas no ${next}.`
 }
+
+/**
+ * Encerrar só o bloco que a tela mostra: ele precisa ser do evento selecionado e estar ativo.
+ * Evita fechar o bloco de outro evento quando outra aba trocou o evento selecionado.
+ */
+export function closeBlockError(block: { eventId: number; active: boolean } | undefined, eventId: number): string | null {
+  if (!block || block.eventId !== eventId) return 'Bloco inválido para este evento.'
+  if (!block.active) return 'Este bloco já foi encerrado.'
+  return null
+}

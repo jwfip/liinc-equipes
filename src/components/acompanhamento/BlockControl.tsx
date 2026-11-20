@@ -48,7 +48,7 @@ export default function BlockControl({ blocks, onChanged }: { blocks: Block[]; o
               <span className="text-slate-500"> ({dayMonth(active.date)})</span>
             </p>
             <button type="button" disabled={pending} className="btn-danger"
-              onClick={() => run(blockSwitchMessage(active.label, null), closeActiveBlock)}>
+              onClick={() => run(blockSwitchMessage(active.label, null), () => closeActiveBlock(active.id))}>
               Encerrar bloco
             </button>
           </>
