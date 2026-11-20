@@ -14,7 +14,7 @@ O **facilitador** conduz o evento. Precisa de um acesso próprio (papel por even
 
 Decidido na parte 1: facilitador não registra; observações para facilitadores são privadas (facilitador, admin e autor). Fica para o design do matching: sob demanda ou a cada nova mentoria? O matching usa o **projeto atual** da equipe (`team_projects`).
 
-## Facilitador ativa blocos de mentoria
+## ~~Facilitador ativa blocos de mentoria~~ (feito: `docs/superpowers/specs/2026-11-20-facilitador-blocos-design.md`)
 
 Permitir que o **facilitador** ative (e encerre) o bloco de mentoria do seu evento, sem depender do admin. Hoje só o admin faz isso em `/admin/eventos/[id]/blocos` (`activateBlock`).
 

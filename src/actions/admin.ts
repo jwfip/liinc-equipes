@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { toActionError, type ActionResult } from '@/lib/action-result'
 import { generateTempPassword, hashPassword } from '@/lib/password'
 import { readMentorProfile } from '@/lib/mentor-profile'
+import { setActiveBlock } from '@/lib/block-writes'
 
 // ── Teams ────────────────────────────────────────────────────
 
@@ -142,10 +143,7 @@ export async function createBlock(eventId: number, fd: FormData): Promise<Action
 export async function activateBlock(eventId: number, id: number): Promise<ActionResult> {
   try {
     await requireAdmin()
-    await db.batch([
-      db.update(blocks).set({ active: false }).where(and(eq(blocks.eventId, eventId), eq(blocks.active, true))),
-      db.update(blocks).set({ active: true }).where(and(eq(blocks.id, id), eq(blocks.eventId, eventId))),
-    ])
+    await setActiveBlock(eventId, id)
     revalidateEventPages(eventId)
     return { ok: true }
   } catch (err) {
@@ -156,7 +154,8 @@ export async function activateBlock(eventId: number, id: number): Promise<Action
 export async function deactivateBlock(eventId: number, id: number): Promise<ActionResult> {
   try {
     await requireAdmin()
-    await db.update(blocks).set({ active: false }).where(and(eq(blocks.id, id), eq(blocks.eventId, eventId)))
+    const block = await db.query.blocks.findFirst({ where: and(eq(blocks.id, id), eq(blocks.eventId, eventId)) })
+    if (block?.active) await setActiveBlock(eventId, null)
     revalidateEventPages(eventId)
     return { ok: true }
   } catch (err) {

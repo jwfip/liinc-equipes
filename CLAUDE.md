@@ -41,7 +41,7 @@ Sistema web multi-evento onde mentores e especialistas registram, direto na plat
 /painel                             → dashboard do evento selecionado (requer login)
 /mentoria                           → Nova mentoria (Mentor) ou Novo atendimento (Especialista)
 /mentoria/edit/[id]                 → edição do próprio registro
-/acompanhamento                     → alertas por equipe (facilitador do evento e admin)
+/acompanhamento                     → alertas por equipe, sugestão de mentores e controle do bloco ativo (facilitador do evento e admin)
 /admin/eventos                      → lista e criação de eventos
 /admin/eventos/[id]                 → dados do evento, encerrar/reativar
 /admin/eventos/[id]/etapas          → etapas do evento (ordem, renomear, remover se não usada)
@@ -185,7 +185,7 @@ Configurar também na Vercel em **Settings → Environment Variables**.
 - **Etapa do card** = a mais recente entre a etapa da última mentoria e o último ajuste da organização (`currentStepFor`). Só admin ajusta.
 - **Atendimentos** não alteram status, etapa nem a "Distribuição por Mentor"; aparecem na aba própria do histórico e em seção própria do painel e do relatório. Não exigem bloco ativo.
 - **Papel decide o tipo**: Mentor só registra mentoria; Especialista só registra atendimento (`registrationError(ctx, kind)`).
-- **Bloco ativo** = no máximo um por evento (índice único parcial); sem bloco ativo, o formulário avisa.
+- **Bloco ativo** = no máximo um por evento (índice único parcial); sem bloco ativo, o formulário avisa. Ativar/encerrar: admin em `/admin/eventos/[id]/blocos` ou facilitador (evento ativo) no topo do Acompanhamento (`canManageBlocks`, ações em `src/actions/blocks.ts`, com confirmação); ambos usam `setActiveBlock` (`src/lib/block-writes.ts`, `db.batch`). Criar e editar blocos é só do admin.
 - **Etapas** são do evento e valem para todas as equipes dele; etapa usada em registros não pode ser removida.
 - **Registros** são editáveis apenas pelo autor; cada envio cria um novo registro.
 - **Equipes inativas** não aparecem no painel nem no formulário.

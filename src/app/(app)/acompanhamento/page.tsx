@@ -3,7 +3,7 @@ import { auth } from '@/auth'
 import NoEventNotice from '@/components/layout/NoEventNotice'
 import AcompanhamentoClient from '@/components/acompanhamento/AcompanhamentoClient'
 import { getEventContext } from '@/lib/event-context'
-import { canCorrectProject, canSeePrivateNotes } from '@/lib/participation'
+import { canCorrectProject, canManageBlocks, canSeePrivateNotes } from '@/lib/participation'
 import {
   getActiveTeams, getEventBlocks, getEventMatchings, getEventPeople, getEventProjects, getEventRecords, getEventStepChanges, getEventSteps, getEventSummaries,
 } from '@/lib/event-data'
@@ -38,6 +38,7 @@ export default async function AcompanhamentoPage() {
       steps={steps}
       blocks={blocks}
       canCorrectProject={canCorrectProject(ctx)}
+      canManageBlocks={canManageBlocks(ctx)}
       people={people}
       initialMatchings={matchings}
       currentUser={session?.user?.email || ''}

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { History, CircleCheck, TriangleAlert, Users } from 'lucide-react'
 import PersonProfile from './PersonProfile'
 import MatchingPanel from './MatchingPanel'
+import BlockControl from './BlockControl'
 import type { MatchingRow } from '@/lib/event-data'
 import HistoryModal from '@/components/painel/HistoryModal'
 import { summaryBoxProps } from '@/components/painel/summary-props'
@@ -32,13 +33,14 @@ interface Props {
   currentUser:        string
   people:             EventPerson[]
   initialMatchings:   MatchingRow[]
+  canManageBlocks:    boolean
 }
 
 const time = (d: string | Date | null) => (d ? new Date(d).getTime() : 0)
 
 /** Tela do facilitador: equipes com sinais de que podem estar ficando para trás, com o motivo e as evidências. */
 export default function AcompanhamentoClient({
-  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser, people, initialMatchings,
+  eventName, initialRecords, initialStepChanges, initialSummaries, initialProjects, teams, steps, blocks: initialBlocks, canCorrectProject, currentUser, people, initialMatchings, canManageBlocks,
 }: Props) {
   const [matchings, setMatchings] = useState(initialMatchings)
   const missingProfiles = people.filter(p => p.active && !p.area && !p.experience).length
@@ -146,6 +148,8 @@ export default function AcompanhamentoClient({
         </p>
         <p className="text-slate-500 text-xs mt-2">Equipes com sinais de que podem estar ficando para trás. Abra o histórico para ver as evidências e quem mentorou.</p>
       </header>
+
+      {canManageBlocks && <BlockControl blocks={blocks} onChanged={reload} />}
 
       {flagged.length === 0 ? (
         <div className="card text-center py-10">
