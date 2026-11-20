@@ -73,6 +73,7 @@ Fonte da verdade: `src/schema.ts`.
 | `mentors` | pessoas que mentoram; `email` guarda o nome de usuário; `active` = pode usar a plataforma; `area`/`experience` = perfil (texto livre, preenchido pelo admin, restrito) |
 | `users`, `accounts`, `sessions`, `verificationTokens` | NextAuth; `users.role` `'mentor' \| 'admin'`; `password_hash`, `must_change_password`; liga-se a `mentors` por `email` |
 | `login_attempts` | falhas de login por usuário (bloqueio) |
+| `team_matchings` | última sugestão de mentores (IA) por equipe: `content` jsonb `{ need, mentors[], specialists[] }`, `requested_by`; restrita a facilitador e admin, fora do polling |
 | `team_summaries` | resumo atual de cada equipe por `kind`: `mentoring`, `specialist` (painel) e `final` (parecer do relatório, editável; `edited_by_admin` protege o texto) |
 
 ### Migrações
@@ -106,6 +107,7 @@ Mudanças com dados vão em SQL idempotente em `drizzle/NNNN_*.sql`, aplicado co
 
 - Cliente em `src/lib/groq.ts` (`chat`, `transcribe`; timeout 20 s; sem SDK). Chave só no servidor.
 - **Resumos** (`team_summaries`, um por equipe e tipo `mentoring`/`specialist`): `generateTeamSummary` em `src/lib/ai/team-summary.ts`, disparado no servidor pelas actions de mentoria/atendimento depois de salvar via `waitUntil` (`@vercel/functions`) — o mentor não espera e falha nunca impede o registro. Botão "Gerar/Atualizar resumo" usa `refreshTeamSummary` (`src/actions/summaries.ts`). Prompts e limpeza em `src/lib/ai/summary-prompt.ts` (últimos 12 registros, conteúdo entre `<registros>` tratado como dado).
+- **Matching** (sugestão de mentores, sob demanda): botão por equipe no Acompanhamento → `suggestMatching` (`src/actions/matching.ts`). Prompt e validação em `src/lib/ai/matching.ts`: pessoas por apelido (P1, P2…) trocado pelo id real em `parseMatching`; até 3 mentores e 2 especialistas; textos inteiros, teto de 60.000 caracteres no pedido (saem registros inteiros, dos mais antigos); inclui observações privadas. "Já atendeu" é calculado pelo código (`servedBlocks`). Só facilitador e admin.
 - **Relato por áudio**: `AudioRecorder` → `POST /api/transcribe` (única outra API route; upload binário) → Whisper + extração em JSON validada por `parseExtraction` (`src/lib/ai/extraction.ts`). Preenche só campos vazios; status/etapa marcados "Sugerido pela IA — confirme". Áudio não é guardado; transcrição vai em `audio_transcript`.
 
 ---
