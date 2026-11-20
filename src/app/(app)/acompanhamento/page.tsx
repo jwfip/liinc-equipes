@@ -10,6 +10,8 @@ import {
 import type { RecordWithRelations } from '@/lib/constants'
 
 export const dynamic = 'force-dynamic'
+// A sugestão de mentores (IA) roda numa server action desta página e pode levar até ~20 s.
+export const maxDuration = 60
 
 export default async function AcompanhamentoPage() {
   const [session, ctx] = await Promise.all([auth(), getEventContext()])

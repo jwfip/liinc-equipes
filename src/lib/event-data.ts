@@ -1,6 +1,7 @@
 import { and, asc, eq } from 'drizzle-orm'
 import { db } from '@/db'
-import { blocks, eventMembers, eventSteps, mentors, teams, teamProjects, teamStepChanges, teamSummaries } from '@/schema'
+import { blocks, eventMembers, eventSteps, mentors, teamMatchings, teams, teamProjects, teamStepChanges, teamSummaries } from '@/schema'
+import type { MatchingContent } from './ai/matching'
 import type { EventPerson } from './follow-up'
 import type { ProjectRow } from './project'
 
@@ -69,8 +70,20 @@ export async function getEventBlocks(eventId: number) {
  */
 export async function getEventPeople(eventId: number): Promise<EventPerson[]> {
   const rows = await db.select({
-    id: mentors.id, name: mentors.name, role: eventMembers.role, area: mentors.area, experience: mentors.experience,
+    id: mentors.id, name: mentors.name, role: eventMembers.role, area: mentors.area, experience: mentors.experience, active: mentors.active,
   }).from(eventMembers).innerJoin(mentors, eq(mentors.id, eventMembers.mentorId))
     .where(eq(eventMembers.eventId, eventId)).orderBy(asc(mentors.name))
   return rows.filter((r): r is EventPerson => r.role === 'mentor' || r.role === 'specialist')
+}
+
+export type MatchingRow = { teamId: string; content: MatchingContent; createdAt: string | Date | null; requestedBy: string | null }
+
+/** Últimas sugestões de mentores do evento. Restrito: chamar só para facilitador do evento ou admin. */
+export async function getEventMatchings(eventId: number): Promise<MatchingRow[]> {
+  const rows = await db.query.teamMatchings.findMany({
+    where: eq(teamMatchings.eventId, eventId),
+    columns: { teamId: true, content: true, createdAt: true },
+    with: { requester: { columns: { name: true } } },
+  })
+  return rows.map(r => ({ teamId: r.teamId, content: r.content as MatchingContent, createdAt: r.createdAt, requestedBy: r.requester?.name ?? null }))
 }

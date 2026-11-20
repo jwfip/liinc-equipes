@@ -10,6 +10,7 @@ import {
   primaryKey,
   uniqueIndex,
   index,
+  jsonb,
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 
@@ -127,6 +128,19 @@ export const teamProjects = pgTable('team_projects', {
   teamIdx: index('team_projects_team_idx').on(t.teamId, t.createdAt),
 }))
 
+/** Última sugestão de mentores (IA) por equipe. Só facilitador e admin leem: os motivos citam o perfil restrito. */
+export const teamMatchings = pgTable('team_matchings', {
+  id:          serial('id').primaryKey(),
+  eventId:     integer('event_id').notNull().references(() => events.id),
+  teamId:      uuid('team_id').notNull().references(() => teams.id, { onDelete: 'cascade' }),
+  content:     jsonb('content').notNull(),
+  requestedBy: uuid('requested_by').references(() => mentors.id),
+  model:       text('model'),
+  createdAt:   timestamp('created_at').defaultNow(),
+}, (t) => ({
+  teamIdx: uniqueIndex('team_matchings_team_idx').on(t.teamId),
+}))
+
 // ── NextAuth tables ──────────────────────────────────────────
 
 export const users = pgTable('users', {
@@ -216,6 +230,10 @@ export const mentorsRelations = relations(mentors, ({ many }) => ({
 export const blocksRelations = relations(blocks, ({ one, many }) => ({
   event:   one(events, { fields: [blocks.eventId], references: [events.id] }),
   records: many(mentoringRecords),
+}))
+
+export const teamMatchingsRelations = relations(teamMatchings, ({ one }) => ({
+  requester: one(mentors, { fields: [teamMatchings.requestedBy], references: [mentors.id] }),
 }))
 
 export const teamProjectsRelations = relations(teamProjects, ({ one }) => ({
