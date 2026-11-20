@@ -61,7 +61,7 @@ Gravação com upsert por `team_id`.
 - **Equipe:** nome; projeto atual e pivôs datados (`projectContext`); status e etapa atuais; textos dos alertas atuais (`eventAlerts`); as últimas **8 mentorias** (data, bloco, status, trabalhou em, orientação, a melhorar, observações para facilitadores, sugestão ao próximo mentor) e os últimos **5 atendimentos** (tema, orientação, observações).
 - **Inclui as observações para facilitadores**: só facilitador e admin veem o resultado, e elas costumam conter o problema escondido.
 - **Pessoas:** os participantes do evento com papel Mentor ou Especialista e acesso ativo (`mentors.active`), cada um com um **apelido curto** (`P1`, `P2`, …, em vez do uuid: menos tokens, e a IA não inventa identificadores), papel, área e experiência. Pessoas sem perfil entram só com nome e papel.
-- **Limites:** cada campo de texto é cortado em 500 caracteres. Os dados vão entre `<equipe>` e `<pessoas>` e são tratados como dado; a instrução manda ignorar comandos escritos ali (mesma defesa dos resumos).
+- **Limites (decisão do dono):** **nenhum campo de texto é cortado**; cortar no meio pode esconder justamente a parte importante. Só há um **teto de segurança para o pedido inteiro, de 60.000 caracteres**. Se ele for ultrapassado, saem **registros inteiros, dos mais antigos para os mais novos** (atendimentos e mentorias); o projeto, os alertas e os perfis nunca são cortados. Os delimitadores falsos continuam sendo neutralizados, como nos resumos (`clip`, sem o corte de tamanho). Os dados vão entre `<equipe>` e `<pessoas>` e são tratados como dado; a instrução manda ignorar comandos escritos ali (mesma defesa dos resumos).
 - **Instruções (system):** escolher só entre as pessoas listadas, pelo apelido; até 3 mentores e até 2 especialistas; motivo em uma frase ligando o perfil a uma necessidade da equipe; `need` em 1 a 2 frases; não preferir nem evitar quem já atendeu a equipe; quem não tem perfil só entra se o histórico da equipe justificar; sem inventar fatos; português do Brasil. Responder **só com JSON** `{ "need": "...", "mentors": [{ "p": "P3", "reason": "..." }], "specialists": [...] }`.
 - **Chamada:** `chat({ json: true, maxTokens: 900 })`, modelo `SUMMARY_MODEL()`.
 
@@ -110,7 +110,8 @@ Gravação com upsert por `team_id`.
 ## Restrições
 
 - Next.js 14, Server Actions, Drizzle `neon-http`, Groq via `src/lib/groq.ts` (timeout 20 s, sem SDK).
-- Regras puras com teste: `buildMatchingMessages`, `parseMatching`, "já atendeu" (`servedBlocks`).
+- Regras puras com teste: `buildMatchingMessages` (incluindo o teto de 60.000 e a ordem de descarte), `parseMatching`, "já atendeu" (`servedBlocks`).
+- O tempo de espera pela IA continua o do cliente (`src/lib/groq.ts`, 20 s); a resposta é curta (`maxTokens: 900`).
 - Atualizar `CLAUDE.md` (tabela, regra de privacidade, IA) e `docs/backlog.md`.
 
 ## Fica para o implementador
