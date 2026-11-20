@@ -46,7 +46,7 @@ export default async function EventDadosPage({ params }: { params: { id: string 
         </div>
         <ActionButton
           action={setEventActive.bind(null, ev.id, !ev.active)}
-          className={ev.active ? 'btn-danger' : 'btn-primary text-xs py-1.5'}
+          className={ev.active ? 'btn-danger' : 'btn-primary'}
           confirm={ev.active ? 'Encerrar este evento? Os participantes deixarão de vê-lo.' : undefined}>
           {ev.active ? 'Encerrar evento' : 'Reativar evento'}
         </ActionButton>

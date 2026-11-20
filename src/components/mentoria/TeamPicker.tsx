@@ -50,7 +50,7 @@ export default function TeamPicker({ teams, value, onChange }: { teams: Team[]; 
     <div className="relative" ref={root}>
       <label className="label" id={`${uid}-label`}>Equipe *</label>
       <button ref={trigger} type="button" aria-labelledby={`${uid}-label`} aria-haspopup="listbox" aria-expanded={open}
-        className="input min-h-[46px] cursor-pointer flex items-center justify-between text-left"
+        className="input cursor-pointer flex items-center justify-between text-left"
         onClick={() => { setOpen(v => !v); setActive(0) }}>
         <span className={selected ? 'text-navy' : 'text-slate-400'}>
           {selected ? `${selected.number} — ${selected.name}` : 'Selecione a equipe...'}

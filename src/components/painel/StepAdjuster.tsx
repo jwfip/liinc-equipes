@@ -36,13 +36,13 @@ export default function StepAdjuster({ teamId, teamName, steps, currentStepId, o
   return (
     <div className="w-full flex flex-col gap-2 pt-1">
       <label className="sr-only" htmlFor={`adj-${teamId}`}>Etapa da equipe {teamName}</label>
-      <select ref={selectRef} id={`adj-${teamId}`} className="input py-2" value={stepId} onChange={e => setStepId(Number(e.target.value))}>
+      <select ref={selectRef} id={`adj-${teamId}`} className="input" value={stepId} onChange={e => setStepId(Number(e.target.value))}>
         <option value="" disabled>Selecione a etapa...</option>
         {steps.map((s, i) => <option key={s.id} value={s.id}>{i + 1} — {s.label}</option>)}
       </select>
       <div className="flex gap-2">
         <button type="button" disabled={isPending || stepId === '' || stepId === currentStepId}
-          className="btn-primary text-xs py-1.5 flex-1"
+          className="btn-primary btn-sm flex-1"
           onClick={() => startTransition(async () => {
             setError(null)
             const r = await adjustTeamStep(teamId, Number(stepId)).catch(() => ({ ok: false as const, error: 'Erro inesperado. Tente novamente.' }))
@@ -52,7 +52,7 @@ export default function StepAdjuster({ teamId, teamName, steps, currentStepId, o
           })}>
           {isPending ? 'Salvando...' : 'Confirmar'}
         </button>
-        <button type="button" className="btn-secondary text-xs py-1.5" onClick={() => setOpen(false)}>Cancelar</button>
+        <button type="button" className="btn-secondary btn-sm" onClick={() => setOpen(false)}>Cancelar</button>
       </div>
       {error && <p role="alert" className="text-[11px] font-semibold text-red-600">{error}</p>}
     </div>

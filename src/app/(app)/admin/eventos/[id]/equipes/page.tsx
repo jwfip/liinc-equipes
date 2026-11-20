@@ -42,7 +42,7 @@ export default async function EquipesPage({ params }: { params: { id: string } }
               <span className="flex-1 min-w-0 font-medium truncate">{t.name}</span>
               <StatusBadge active={t.active} />
               <ActionButton action={toggleTeam.bind(null, t.id, !t.active)}
-                className={t.active ? 'btn-danger' : 'btn-secondary text-xs py-1.5'}>
+                className={t.active ? 'btn-danger btn-sm' : 'btn-secondary btn-sm'}>
                 {t.active ? 'Desativar' : 'Ativar'}
               </ActionButton>
             </li>

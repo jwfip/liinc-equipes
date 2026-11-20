@@ -25,7 +25,7 @@ export default async function EventosPage() {
 
       <div className="card mb-6">
         <h2 className="font-display font-semibold text-sm mb-4 text-slate-600">Novo evento</h2>
-        <AdminForm action={createEvent} submitLabel="+ Criar evento" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+        <AdminForm action={createEvent} submitLabel="+ Criar evento" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <div className="lg:col-span-2">
             <label className="label" htmlFor="ev-name">Nome</label>
             <input id="ev-name" name="name" required placeholder="Ex: Maratona de Inovação 2027" className="input" />

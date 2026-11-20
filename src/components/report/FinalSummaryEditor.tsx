@@ -55,8 +55,8 @@ export default function FinalSummaryEditor({ teamId, content, edited }: Props) {
           <label className="sr-only" htmlFor={`final-${teamId}`}>Parecer final</label>
           <textarea id={`final-${teamId}`} value={draft} onChange={e => setDraft(e.target.value)} rows={6} maxLength={2000} className="input resize-y text-[13px]" />
           <div className="flex gap-2 mt-2">
-            <button type="button" onClick={save} disabled={isPending} className="btn-primary text-xs py-1.5">{isPending ? 'Salvando…' : 'Salvar'}</button>
-            <button type="button" onClick={() => setEditing(false)} className="btn-secondary text-xs py-1.5">Cancelar</button>
+            <button type="button" onClick={save} disabled={isPending} className="btn-primary btn-sm">{isPending ? 'Salvando…' : 'Salvar'}</button>
+            <button type="button" onClick={() => setEditing(false)} className="btn-secondary btn-sm">Cancelar</button>
           </div>
         </div>
       ) : content ? (

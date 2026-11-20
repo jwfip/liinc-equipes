@@ -69,7 +69,7 @@ export default function ReportToolbar({ eventId, hidden, teams, finals }: Props)
               <input type="checkbox" checked={overwrite} onChange={e => setOverwrite(e.target.checked)} className="accent-orange" />
               Substituir textos editados
             </label>
-            <button type="button" onClick={generateAll} disabled={!!progress} className="btn-secondary text-xs py-2">
+            <button type="button" onClick={generateAll} disabled={!!progress} className="btn-secondary btn-sm">
               {progress ? <Loader2 aria-hidden="true" size={14} className="animate-spin" /> : <Sparkles aria-hidden="true" size={14} />}
               {progress ? `Gerando ${progress.done}/${progress.total}…` : 'Gerar resumos finais'}
             </button>

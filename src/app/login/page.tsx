@@ -74,7 +74,7 @@ export default function LoginPage({ searchParams }: { searchParams: { error?: st
               </div>
             )}
 
-            <button type="submit" className="btn-primary w-full justify-center py-2.5 mt-2">
+            <button type="submit" className="btn-primary w-full mt-2">
               Entrar
             </button>
           </form>

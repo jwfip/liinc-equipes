@@ -30,7 +30,7 @@ export default function EventSwitcher({ options, current, isAdmin }: Props) {
         const id = Number(e.target.value)
         startTransition(() => setCurrentEvent(id))
       }}
-      className="w-full bg-white/10 text-white text-sm font-display font-bold rounded-lg px-3 py-2 border border-white/15 focus:outline-none focus:ring-2 focus:ring-orange"
+      className="w-full min-h-[44px] bg-white/10 text-white text-base sm:text-sm font-display font-bold rounded-lg px-3 py-2 border border-white/15 focus:outline-none focus:ring-2 focus:ring-orange"
     >
       {selectable.map(o => (
         <option key={o.id} value={o.id} className="text-navy">

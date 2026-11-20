@@ -127,7 +127,7 @@ export default function AcompanhamentoClient({
             </p>
           </div>
           <button type="button" onClick={() => setHistoryTeam(team)}
-            className="btn-secondary text-xs shrink-0 inline-flex items-center gap-1.5">
+            className="btn-secondary btn-sm shrink-0">
             <History aria-hidden="true" size={14} />Histórico
           </button>
         </div>

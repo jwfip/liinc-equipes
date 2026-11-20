@@ -88,7 +88,7 @@ export default function AtendimentoForm({ teams, activeBlock, projects, recordTo
       {error   && <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">{error}</div>}
       {success && <div role="status" className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold flex items-center gap-2"><CircleCheck aria-hidden="true" size={18} />Atendimento {recordToEdit ? 'atualizado' : 'registrado'}!</div>}
 
-      <button type="submit" disabled={isPending || !teamId} className="btn-primary w-full justify-center py-3 text-base">
+      <button type="submit" disabled={isPending || !teamId} className="btn-primary w-full">
         {isPending ? 'Salvando...' : recordToEdit ? 'Salvar alterações' : 'Registrar atendimento'}
       </button>
     </form>

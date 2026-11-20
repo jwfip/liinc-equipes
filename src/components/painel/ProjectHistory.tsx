@@ -63,8 +63,8 @@ export default function ProjectHistory({ teamId, rows, blockOf, canCorrect, onCh
             <p className="text-xs text-slate-500">Use para ajustar a redação. Se a equipe mudou de projeto, o mentor registra o pivô na mentoria.</p>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setEditing(false)} className="btn-secondary text-xs" disabled={pending}>Cancelar</button>
-              <button type="button" onClick={save} className="btn-primary text-xs" disabled={pending || !text.trim()}>{pending ? 'Salvando...' : 'Salvar correção'}</button>
+              <button type="button" onClick={() => setEditing(false)} className="btn-secondary btn-sm" disabled={pending}>Cancelar</button>
+              <button type="button" onClick={save} className="btn-primary btn-sm" disabled={pending || !text.trim()}>{pending ? 'Salvando...' : 'Salvar correção'}</button>
             </div>
           </div>
         ) : (

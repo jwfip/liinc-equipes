@@ -51,7 +51,7 @@ export default function AdminForm({
       <div className={className ?? 'flex flex-col sm:flex-row gap-3'}>
         {children}
         <div className="flex items-end">
-          <button type="submit" disabled={isPending} className="btn-primary h-[38px] w-full sm:w-auto justify-center">
+          <button type="submit" disabled={isPending} className="btn-primary w-full sm:w-auto">
             {isPending ? 'Salvando...' : submitLabel}
           </button>
         </div>

@@ -14,7 +14,7 @@ export default function TempPasswordNotice({ username, password }: { username: s
         <dt className="text-slate-500">Senha</dt><dd className="font-mono font-bold text-navy text-base tracking-wider select-all">{password}</dd>
       </dl>
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-3">
-        <button type="button" className="btn-secondary text-xs py-1.5 justify-center"
+        <button type="button" className="btn-secondary btn-sm"
           onClick={async () => {
             try { await navigator.clipboard.writeText(text); setCopied(true) } catch { setCopied(false) }
           }}>

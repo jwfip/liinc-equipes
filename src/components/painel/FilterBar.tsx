@@ -36,7 +36,7 @@ export default function FilterBar({ search, onSearch, statusFilter, onStatusFilt
           value={search}
           onChange={e => onSearch(e.target.value)}
           placeholder="Buscar equipe..."
-          className="w-full md:w-56 bg-slate-100 border border-slate-200 rounded-full py-1.5 pl-8 pr-4 text-[13px] text-navy outline-none focus:border-orange focus:ring-2 focus:ring-orange/20 transition-all"
+          className="w-full md:w-56 bg-slate-100 border border-slate-200 rounded-full min-h-[44px] sm:min-h-[36px] py-1.5 pl-8 pr-4 text-base sm:text-[13px] text-navy outline-none focus:border-orange focus:ring-2 focus:ring-orange/20 transition-all"
         />
       </div>
     </div>

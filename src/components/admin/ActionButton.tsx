@@ -23,7 +23,7 @@ export default function ActionButton({ action, children, className, confirm, tit
         title={title}
         aria-label={title}
         disabled={isPending}
-        className={className ?? 'btn-secondary text-xs py-1.5'}
+        className={className ?? 'btn-secondary btn-sm'}
         onClick={() => {
           if (confirm && !window.confirm(confirm)) return
           setError(null)

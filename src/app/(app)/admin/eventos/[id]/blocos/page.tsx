@@ -46,8 +46,8 @@ export default async function BlocosPage({ params }: { params: { id: string } })
                 <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200">Inativo</span>
               )}
               {b.active
-                ? <ActionButton action={deactivateBlock.bind(null, eventId, b.id)} className="btn-danger">Desativar</ActionButton>
-                : <ActionButton action={activateBlock.bind(null, eventId, b.id)} className="btn-primary text-xs py-1.5">Ativar</ActionButton>}
+                ? <ActionButton action={deactivateBlock.bind(null, eventId, b.id)} className="btn-danger btn-sm">Desativar</ActionButton>
+                : <ActionButton action={activateBlock.bind(null, eventId, b.id)} className="btn-primary btn-sm">Ativar</ActionButton>}
             </li>
           ))}
         </ul>

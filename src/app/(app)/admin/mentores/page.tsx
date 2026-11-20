@@ -89,7 +89,7 @@ export default async function MentoresPage() {
               <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
                 <ResetPasswordButton mentorId={m.id} name={m.name} />
                 <ActionButton action={toggleMentor.bind(null, m.id, !m.active)}
-                  className={m.active ? 'btn-danger' : 'btn-secondary text-xs py-1.5'}>
+                  className={m.active ? 'btn-danger btn-sm' : 'btn-secondary btn-sm'}>
                   {m.active ? 'Desativar' : 'Ativar'}
                 </ActionButton>
               </div>

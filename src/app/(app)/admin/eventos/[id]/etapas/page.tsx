@@ -43,7 +43,7 @@ export default async function EtapasPage({ params }: { params: { id: string } })
               <div className="flex items-start gap-2 self-end sm:self-center">
                 <ActionButton action={moveStep.bind(null, eventId, s.id, 'up')} title="Mover para cima"><ArrowUp aria-hidden="true" size={14} /></ActionButton>
                 <ActionButton action={moveStep.bind(null, eventId, s.id, 'down')} title="Mover para baixo"><ArrowDown aria-hidden="true" size={14} /></ActionButton>
-                <ActionButton action={deleteStep.bind(null, s.id)} className="btn-danger" confirm={`Remover a etapa "${s.label}"?`}>Remover</ActionButton>
+                <ActionButton action={deleteStep.bind(null, s.id)} className="btn-danger btn-sm" confirm={`Remover a etapa "${s.label}"?`}>Remover</ActionButton>
               </div>
             </li>
           ))}

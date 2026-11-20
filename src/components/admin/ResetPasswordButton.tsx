@@ -11,7 +11,7 @@ export default function ResetPasswordButton({ mentorId, name }: { mentorId: stri
 
   return (
     <div className="flex flex-col items-stretch sm:items-end gap-1 w-full sm:w-auto">
-      <button type="button" disabled={isPending} className="btn-secondary text-xs py-1.5 justify-center"
+      <button type="button" disabled={isPending} className="btn-secondary btn-sm"
         onClick={() => {
           if (!window.confirm(`Gerar nova senha temporária para ${name}?`)) return
           setError(null); setSecret(null)

@@ -57,7 +57,7 @@ export default function ProjectField({ project, pivoted, onPivoted, text, onText
           <span className="flex-1 inline-flex items-center gap-1.5 text-orange-dark font-semibold">
             <Sparkles aria-hidden="true" size={15} />A IA identificou um possível pivô — confira
           </span>
-          <button type="button" onClick={onUseAiPivot} className="btn-secondary text-xs">Usar texto sugerido</button>
+          <button type="button" onClick={onUseAiPivot} className="btn-secondary btn-sm">Usar texto sugerido</button>
         </div>
       )}
       {pivoted && (

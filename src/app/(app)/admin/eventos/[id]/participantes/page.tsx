@@ -90,7 +90,7 @@ export default async function ParticipantesPage({ params }: { params: { id: stri
                       Tornar {ROLE_LABEL[r]}
                     </ActionButton>
                   ))}
-                  <ActionButton action={removeMember.bind(null, eventId, m.mentorId)} className="btn-danger" confirm={`Remover ${m.name} deste evento?`}>
+                  <ActionButton action={removeMember.bind(null, eventId, m.mentorId)} className="btn-danger btn-sm" confirm={`Remover ${m.name} deste evento?`}>
                     Remover
                   </ActionButton>
                 </div>

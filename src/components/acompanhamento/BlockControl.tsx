@@ -69,7 +69,7 @@ export default function BlockControl({ blocks, onChanged }: { blocks: Block[]; o
               {others.map(b => <option key={b.id} value={b.id}>{b.label} — {dayMonth(b.date)}</option>)}
             </select>
           </div>
-          <button type="button" disabled={pending || !next} className="btn-primary h-[38px] justify-center"
+          <button type="button" disabled={pending || !next} className="btn-primary"
             onClick={() => next && run(blockSwitchMessage(active?.label ?? null, next.label), () => activateEventBlock(next.id))}>
             {pending ? 'Salvando…' : 'Ativar'}
           </button>

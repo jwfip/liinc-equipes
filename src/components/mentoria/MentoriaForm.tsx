@@ -207,7 +207,7 @@ export default function MentoriaForm({ teams, steps, activeBlock, projects, reco
       {success && <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm text-green-700 font-bold flex items-center gap-2"><CircleCheck aria-hidden="true" size={18} />Mentoria {recordToEdit ? 'atualizada' : 'registrada'}!</div>}
 
       <button type="submit" disabled={isPending || !selectedTeam || !selectedStatus || !selectedStep}
-        className="btn-primary w-full justify-center py-3 text-base">
+        className="btn-primary w-full">
         {isPending ? (recordToEdit ? 'Atualizando...' : 'Registrando...') : (recordToEdit ? 'Salvar alterações' : 'Registrar mentoria')}
       </button>
     </form>
