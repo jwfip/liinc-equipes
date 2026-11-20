@@ -33,3 +33,6 @@ Pendências menores já anotadas nas revisões, que podem entrar aqui:
 - Lista de pessoas do Acompanhamento só atualiza ao recarregar.
 - Pedido grande demais para a IA aparece como "A IA não respondeu agora".
 - Nome no cabeçalho só muda no próximo login depois que o admin renomeia a pessoa.
+- Controle de bloco (Acompanhamento): a mensagem de sucesso não aparece; "Encerrar bloco" não muda o texto enquanto salva.
+- Ativar/encerrar bloco pelo admin não revalida `/acompanhamento` (o polling cobre em 5 s).
+- `activateBlock` do admin com id de bloco de outro evento encerra o atual e não ativa nenhum (só chamando a ação fora da tela).
